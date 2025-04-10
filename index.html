@@ -1,13 +1,57 @@
 <!DOCTYPE html>
-<script src="pbj-client.js"></script>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project BlueJay</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project BlueJay</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f5faff;
+      color: #333;
+      text-align: center;
+    }
+    h1 {
+      color: #0066cc;
+    }
+    input, button {
+      padding: 12px;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #004d99;
+    }
+    #response {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eaf4ff;
+      border-radius: 6px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      white-space: pre-wrap;
+      font-size: 1rem;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to Project BlueJay</h1>
-    <p>Your content goes here.</p>
+  <h1>Ask Project BlueJay</h1>
+  <input type="text" id="userInput" placeholder="Type your question..." />
+  <button id="submitBtn">Submit</button>
+  <div id="response"></div>
+
+  <script src="pbj-client.js"></script>
 </body>
 </html>
