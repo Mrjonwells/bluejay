@@ -5,7 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Project BlueJay</title>
   <style>
-    body {
+    .dots {
+  font-style: italic;
+}
+
+.dot {
+  animation: blink 1.5s infinite;
+  opacity: 0;
+}
+
+.dot.one { animation-delay: 0s; }
+.dot.two { animation-delay: 0.2s; }
+.dot.three { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}    body {
       font-family: Arial, sans-serif;
       padding: 2rem;
       background-color: #f5faff;
