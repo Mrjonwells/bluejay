@@ -1,2 +1,0 @@
-# ProjectBlueJayWeb
-Web related
