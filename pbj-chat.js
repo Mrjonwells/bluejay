@@ -10,7 +10,7 @@ function addMessage(text, role) {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-submitBtn.addEventListener('click', async () => {
+async function sendMessage() {
   const message = userInput.value.trim();
   if (!message) return;
 
@@ -27,7 +27,8 @@ submitBtn.addEventListener('click', async () => {
     });
 
     const data = await res.json();
-    // Remove the loading placeholder
+
+    // Remove the "thinking" message
     const last = document.querySelector('.bot:last-child');
     if (last && last.textContent === "PBJ is thinking...") {
       last.remove();
@@ -36,5 +37,16 @@ submitBtn.addEventListener('click', async () => {
     addMessage(data.response || "No response received.", 'bot');
   } catch (err) {
     addMessage("Something went wrong. Try again.", 'bot');
+  }
+}
+
+// Click send button
+submitBtn.addEventListener('click', sendMessage);
+
+// Press Enter key
+userInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    e.preventDefault(); // prevent newline
+    sendMessage();
   }
 });
