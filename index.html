@@ -3,75 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Project BlueJay</title>
+  <title>BlueJay Chat Assistant</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 2rem;
-      background-color: #f5faff;
-      color: #333;
+      margin: 0;
+      padding: 0;
+      background: #f5faff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    h1 {
+      background-color: #0066cc;
+      color: white;
+      margin: 0;
+      padding: 1rem;
       text-align: center;
     }
-    h1 {
-      color: #0066cc;
+
+    #chat-container {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
-    input, button {
+
+    .bubble {
+      max-width: 70%;
       padding: 12px;
-      font-size: 16px;
-      margin: 10px 0;
-      width: 100%;
-      max-width: 400px;
-      box-sizing: border-box;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      line-height: 1.4;
     }
-    button {
+
+    .user {
+      align-self: flex-end;
+      background: #cce5ff;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #eaf4ff;
+      border-bottom-left-radius: 0;
+    }
+
+    #input-area {
+      display: flex;
+      padding: 1rem;
+      background: white;
+      border-top: 1px solid #ccc;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #submitBtn {
+      padding: 10px 20px;
+      margin-left: 10px;
+      font-size: 1rem;
       background-color: #0066cc;
       color: white;
       border: none;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    button:hover {
-      background-color: #004d99;
-    }
-    #response {
-      margin-top: 20px;
-      padding: 15px;
-      background: #eaf4ff;
       border-radius: 6px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-      white-space: pre-wrap;
-      font-size: 1rem;
+      cursor: pointer;
     }
 
-    /* Animation for "PBJ is thinking..." */
-    .dots {
-      font-style: italic;
-    }
-
-    .dot {
-      animation: blink 1.5s infinite;
-      opacity: 0;
-    }
-
-    .dot.one { animation-delay: 0s; }
-    .dot.two { animation-delay: 0.2s; }
-    .dot.three { animation-delay: 0.4s; }
-
-    @keyframes blink {
-      0% { opacity: 0; }
-      50% { opacity: 1; }
-      100% { opacity: 0; }
+    #submitBtn:hover {
+      background-color: #004d99;
     }
   </style>
 </head>
 <body>
-  <h1>Ask Project BlueJay</h1>
-  <input type="text" id="userInput" placeholder="Type your question..." />
-  <button id="submitBtn">Submit</button>
-  <div id="response"></div>
+  <h1>Chat with BlueJay</h1>
+  <div id="chat-container"></div>
+  <div id="input-area">
+    <input type="text" id="userInput" placeholder="Type your question..." />
+    <button id="submitBtn">Send</button>
+  </div>
 
-  <script src="pbj-client.js"></script>
+  <script src="pbj-chat.js"></script>
 </body>
 </html>
