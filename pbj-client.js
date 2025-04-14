@@ -1,26 +1,76 @@
-document.getElementById('submitBtn').addEventListener('click', async () => {
-  const userInput = document.getElementById('userInput').value.trim();
-  const responseDiv = document.getElementById('response');
+const chatContainer = document.getElementById('chat-container');
+const userInput = document.getElementById('userInput');
+const submitBtn = document.getElementById('submitBtn');
 
-  if (!userInput) {
-    responseDiv.textContent = "Please enter a question.";
-    return;
-  }
+// Wakes up the Render server on first page load
+(async function warmUpServer() {
+  await fetch("https://pbj-server1.onrender.com/");
+})();
 
-  // Show typing animation
-  responseDiv.innerHTML = `<span class="dots">PBJ is thinking<span class="dot one">.</span><span class="dot two">.</span><span class="dot three">.</span></span>`;
+function addMessage(text, role) {
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${role}`;
+  bubble.textContent = text;
+  chatContainer.appendChild(bubble);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function addThinkingBubble() {
+  const loadingBubble = document.createElement('div');
+  loadingBubble.className = 'bubble bot';
+  loadingBubble.innerHTML = `<span class="dots">BlueJay is thinking<span class="dot one">.</span><span class="dot two">.</span><span class="dot three">.</span></span>`;
+  chatContainer.appendChild(loadingBubble);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
+
+  addMessage(message, 'user');
+  userInput.value = '';
+
+  addThinkingBubble();
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000); // safety timeout
+
     const res = await fetch("https://pbj-server1.onrender.com/pbj", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userInput })
+      body: JSON.stringify({ message }),
+      signal: controller.signal
     });
 
+    clearTimeout(timeout);
+
     const data = await res.json();
-    responseDiv.textContent = data.response || "No response received.";
-  } catch (error) {
-    responseDiv.textContent = "Error: " + error.message;
-    console.error("Fetch error:", error);
+
+    // Remove the "thinking" message
+    const last = document.querySelector('.bot:last-child');
+    if (last && last.innerHTML.includes("BlueJay is thinking")) {
+      last.remove();
+    }
+
+    addMessage(data.response || "No response received.", 'bot');
+  } catch (err) {
+    const last = document.querySelector('.bot:last-child');
+    if (last && last.innerHTML.includes("BlueJay is thinking")) {
+      last.remove();
+    }
+
+    addMessage("Sorry, something went wrong. Try again in a moment.", 'bot');
+  }
+}
+
+// Click send button
+submitBtn.addEventListener('click', sendMessage);
+
+// Press Enter key
+userInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    e.preventDefault(); // prevent newline
+    sendMessage();
   }
 });
