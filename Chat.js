@@ -1,74 +1,28 @@
-const chatLog = document.getElementById('chatLog');
-const sendBtn = document.getElementById('sendBtn');
-const userInput = document.getElementById('userInput');
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const userInput = document.getElementById('userInput').value.trim();
+  const responseDiv = document.getElementById('response');
+  if (!userInput) return;
 
-sendBtn.addEventListener('click', sendMessage);
-userInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendMessage();
-});
-
-function getThreadData() {
-  const stored = JSON.parse(localStorage.getItem('bluejay_thread') || '{}');
-  const now = Date.now();
-  if (stored.id && stored.timestamp && now - stored.timestamp < 20 * 60 * 1000) {
-    return stored;
-  }
-  return { id: null, timestamp: now };
-}
-
-function setThreadData(id) {
-  localStorage.setItem('bluejay_thread', JSON.stringify({
-    id,
-    timestamp: Date.now()
-  }));
-}
-
-function appendMessage(role, text) {
-  const div = document.createElement('div');
-  div.className = `message ${role}`;
-  div.textContent = text;
-  chatLog.appendChild(div);
-  chatLog.scrollTop = chatLog.scrollHeight;
-}
-
-async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;
-
-  userInput.value = '';
-  userInput.disabled = true;
-  appendMessage('user', message);
-  appendMessage('bot', 'BlueJay is thinking...');
-
-  const threadData = getThreadData();
+  responseDiv.innerHTML += `<div class="message user"><strong>You:</strong> ${userInput}</div>`;
+  document.getElementById('userInput').value = '';
+  responseDiv.innerHTML += `<div class="message bot">BlueJay is thinking...</div>`;
 
   try {
-    const res = await fetch('https://pbj-server1.onrender.com/pbj', {
+    const res = await fetch("https://pbj-server1.onrender.com/pbj", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message,
-        thread_id: threadData.id
-      })
+      body: JSON.stringify({ message: userInput }),
     });
 
     const data = await res.json();
-
-    // Remove "thinking..." message
-    const entries = chatLog.querySelectorAll('.message.bot');
-    if (entries.length) {
-      entries[entries.length - 1].remove();
-    }
-
-    appendMessage('bot', data.response || "No response received.");
-    if (data.thread_id && data.thread_id !== threadData.id) {
-      setThreadData(data.thread_id);
-    }
-
-  } catch (err) {
-    appendMessage('bot', "Error: " + err.message);
-  } finally {
-    userInput.disabled = false;
-    userInput.focus();
+    const botMessage = data.response || "No response.";
+    responseDiv.innerHTML += `<div class="message bot"><strong>BlueJay:</strong> ${botMessage}</div>`;
+    responseDiv.scrollTop = responseDiv.scrollHeight;
+  } catch (error) {
+    responseDiv.innerHTML += `<div class="message bot">Error: ${error.message}</div>`;
   }
-}
+});
+
+document.getElementById('userInput').addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') document.getElementById('submitBtn').click();
+});
