@@ -1,52 +1,38 @@
-const chatContainer = document.getElementById('chat-container');
-const userInput = document.getElementById('userInput');
-const submitBtn = document.getElementById('submitBtn');
-
-function addMessage(text, role) {
-  const bubble = document.createElement('div');
-  bubble.className = `bubble ${role}`;
-  bubble.textContent = text;
-  chatContainer.appendChild(bubble);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
+document.getElementById('submitBtn').addEventListener('click', sendMessage);
+document.getElementById('userInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
 
 async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;
+  const inputEl = document.getElementById('userInput');
+  const responseDiv = document.getElementById('response');
+  const message = inputEl.value.trim();
 
-  addMessage(message, 'user');
-  userInput.value = '';
+  if (!message) {
+    responseDiv.textContent = "Please enter a message.";
+    return;
+  }
 
-  addMessage("PBJ is thinking...", 'bot');
+  inputEl.disabled = true;
+  responseDiv.textContent = "BlueJay is thinking";
+  responseDiv.classList.add("thinking");
 
   try {
-    const res = await fetch("https://pbj-server1.onrender.com/pbj", {
+    const res = await fetch('https://pbj-server1.onrender.com/pbj', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message })
     });
 
     const data = await res.json();
-
-    // Remove the "thinking" message
-    const last = document.querySelector('.bot:last-child');
-    if (last && last.textContent === "PBJ is thinking...") {
-      last.remove();
-    }
-
-    addMessage(data.response || "No response received.", 'bot');
+    responseDiv.classList.remove("thinking");
+    responseDiv.textContent = data.response || "No response received.";
   } catch (err) {
-    addMessage("Something went wrong. Try again.", 'bot');
+    responseDiv.classList.remove("thinking");
+    responseDiv.textContent = "Error: " + err.message;
+  } finally {
+    inputEl.value = "";
+    inputEl.disabled = false;
+    inputEl.focus();
   }
 }
-
-// Click send button
-submitBtn.addEventListener('click', sendMessage);
-
-// Press Enter key
-userInput.addEventListener('keydown', function (e) {
-  if (e.key === 'Enter') {
-    e.preventDefault(); // prevent newline
-    sendMessage();
-  }
-});
