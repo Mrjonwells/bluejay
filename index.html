@@ -18,6 +18,11 @@
       color: white;
       font-size: 1.5rem;
     }
+    img {
+      max-width: 200px;
+      display: block;
+      margin: 1rem auto;
+    }
     #chat-container {
       max-width: 800px;
       margin: 2rem auto;
@@ -41,9 +46,11 @@
     }
     .user {
       text-align: right;
+      color: #003366;
     }
     .bot {
       text-align: left;
+      color: #444;
     }
     #userInput {
       width: 75%;
@@ -65,11 +72,14 @@
 </head>
 <body>
   <header>Talk to BlueJay — The Merchant Savings Bot</header>
+  <img src="bluejay-logo.jpeg" alt="BlueJay Logo" />
+
   <div id="chat-container">
     <div id="response"></div>
     <input type="text" id="userInput" placeholder="Ask BlueJay a question..." />
     <button id="submitBtn">Send</button>
   </div>
+
   <script src="chat.js"></script>
 </body>
 </html>
