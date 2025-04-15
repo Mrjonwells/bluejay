@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Talk to BlueJay</title>
+  <title>Talk to BlueJay — The Merchant Savings Bot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,18 +12,31 @@
     }
     h1 {
       color: #0066cc;
-      margin-bottom: 30px;
+    }
+    #desktop-warning {
+      margin-top: 20px;
+      color: red;
+      display: none;
     }
   </style>
 </head>
 <body>
   <h1>Talk to BlueJay — The Merchant Savings Bot</h1>
+  <div id="desktop-warning">This chat works best on a desktop browser.</div>
 
-  <!-- Official OpenAI Embed using your GPT ID -->
-  <script src="https://chat.openai.com/embed.js"
-    data-gpt-id="g-bHpTfjdXm-bluejay-the-merchant-savings-bot"
-    data-theme="light"
-    data-openai-assistant="true">
+  <div id="openai-embed-container">
+    <script src="https://chat.openai.com/embed.js"
+      data-gpt-id="g-bHpTfjdXm-bluejay-the-merchant-savings-bot"
+      data-theme="light"
+      data-openai-assistant="true">
+    </script>
+  </div>
+
+  <script>
+    // Detect mobile and show warning
+    if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      document.getElementById('desktop-warning').style.display = 'block';
+    }
   </script>
 </body>
 </html>
