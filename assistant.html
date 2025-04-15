@@ -2,41 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Talk to BlueJay — The Merchant Savings Bot</title>
+  <title>Talk to BlueJay (API-Powered)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f0f6fc;
       text-align: center;
-      background-color: #f5f9ff;
       padding: 2rem;
     }
+
     h1 {
-      color: #0066cc;
+      color: #005aa7;
     }
-    #desktop-warning {
+
+    #userInput, #submitBtn {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 80%;
+      max-width: 400px;
+    }
+
+    #submitBtn {
+      background-color: #0073e6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #submitBtn:hover {
+      background-color: #005bb5;
+    }
+
+    #response {
       margin-top: 20px;
-      color: red;
-      display: none;
+      padding: 20px;
+      background: #e8f1ff;
+      border-radius: 6px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      white-space: pre-wrap;
+      font-size: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>Talk to BlueJay — The Merchant Savings Bot</h1>
-  <div id="desktop-warning">This chat works best on a desktop browser.</div>
-
-  <div id="openai-embed-container">
-    <script src="https://chat.openai.com/embed.js"
-      data-gpt-id="g-bHpTfjdXm-bluejay-the-merchant-savings-bot"
-      data-theme="light"
-      data-openai-assistant="true">
-    </script>
-  </div>
+  <h1>Talk to BlueJay</h1>
+  <input type="text" id="userInput" placeholder="Type your question..." />
+  <br />
+  <button id="submitBtn">Send</button>
+  <div id="response"></div>
 
   <script>
-    // Detect mobile and show warning
-    if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-      document.getElementById('desktop-warning').style.display = 'block';
-    }
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+      const input = document.getElementById('userInput').value.trim();
+      const responseDiv = document.getElementById('response');
+      if (!input) {
+        responseDiv.textContent = "Please enter a message.";
+        return;
+      }
+
+      responseDiv.textContent = "BlueJay is thinking...";
+
+      try {
+        const res = await fetch('https://pbj-server1.onrender.com/pbj', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: input })
+        });
+
+        const data = await res.json();
+        responseDiv.textContent = data.response || "No response received.";
+      } catch (err) {
+        responseDiv.textContent = "Error: " + err.message;
+      }
+
+      document.getElementById('userInput').value = "";
+    });
+
+    // Press Enter = send
+    document.getElementById('userInput').addEventListener('keypress', (e) => {
+      if (e.key === "Enter") {
+        document.getElementById('submitBtn').click();
+      }
+    });
   </script>
 </body>
 </html>
