@@ -3,9 +3,19 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const responseDiv = document.getElementById('response');
   if (!userInput) return;
 
-  responseDiv.innerHTML += `<div class="message user"><strong>You:</strong> ${userInput}</div>`;
+  // Add user message
+  const userMsg = document.createElement('div');
+  userMsg.classList.add('message', 'user');
+  userMsg.innerHTML = `<strong>You:</strong> ${userInput}`;
+  responseDiv.appendChild(userMsg);
   document.getElementById('userInput').value = '';
-  responseDiv.innerHTML += `<div class="message bot">BlueJay is thinking...</div>`;
+
+  // Add thinking animation
+  const botThinking = document.createElement('div');
+  botThinking.classList.add('message', 'bot');
+  botThinking.textContent = 'BlueJay is thinking...';
+  responseDiv.appendChild(botThinking);
+  responseDiv.scrollTop = responseDiv.scrollHeight;
 
   try {
     const res = await fetch("https://pbj-server1.onrender.com/pbj", {
@@ -16,10 +26,13 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
     const data = await res.json();
     const botMessage = data.response || "No response.";
-    responseDiv.innerHTML += `<div class="message bot"><strong>BlueJay:</strong> ${botMessage}</div>`;
+
+    // Replace thinking with actual response
+    botThinking.innerHTML = `<strong>BlueJay:</strong> ${botMessage}`;
     responseDiv.scrollTop = responseDiv.scrollHeight;
+
   } catch (error) {
-    responseDiv.innerHTML += `<div class="message bot">Error: ${error.message}</div>`;
+    botThinking.textContent = `Error: ${error.message}`;
   }
 });
 
