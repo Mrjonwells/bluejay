@@ -2,80 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Talk to BlueJay — The Merchant Savings Bot</title>
+  <title>Chat with BlueJay</title>
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f0f6fc;
+      background-color: #f5f9ff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: #0073e6;
+      color: white;
+      padding: 16px;
       text-align: center;
-      padding: 2rem;
+      font-size: 20px;
     }
 
-    h1 {
-      color: #0073e6;
-      margin-bottom: 2rem;
+    #chatLog {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    input, button {
+    .message {
+      max-width: 80%;
       padding: 12px;
-      font-size: 16px;
-      margin: 10px 0;
-      width: 90%;
-      max-width: 500px;
+      border-radius: 8px;
+      font-size: 15px;
+      line-height: 1.4;
     }
 
-    button {
-      background-color: #0073e6;
+    .user {
+      align-self: flex-end;
+      background-color: #d0e8ff;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background-color: #e6ecf2;
+    }
+
+    #inputArea {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+      background: white;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+    }
+
+    #sendBtn {
+      margin-left: 10px;
+      padding: 10px 16px;
+      background: #0073e6;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
-    button:hover {
+    #sendBtn:hover {
       background-color: #005bb5;
-    }
-
-    #response {
-      margin-top: 20px;
-      padding: 20px;
-      background: #e8f1ff;
-      border-radius: 6px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-      white-space: pre-wrap;
-      font-size: 1rem;
-    }
-
-    .thinking::after {
-      content: '...';
-      animation: dots 1s steps(3, end) infinite;
-    }
-
-    @keyframes dots {
-      0%, 20% {
-        content: '';
-      }
-      40% {
-        content: '.';
-      }
-      60% {
-        content: '..';
-      }
-      80%, 100% {
-        content: '...';
-      }
     }
   </style>
 </head>
 <body>
-  <h1>Talk to BlueJay</h1>
-  <input type="text" id="userInput" placeholder="Type your question..." />
-  <br />
-  <button id="submitBtn">Send</button>
-  <div id="response"></div>
-
+  <header>BlueJay — Merchant Savings Bot</header>
+  <div id="chatLog"></div>
+  <div id="inputArea">
+    <input type="text" id="userInput" placeholder="Ask BlueJay a question..." />
+    <button id="sendBtn">Send</button>
+  </div>
   <script src="chat.js"></script>
 </body>
 </html>
