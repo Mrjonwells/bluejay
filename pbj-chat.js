@@ -7,6 +7,7 @@ userInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') sendMessage();
 });
 
+// Get or expire the current thread_id from localStorage
 function getThreadData() {
   const stored = JSON.parse(localStorage.getItem('bluejay_thread') || '{}');
   const now = Date.now();
@@ -23,10 +24,11 @@ function setThreadData(id) {
   }));
 }
 
+// Add a chat message to the UI
 function appendMessage(role, text = "") {
   const div = document.createElement('div');
   div.className = `message ${role}`;
-  div.textContent = text;
+  div.innerHTML = text; // Render inline HTML safely (be cautious with inputs!)
   chatLog.appendChild(div);
   chatLog.scrollTop = chatLog.scrollHeight;
   return div;
@@ -44,9 +46,7 @@ async function sendMessage() {
   const threadData = getThreadData();
 
   const eventSource = new EventSourcePolyfill('https://pbj-server1.onrender.com/pbj', {
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     payload: JSON.stringify({
       message,
       thread_id: threadData.id
@@ -67,14 +67,14 @@ async function sendMessage() {
       userInput.focus();
     } else {
       fullBotReply += event.data;
-      botMsg.textContent = fullBotReply;
+      botMsg.innerHTML = fullBotReply;
       chatLog.scrollTop = chatLog.scrollHeight;
     }
   };
 
   eventSource.onerror = function (err) {
-    botMsg.textContent = "Error receiving response.";
-    console.error("Stream error:", err);
+    botMsg.textContent = "Error: Could not receive response.";
+    console.error("Streaming error:", err);
     eventSource.close();
     userInput.disabled = false;
   };
