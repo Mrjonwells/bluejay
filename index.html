@@ -37,10 +37,36 @@
       color: white;
       font-size: 1.5rem;
     }
-    img {
+    img.logo {
       max-width: 200px;
       display: block;
       margin: 1rem auto;
+    }
+    #hero {
+      text-align: center;
+      background: #eaf4ff;
+      padding: 2rem;
+    }
+    #hero h1 {
+      color: #004080;
+      margin-bottom: 0.5rem;
+    }
+    #hero p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+    }
+    #hero button {
+      background: #0077cc;
+      color: white;
+      font-size: 1rem;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #hero button:hover {
+      background-color: #005fa3;
     }
     #chat-container {
       max-width: 800px;
@@ -59,10 +85,7 @@
       margin-bottom: 1rem;
       background: #f0f8ff;
     }
-    .message {
-      margin-bottom: 1rem;
-      line-height: 1.5;
-    }
+    .message { margin-bottom: 1rem; line-height: 1.5; }
     .user { text-align: right; color: #003366; }
     .bot { text-align: left; color: #444; }
     #userInput {
@@ -80,6 +103,21 @@
     }
     #submitBtn:hover {
       background-color: #005fa3;
+    }
+    #icons {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 3rem auto;
+      max-width: 800px;
+    }
+    #icons div {
+      text-align: center;
+      flex: 1;
+    }
+    #icons img {
+      height: 60px;
+      margin-bottom: 0.5rem;
     }
     #faq {
       max-width: 800px;
@@ -102,10 +140,14 @@
 
 <body>
   <header>Talk to BlueJay — The Merchant Savings Bot</header>
-  <img src="bluejay-logo.jpeg" alt="BlueJay Logo" />
+  <img src="bluejay-logo.jpeg" class="logo" alt="BlueJay Logo" />
 
-  <section style="text-align:center; margin-top: 1rem;">
-    <p><strong>BlueJay</strong> is your smart assistant for reducing <em>credit card processing fees</em>. Whether you're using <em>Clover, Square, Toast,</em> or another POS, BlueJay helps small businesses save money with zero-fee solutions, real-time advice, and AI-powered automation. Get help with <em>merchant services, payment processing, chargebacks, and lowering rates</em> — all in one conversation.</p>
+  <section id="hero">
+    <h1>Welcome to BlueJay</h1>
+    <p>Your smart assistant for reducing payment processing costs and increasing profitability. Let’s discover how much your business could save.</p>
+    <button onclick="document.getElementById('userInput').value='Tell me about your business';document.getElementById('submitBtn').click();">
+      Start Now — It’s Free
+    </button>
   </section>
 
   <div id="chat-container">
@@ -113,6 +155,21 @@
     <input type="text" id="userInput" placeholder="Ask BlueJay a question..." />
     <button id="submitBtn">Send</button>
   </div>
+
+  <section id="icons">
+    <div>
+      <img src="icon-savings.png" alt="Savings">
+      <p><strong>Smart Savings</strong><br/>BlueJay identifies ways to eliminate fees.</p>
+    </div>
+    <div>
+      <img src="icon-time.png" alt="Time">
+      <p><strong>Time-Saving</strong><br/>Instant, AI-powered recommendations.</p>
+    </div>
+    <div>
+      <img src="icon-trust.png" alt="Trust">
+      <p><strong>Transparent</strong><br/>No pressure. Just smart advice.</p>
+    </div>
+  </section>
 
   <div id="faq">
     <h2>Frequently Asked Questions</h2>
@@ -122,6 +179,13 @@
     <p><strong>Does it work with Clover, Square, or Toast?</strong><br />Yes! BlueJay understands how to help you save across most modern POS systems.</p>
   </div>
 
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById("userInput").value = "Hi BlueJay, here's a little about my business...";
+      }, 3000);
+    });
+  </script>
   <script src="chat.js"></script>
 </body>
 </html>
