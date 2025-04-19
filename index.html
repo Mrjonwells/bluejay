@@ -45,7 +45,7 @@
     #hero {
       text-align: center;
       background: #eaf4ff;
-      padding: 2rem;
+      padding: 2rem 1rem;
     }
     #hero h1 {
       color: #004080;
@@ -55,18 +55,6 @@
       font-size: 1.2rem;
       max-width: 600px;
       margin: 0 auto 1.5rem;
-    }
-    #hero button {
-      background: #0077cc;
-      color: white;
-      font-size: 1rem;
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    #hero button:hover {
-      background-color: #005fa3;
     }
     #chat-container {
       max-width: 800px;
@@ -145,14 +133,11 @@
   <section id="hero">
     <h1>Welcome to BlueJay</h1>
     <p>Your smart assistant for reducing payment processing costs and increasing profitability. Let’s discover how much your business could save.</p>
-    <button onclick="document.getElementById('userInput').value='Tell me about your business';document.getElementById('submitBtn').click();">
-      Start Now — It’s Free
-    </button>
   </section>
 
   <div id="chat-container">
     <div id="response"></div>
-    <input type="text" id="userInput" placeholder="Ask BlueJay a question..." />
+    <input type="text" id="userInput" placeholder="Tell me about your business..." />
     <button id="submitBtn">Send</button>
   </div>
 
