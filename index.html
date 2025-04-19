@@ -3,7 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk with BlueJay</title>
+  <title>BlueJay AI — Slash Your Merchant Fees with Smart Automation</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="BlueJay is your AI-powered assistant for reducing credit card processing fees. Start saving money with zero-fee processing insights and automated recommendations." />
+  <meta name="keywords" content="AI for merchant processing, reduce credit card fees, zero fee processing, Clover POS savings, BlueJay chatbot, payment automation, small business savings, merchant account help" />
+  <meta name="author" content="BlueJay AI" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="BlueJay AI — Your Smart Merchant Savings Assistant" />
+  <meta property="og:description" content="Talk to BlueJay, your automated assistant for lowering payment processing costs and boosting profitability." />
+  <meta property="og:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
+  <meta property="og:url" content="https://yourdomain.com" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BlueJay AI" />
+  <meta name="twitter:description" content="Cut merchant fees with smart AI. Try BlueJay now." />
+  <meta name="twitter:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -44,14 +63,8 @@
       margin-bottom: 1rem;
       line-height: 1.5;
     }
-    .user {
-      text-align: right;
-      color: #003366;
-    }
-    .bot {
-      text-align: left;
-      color: #444;
-    }
+    .user { text-align: right; color: #003366; }
+    .bot { text-align: left; color: #444; }
     #userInput {
       width: 75%;
       padding: 10px;
@@ -68,16 +81,45 @@
     #submitBtn:hover {
       background-color: #005fa3;
     }
+    #faq {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+    }
+    #faq h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #0077cc;
+    }
+    #faq p {
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
+
 <body>
   <header>Talk to BlueJay — The Merchant Savings Bot</header>
   <img src="bluejay-logo.jpeg" alt="BlueJay Logo" />
+
+  <section style="text-align:center; margin-top: 1rem;">
+    <p><strong>BlueJay</strong> is your smart assistant for reducing <em>credit card processing fees</em>. Whether you're using <em>Clover, Square, Toast,</em> or another POS, BlueJay helps small businesses save money with zero-fee solutions, real-time advice, and AI-powered automation. Get help with <em>merchant services, payment processing, chargebacks, and lowering rates</em> — all in one conversation.</p>
+  </section>
 
   <div id="chat-container">
     <div id="response"></div>
     <input type="text" id="userInput" placeholder="Ask BlueJay a question..." />
     <button id="submitBtn">Send</button>
+  </div>
+
+  <div id="faq">
+    <h2>Frequently Asked Questions</h2>
+    <p><strong>What is BlueJay?</strong><br />BlueJay is an AI-powered chatbot that helps businesses reduce their credit card processing fees through smart automation and real-time analysis.</p>
+    <p><strong>How can BlueJay help me?</strong><br />By analyzing your current processing setup and suggesting cost-saving options like zero-fee programs and optimized POS usage.</p>
+    <p><strong>Is it free to use?</strong><br />Yes, BlueJay offers a free conversation to explore your current savings opportunities.</p>
+    <p><strong>Does it work with Clover, Square, or Toast?</strong><br />Yes! BlueJay understands how to help you save across most modern POS systems.</p>
   </div>
 
   <script src="chat.js"></script>
