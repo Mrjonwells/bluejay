@@ -6,95 +6,76 @@
   <title>BlueJay AI — Slash Your Merchant Fees with Smart Automation</title>
 
   <!-- SEO Meta Tags -->
-  <meta name="description" content="BlueJay is your AI-powered assistant for reducing credit card processing fees." />
-  <meta name="keywords" content="AI for merchant processing, reduce card fees, payment automation" />
+  <meta name="description" content="BlueJay is your AI-powered assistant for reducing credit card processing fees. Start saving money with zero-fee processing insights and automated recommendations." />
+  <meta name="keywords" content="AI for merchant processing, reduce credit card fees, zero fee processing, Clover POS savings, BlueJay chatbot, payment automation, small business savings, merchant account help" />
   <meta name="author" content="BlueJay AI" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="BlueJay AI — Your Smart Merchant Savings Assistant" />
+  <meta property="og:description" content="Talk to BlueJay, your automated assistant for lowering payment processing costs and boosting profitability." />
+  <meta property="og:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
+  <meta property="og:url" content="https://yourdomain.com" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BlueJay AI" />
+  <meta name="twitter:description" content="Cut merchant fees with smart AI. Try BlueJay now." />
+  <meta name="twitter:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
 
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f2faff;
+      font-family: Arial, sans-serif;
+      background-color: #f5faff;
       margin: 0;
       padding: 0;
       text-align: center;
-      color: #333;
     }
-
     header {
-      background-color: #0066cc;
+      background-color: #0077cc;
       color: white;
       padding: 1rem;
-      font-size: 1.75rem;
-      font-weight: bold;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 1.5rem;
     }
-
-    .logo {
-      display: block;
-      margin: 20px auto 10px auto;
-      width: 80px;
-      height: auto;
-    }
-
     .motto {
-      font-size: 22px;
-      font-weight: 600;
+      margin-top: 40px;
+      font-size: 24px;
+      font-weight: bold;
       color: #003366;
-      margin-bottom: 20px;
     }
-
     .chat-container {
       margin: 30px auto;
       background-color: #fff;
-      border-radius: 12px;
-      padding: 25px;
-      max-width: 720px;
-      box-shadow: 0 0 16px rgba(0, 102, 204, 0.15);
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 700px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
     }
-
     .chat-box {
-      min-height: 200px;
+      min-height: 150px;
       border: 1px solid #ccc;
       padding: 15px;
       margin-bottom: 15px;
-      background-color: #fdfdfd;
+      background-color: #f9f9f9;
       border-radius: 6px;
       overflow-y: auto;
       text-align: left;
-      max-height: 300px;
     }
-
     .input-row {
       display: flex;
       justify-content: center;
-      align-items: center;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 10px;
     }
-
-    #thinking-icon {
-      font-size: 22px;
-      animation: spin 1.2s linear infinite;
-      display: none;
-      color: #00aa00;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
     input[type="text"] {
-      padding: 12px;
+      padding: 10px;
       width: 60%;
       min-width: 220px;
       border-radius: 4px;
-      border: 1px solid #bbb;
-      font-size: 16px;
+      border: 1px solid #ccc;
     }
-
     button {
-      padding: 12px 24px;
+      padding: 10px 20px;
       font-size: 16px;
       background-color: #0077cc;
       color: #fff;
@@ -102,11 +83,9 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #005fa3;
     }
-
     .icons-row {
       display: flex;
       justify-content: center;
@@ -115,32 +94,20 @@
       flex-wrap: wrap;
       padding-bottom: 40px;
     }
-
     .icons-row img {
       width: 120px;
       height: auto;
     }
-
-    .message {
-      margin-bottom: 12px;
-    }
-
-    .message strong {
-      color: #0066cc;
-    }
-
   </style>
 </head>
 <body>
+  <header>Talk to BlueJay — The Merchant Savings Bot</header>
 
-  <img src="bluejay-logo.jpeg" alt="BlueJay Logo" class="logo" />
-  <header>Talk with BlueJay — The Merchant Savings Bot</header>
   <div class="motto">BlueJay. Save smart. Scale faster.</div>
 
   <div class="chat-container">
     <div class="chat-box" id="chat-box">Welcome! How can I help your business today?</div>
     <div class="input-row">
-      <span id="thinking-icon">💲</span>
       <input type="text" id="user-input" placeholder="Tell me about your business..." />
       <button id="send-btn">Send</button>
     </div>
