@@ -3,105 +3,102 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk to BlueJay — The Merchant Savings Bot</title>
-  <meta name="description" content="BlueJay helps your business save money on merchant processing fees and boost profitability with smart AI insights." />
-  <meta name="keywords" content="merchant processing, payment savings, small business AI, BlueJay bot, reduce processing fees, smart assistant, payment automation, merchant bot, Clover AI, Square alternative" />
-  <meta name="author" content="Fortified Capital LLC" />
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>BlueJay — The Merchant Savings Bot</title>
+  <meta name="description" content="BlueJay is your smart assistant for reducing merchant processing fees and increasing your business profitability. Try it today for free.">
+  <meta name="keywords" content="merchant savings bot, reduce credit card fees, BlueJay, merchant processing AI, business payment assistant, AI cost reduction, processing rate check, business automation, clover integration, square savings">
+  <meta name="author" content="Fortified Capital LLC">
+
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      padding: 0;
-      background-color: #f5faff;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAHgCAYAAACXxr5kAAA...') no-repeat center center fixed;
+      background-size: cover;
+      color: #222;
     }
+
     header {
-      background-color: #0073cf;
+      background-color: #0077cc;
       color: white;
-      padding: 1rem 2rem;
+      padding: 1rem;
       text-align: center;
-      width: 100%;
+      font-size: 1.5rem;
     }
-    h1 {
-      margin: 0.5rem 0;
-    }
-    .logo {
-      margin-top: 20px;
-      max-width: 180px;
-    }
-    .intro {
+
+    .container {
       text-align: center;
-      max-width: 600px;
-      margin: 1.5rem auto;
-    }
-    .chat-container {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      width: 95%;
+      padding: 2rem;
+      background-color: rgba(255, 255, 255, 0.92);
+      margin: 3rem auto;
       max-width: 700px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
-    #response {
-      margin-bottom: 15px;
-      min-height: 100px;
-      white-space: pre-wrap;
-      background: #eaf4ff;
-      padding: 10px;
-      border-radius: 6px;
+
+    .logo {
+      max-width: 200px;
+      margin-bottom: 1.5rem;
     }
-    input[type="text"] {
-      width: calc(100% - 100px);
+
+    h1 {
+      color: #0077cc;
+    }
+
+    p {
+      font-size: 1.2rem;
+      line-height: 1.6;
+    }
+
+    input[type="text"], button {
+      width: 100%;
+      max-width: 500px;
+      margin: 1rem auto;
       padding: 12px;
-      font-size: 1rem;
+      font-size: 16px;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 4px;
       box-sizing: border-box;
     }
+
     button {
-      width: 80px;
-      padding: 12px;
-      font-size: 1rem;
-      background-color: #0073cf;
+      background-color: #0077cc;
       color: white;
       border: none;
-      border-radius: 6px;
-      margin-left: 10px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
+
     button:hover {
-      background-color: #005ea6;
+      background-color: #005fa3;
     }
-    .input-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+
+    #response {
+      background: #f0faff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      white-space: pre-wrap;
+      font-size: 1rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
-<body>
 
+<body>
   <header>
-    <h1>Talk to BlueJay — The Merchant Savings Bot</h1>
+    Talk to BlueJay — The Merchant Savings Bot
   </header>
 
-  <img src="bluejay-logo.jpeg" alt="BlueJay Logo" class="logo" />
-
-  <div class="intro">
-    <h2>Welcome to BlueJay</h2>
+  <div class="container">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAHgCAYAAACXxr5kAAA..." alt="BlueJay Logo" class="logo" />
+    <h1>Welcome to BlueJay</h1>
     <p>Your smart assistant for reducing payment processing costs and increasing profitability. Let’s discover how much your business could save.</p>
-  </div>
 
-  <div class="chat-container">
-    <div id="response"> </div>
-    <div class="input-row">
-      <input type="text" id="userInput" placeholder="Tell me about your business…" />
-      <button id="submitBtn">Send</button>
-    </div>
+    <input type="text" id="userInput" placeholder="Tell me about your business..." />
+    <button id="submitBtn">Send</button>
+    <div id="response"></div>
   </div>
 
   <script src="chat.js"></script>
