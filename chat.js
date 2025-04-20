@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const sendBtn = document.getElementById("send-btn");
   const userInput = document.getElementById("user-input");
   const chatBox = document.getElementById("chat-box");
+  const thinkingIndicator = document.getElementById("thinking-indicator");
 
   function appendMessage(sender, text) {
     const message = document.createElement("div");
@@ -19,6 +20,9 @@ document.addEventListener("DOMContentLoaded", function () {
     userInput.disabled = true;
     sendBtn.disabled = true;
 
+    // Show thinking indicator
+    thinkingIndicator.style.display = "block";
+
     try {
       const response = await fetch("https://pbj-server1.onrender.com/chat", {
         method: "POST",
@@ -31,6 +35,8 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (err) {
       appendMessage("BlueJay", "There was an error reaching the server. Please try again later.");
     } finally {
+      // Hide thinking indicator
+      thinkingIndicator.style.display = "none";
       userInput.disabled = false;
       sendBtn.disabled = false;
       userInput.focus();
