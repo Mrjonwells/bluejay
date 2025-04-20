@@ -23,25 +23,93 @@
   <meta name="twitter:description" content="Cut merchant fees with smart AI. Try BlueJay now." />
   <meta name="twitter:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
 
-  <!-- Link to External CSS -->
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5faff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #0077cc;
+      color: white;
+      padding: 1rem;
+      font-size: 1.5rem;
+    }
+    .motto {
+      margin-top: 40px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #003366;
+    }
+    .chat-container {
+      margin: 30px auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 700px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    }
+    .chat-box {
+      min-height: 150px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 15px;
+      background-color: #f9f9f9;
+      border-radius: 6px;
+      overflow-y: auto;
+      text-align: left;
+    }
+    .input-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 60%;
+      min-width: 220px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0077cc;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    .icons-row {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+      padding-bottom: 40px;
+    }
+    .icons-row img {
+      width: 120px;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
   <header>Talk to BlueJay — The Merchant Savings Bot</header>
 
-  <div class="hero">
-    <img src="bluejay-logo.jpeg" alt="BlueJay Logo" class="hero-logo">
-    <div class="hero-text">BlueJay. Save smart. Scale faster.</div>
-  </div>
+  <div class="motto">BlueJay. Save smart. Scale faster.</div>
 
   <div class="chat-container">
     <div class="chat-box" id="chat-box">Welcome! How can I help your business today?</div>
     <div class="input-row">
       <input type="text" id="user-input" placeholder="Tell me about your business..." />
       <button id="send-btn">Send</button>
-    </div>
-    <div id="thinking-indicator" style="display: none;">
-      <img src="bluejay-logo.jpeg" alt="BlueJay is thinking..." class="rotating-logo" />
     </div>
   </div>
 
