@@ -3,119 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BlueJay AI — Slash Your Merchant Fees with Smart Automation</title>
-
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="BlueJay is your AI-powered assistant for reducing credit card processing fees. Start saving money with zero-fee processing insights and automated recommendations." />
-  <meta name="keywords" content="AI for merchant processing, reduce credit card fees, zero fee processing, Clover POS savings, BlueJay chatbot, payment automation, small business savings, merchant account help" />
-  <meta name="author" content="BlueJay AI" />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="BlueJay AI — Your Smart Merchant Savings Assistant" />
-  <meta property="og:description" content="Talk to BlueJay, your automated assistant for lowering payment processing costs and boosting profitability." />
-  <meta property="og:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
-  <meta property="og:url" content="https://yourdomain.com" />
-  <meta property="og:type" content="website" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="BlueJay AI" />
-  <meta name="twitter:description" content="Cut merchant fees with smart AI. Try BlueJay now." />
-  <meta name="twitter:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
-
+  <title>Talk to BlueJay</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f5faff;
+      color: #333;
       margin: 0;
-      padding: 0;
+      padding: 2rem;
       text-align: center;
     }
-    header {
-      background-color: #0077cc;
-      color: white;
-      padding: 1rem;
-      font-size: 1.5rem;
+    h1 {
+      color: #0066cc;
     }
-    .motto {
-      margin-top: 40px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #003366;
-    }
-    .chat-container {
-      margin: 30px auto;
-      background-color: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      max-width: 700px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-    }
-    .chat-box {
-      min-height: 150px;
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 15px;
-      background-color: #f9f9f9;
-      border-radius: 6px;
-    }
-    .input-row {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    input[type="text"] {
-      padding: 10px;
-      width: 60%;
-      min-width: 220px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+    input, button {
+      padding: 12px;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
     }
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #0077cc;
-      color: #fff;
+      background-color: #0066cc;
+      color: white;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
+      border-radius: 4px;
     }
     button:hover {
-      background-color: #005fa3;
+      background-color: #004d99;
     }
-    .icons-row {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      margin-top: 40px;
-      flex-wrap: wrap;
-      padding-bottom: 40px;
-    }
-    .icons-row img {
-      width: 120px;
-      height: auto;
+    #response {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eaf4ff;
+      border-radius: 6px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      white-space: pre-wrap;
+      font-size: 1rem;
     }
   </style>
 </head>
 <body>
-  <header>Talk to BlueJay — The Merchant Savings Bot</header>
-
-  <div class="motto">BlueJay. Save smart. Scale faster.</div>
-
-  <div class="chat-container">
-    <div class="chat-box" id="chat-box">Welcome! How can I help your business today?</div>
-    <div class="input-row">
-      <input type="text" id="user-input" placeholder="Tell me about your business..." />
-      <button id="send-btn">Send</button>
-    </div>
-  </div>
-
-  <div class="icons-row">
-    <img src="Insights.png" alt="AI-powered insights">
-    <img src="Lower.png" alt="Lower processing costs">
-    <img src="Boost.png" alt="Boost your profits">
-  </div>
+  <h1>Ask Project BlueJay</h1>
+  <input type="text" id="userInput" placeholder="Type your question..." />
+  <button id="submitBtn">Submit</button>
+  <div id="response"></div>
 
   <script src="chat.js"></script>
 </body>
