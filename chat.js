@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     input.value = "";
 
     try {
-      const response = await fetch("/chat", {
+      const response = await fetch("https://pbj-server1.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage })
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
       appendToChat("assistant", data.response || "No response from assistant.");
     } catch (err) {
-      appendToChat("assistant", "There was an error. Please try again.");
+      appendToChat("assistant", "There was an error reaching the server.");
       console.error(err);
     }
   }
