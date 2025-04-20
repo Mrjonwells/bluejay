@@ -19,8 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
     userInput.value = "";
     userInput.disabled = true;
     sendBtn.disabled = true;
-
-    // Show thinking indicator
     thinkingIndicator.style.display = "block";
 
     try {
@@ -35,7 +33,6 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (err) {
       appendMessage("BlueJay", "There was an error reaching the server. Please try again later.");
     } finally {
-      // Hide thinking indicator
       thinkingIndicator.style.display = "none";
       userInput.disabled = false;
       sendBtn.disabled = false;
@@ -45,8 +42,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   sendBtn.addEventListener("click", sendMessage);
   userInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
+    if (e.key === "Enter") sendMessage();
   });
 });
