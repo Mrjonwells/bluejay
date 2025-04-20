@@ -2,11 +2,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const sendBtn = document.getElementById("send-btn");
   const userInput = document.getElementById("user-input");
   const chatBox = document.getElementById("chat-box");
-  const thinkingIcon = document.getElementById("thinking-icon");
 
   function appendMessage(sender, text) {
     const message = document.createElement("div");
-    message.classList.add("message");
     message.innerHTML = `<strong>${sender}:</strong> ${text}`;
     chatBox.appendChild(message);
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -20,10 +18,9 @@ document.addEventListener("DOMContentLoaded", function () {
     userInput.value = "";
     userInput.disabled = true;
     sendBtn.disabled = true;
-    thinkingIcon.style.display = "inline-block";
 
     try {
-      const response = await fetch("https://pbj-server1.onrender.com/pbj", {
+      const response = await fetch("https://pbj-server1.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
@@ -36,13 +33,11 @@ document.addEventListener("DOMContentLoaded", function () {
     } finally {
       userInput.disabled = false;
       sendBtn.disabled = false;
-      thinkingIcon.style.display = "none";
       userInput.focus();
     }
   }
 
   sendBtn.addEventListener("click", sendMessage);
-
   userInput.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
       sendMessage();
