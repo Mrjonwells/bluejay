@@ -23,108 +23,8 @@
   <meta name="twitter:description" content="Cut merchant fees with smart AI. Try BlueJay now." />
   <meta name="twitter:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
 
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #e9f4ff, #f2fcff);
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      background-color: #0077cc;
-      color: white;
-      padding: 1.2rem;
-      font-size: 1.8rem;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    .hero {
-      background: linear-gradient(90deg, #dff1ff, #eaf7ff);
-      padding: 60px 20px 30px;
-    }
-    .hero-logo {
-      width: 110px;
-      height: auto;
-      margin-bottom: 20px;
-    }
-    .hero-text {
-      font-size: 32px;
-      font-weight: 700;
-      color: #003366;
-      text-shadow: 1px 1px 1px rgba(0,0,0,0.05);
-      animation: pop-in 1.2s ease forwards;
-      opacity: 0;
-    }
-    @keyframes pop-in {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    .chat-container {
-      margin: 40px auto;
-      background-color: #ffffff;
-      border-radius: 12px;
-      padding: 30px 25px;
-      max-width: 700px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    }
-    .chat-box {
-      min-height: 180px;
-      border: 1px solid #cbd6e2;
-      padding: 20px;
-      margin-bottom: 20px;
-      background-color: #f9f9f9;
-      border-radius: 8px;
-      overflow-y: auto;
-      text-align: left;
-      font-size: 15px;
-      line-height: 1.5;
-      color: #333;
-    }
-    .input-row {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    input[type="text"] {
-      padding: 12px;
-      width: 65%;
-      min-width: 240px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 15px;
-    }
-    button {
-      padding: 12px 24px;
-      font-size: 15px;
-      background-color: #0077cc;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-    }
-    button:hover {
-      background-color: #005fa3;
-    }
-    .icons-row {
-      display: flex;
-      justify-content: center;
-      gap: 50px;
-      margin-top: 50px;
-      margin-bottom: 60px;
-      flex-wrap: wrap;
-    }
-    .icons-row img {
-      width: 130px;
-      height: auto;
-      transition: transform 0.2s;
-    }
-    .icons-row img:hover {
-      transform: scale(1.05);
-    }
-  </style>
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>Talk to BlueJay — The Merchant Savings Bot</header>
@@ -139,6 +39,9 @@
     <div class="input-row">
       <input type="text" id="user-input" placeholder="Tell me about your business..." />
       <button id="send-btn">Send</button>
+    </div>
+    <div id="thinking-indicator" style="display: none;">
+      <img src="bluejay-logo.png" alt="BlueJay is thinking..." class="rotating-logo" />
     </div>
   </div>
 
