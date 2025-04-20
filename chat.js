@@ -1,21 +1,12 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const chatBox = document.getElementById("chat-box");
   const userInput = document.getElementById("user-input");
   const sendBtn = document.getElementById("send-btn");
 
-  sendBtn.addEventListener("click", sendMessage);
-
-  userInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-
-  function appendMessage(role, message) {
-    const messageElem = document.createElement("div");
-    messageElem.textContent = `${role}: ${message}`;
-    chatBox.appendChild(messageElem);
+  function appendMessage(role, text) {
+    const msg = document.createElement("div");
+    msg.innerHTML = `<strong>${role === "user" ? "You" : "BlueJay"}:</strong> ${text}`;
+    chatBox.appendChild(msg);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
@@ -23,23 +14,31 @@ document.addEventListener("DOMContentLoaded", function () {
     const message = userInput.value.trim();
     if (!message) return;
 
-    appendMessage("You", message);
+    appendMessage("user", message);
     userInput.value = "";
 
     try {
-      const response = await fetch("/chat", {
+      const response = await fetch("https://pbj-server1.onrender.com/chat", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message })
       });
 
       const data = await response.json();
-      appendMessage("BlueJay", data.response || "There was an error.");
+      appendMessage("assistant", data.response || "There was no response.");
     } catch (error) {
-      appendMessage("BlueJay", "Server error. Please try again later.");
-      console.error("Chat error:", error);
+      appendMessage("assistant", "There was an error. Please try again.");
     }
   }
+
+  sendBtn.addEventListener("click", sendMessage);
+
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
 });
