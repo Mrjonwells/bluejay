@@ -8,15 +8,14 @@
   <meta name="author" content="BlueJay AI"/>
   <title>Talk to BlueJay — The Merchant Savings Bot</title>
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
       font-family: Arial, sans-serif;
-      background: url('background.png') no-repeat center center fixed;
+      background: url('background.png') no-repeat center top;
       background-size: cover;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      background-attachment: fixed;
       color: #002244;
       text-align: center;
     }
@@ -29,6 +28,7 @@
       background-color: rgba(0,0,0,0.5);
       padding: 15px 30px;
       border-radius: 8px;
+      display: inline-block;
     }
 
     .chat-container {
@@ -39,6 +39,8 @@
       width: 90%;
       max-width: 700px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .chat-header {
@@ -59,18 +61,21 @@
 
     .input-container {
       display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
     }
 
     #user-input {
-      flex: 1;
+      flex: 1 1 60%;
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 16px;
+      min-width: 200px;
     }
 
     #send-btn {
-      margin-left: 10px;
       padding: 10px 20px;
       font-size: 16px;
       background-color: #007bff;
@@ -78,6 +83,10 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+    }
+
+    #send-btn:hover {
+      background-color: #0056b3;
     }
 
     .icons-row {
