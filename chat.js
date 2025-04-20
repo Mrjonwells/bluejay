@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const sendBtn = document.getElementById("send-btn");
   const userInput = document.getElementById("user-input");
   const chatBox = document.getElementById("chat-box");
-  const thinking = document.getElementById("thinking-spinner");
 
   function appendMessage(sender, text) {
     const message = document.createElement("div");
@@ -19,10 +18,9 @@ document.addEventListener("DOMContentLoaded", function () {
     userInput.value = "";
     userInput.disabled = true;
     sendBtn.disabled = true;
-    thinking.style.display = "inline-block";
 
     try {
-      const response = await fetch("https://pbj-server1.onrender.com/pbj", {
+      const response = await fetch("https://pbj-server1.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
@@ -33,7 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (err) {
       appendMessage("BlueJay", "There was an error reaching the server. Please try again later.");
     } finally {
-      thinking.style.display = "none";
       userInput.disabled = false;
       sendBtn.disabled = false;
       userInput.focus();
@@ -42,6 +39,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   sendBtn.addEventListener("click", sendMessage);
   userInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") sendMessage();
+    if (e.key === "Enter") {
+      sendMessage();
+    }
   });
 });
