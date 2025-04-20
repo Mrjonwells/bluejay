@@ -17,12 +17,6 @@
   <meta property="og:url" content="https://yourdomain.com" />
   <meta property="og:type" content="website" />
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="BlueJay AI" />
-  <meta name="twitter:description" content="Cut merchant fees with smart AI. Try BlueJay now." />
-  <meta name="twitter:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -36,9 +30,20 @@
       color: white;
       padding: 1rem;
       font-size: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    .logo {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      width: 40px;
+      height: auto;
     }
     .motto {
-      margin-top: 40px;
+      margin-top: 20px;
       font-size: 24px;
       font-weight: bold;
       color: #003366;
@@ -64,7 +69,7 @@
     .input-row {
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
+      align-items: center;
       gap: 10px;
     }
     input[type="text"] {
@@ -98,16 +103,32 @@
       width: 120px;
       height: auto;
     }
+    #thinking-icon {
+      font-size: 28px;
+      animation: spin 1.2s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(90deg); }
+      50% { transform: rotate(180deg); }
+      75% { transform: rotate(270deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <header>Talk to BlueJay — The Merchant Savings Bot</header>
+  <header>
+    <img src="bluejay-logo.jpeg" alt="BlueJay Logo" class="logo" />
+    Talk with BlueJay — The Merchant Savings Bot
+  </header>
 
   <div class="motto">BlueJay. Save smart. Scale faster.</div>
 
   <div class="chat-container">
     <div class="chat-box" id="chat-box">Welcome! How can I help your business today?</div>
     <div class="input-row">
+      <div id="thinking-icon">💲</div>
       <input type="text" id="user-input" placeholder="Tell me about your business..." />
       <button id="send-btn">Send</button>
     </div>
