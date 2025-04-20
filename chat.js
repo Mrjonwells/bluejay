@@ -3,10 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const userInput = document.getElementById("user-input");
   const sendBtn = document.getElementById("send-btn");
 
-  // Send message on button click
   sendBtn.addEventListener("click", sendMessage);
 
-  // Send message on Enter key press
   userInput.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -29,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     userInput.value = "";
 
     try {
-      const response = await fetch("/pbj", {
+      const response = await fetch("/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
