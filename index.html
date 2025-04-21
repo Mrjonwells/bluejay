@@ -15,8 +15,8 @@
     }
 
     header {
-      background: url('Background.jpg.png') no-repeat center center;
-      background-size: cover;
+      background: url('background.png') no-repeat center center;
+      background-size: contain;
       height: 200px;
     }
 
@@ -56,12 +56,13 @@
     }
 
     #response {
-      margin-top: 20px;
+      margin-bottom: 20px;
       padding: 15px;
       background: #eaf4ff;
       border-radius: 6px;
       font-size: 1rem;
       white-space: pre-wrap;
+      min-height: 50px;
     }
 
     #userInput {
@@ -73,12 +74,18 @@
       justify-content: center;
       gap: 20px;
       margin-top: 40px;
-      padding-bottom: 20px;
+      padding-bottom: 10px;
     }
 
     .footer-icons img {
       width: 60px;
       height: 60px;
+    }
+
+    footer {
+      font-size: 0.9rem;
+      color: #888;
+      padding-bottom: 20px;
     }
   </style>
 </head>
@@ -87,16 +94,18 @@
 
   <div id="chatBox">
     <h1>Talk with BlueJay</h1>
+    <div id="response"></div>
     <input type="text" id="userInput" placeholder="Type your question..." />
     <button id="submitBtn">Submit</button>
-    <div id="response"></div>
   </div>
 
   <div class="footer-icons">
     <img src="Boost.png" alt="Boost" />
-    <img src="Insight.png" alt="Insight" />
+    <img src="Insights.png" alt="Insights" />
     <img src="Lower.png" alt="Lower Fees" />
   </div>
+
+  <footer>Fortified Capital LLC © All rights reserved.</footer>
 
   <script src="pbj-client.js"></script>
 </body>
