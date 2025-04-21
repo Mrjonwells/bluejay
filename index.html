@@ -6,106 +6,107 @@
   <title>Talk with BlueJay</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       background-color: #f5faff;
-      margin: 0;
-      padding: 0;
-      text-align: center;
       color: #333;
+      text-align: center;
+      padding: 0;
+      margin: 0;
     }
 
     header {
-      background: url('background.png') no-repeat center center;
-      background-size: contain;
-      height: 200px;
+      background-color: #ffffff;
+      padding: 1rem;
+    }
+
+    header img {
+      height: 80px;
     }
 
     h1 {
-      margin-top: 1rem;
-      color: #0066cc;
+      margin: 0.5rem 0;
+      font-size: 1.8rem;
+      color: #004c99;
     }
 
-    #chatBox {
-      background: #fff;
-      border-radius: 10px;
-      padding: 2rem;
+    .chatbox {
+      background-color: white;
       max-width: 600px;
       margin: 2rem auto;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    input, button {
-      padding: 12px;
+    #chat {
+      text-align: left;
+      margin-bottom: 1rem;
+      white-space: pre-wrap;
+    }
+
+    #userInput {
+      padding: 10px;
       font-size: 16px;
-      margin: 10px 0;
-      width: 100%;
-      max-width: 500px;
-      box-sizing: border-box;
+      width: 80%;
+      max-width: 400px;
     }
 
-    button {
-      background-color: #0066cc;
+    #submitBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0077cc;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
     }
 
-    button:hover {
-      background-color: #004999;
+    #submitBtn:hover {
+      background-color: #005fa3;
     }
 
-    #response {
-      margin-bottom: 20px;
-      padding: 15px;
-      background: #eaf4ff;
-      border-radius: 6px;
-      font-size: 1rem;
-      white-space: pre-wrap;
-      min-height: 50px;
-    }
-
-    #userInput {
-      margin-bottom: 1rem;
-    }
-
-    .footer-icons {
+    .features {
       display: flex;
       justify-content: center;
-      gap: 20px;
-      margin-top: 40px;
-      padding-bottom: 10px;
+      gap: 30px;
+      margin-top: 2rem;
+      flex-wrap: wrap;
     }
 
-    .footer-icons img {
-      width: 60px;
-      height: 60px;
+    .features img {
+      height: 100px;
+      width: auto;
     }
 
     footer {
+      margin-top: 2rem;
       font-size: 0.9rem;
-      color: #888;
-      padding-bottom: 20px;
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <header></header>
+  <header>
+    <img src="BlueJayLogo.png" alt="BlueJay Logo">
+  </header>
 
-  <div id="chatBox">
-    <h1>Talk with BlueJay</h1>
-    <div id="response"></div>
-    <input type="text" id="userInput" placeholder="Type your question..." />
-    <button id="submitBtn">Submit</button>
+  <h1>Talk with BlueJay — The Merchant Savings Bot</h1>
+
+  <div class="chatbox">
+    <div id="chat"></div>
+    <input type="text" id="userInput" placeholder="Tell me about your business..." />
+    <button id="submitBtn">Send</button>
   </div>
 
-  <div class="footer-icons">
-    <img src="Boost.png" alt="Boost" />
-    <img src="Insights.png" alt="Insights" />
-    <img src="Lower.png" alt="Lower Fees" />
+  <div class="features">
+    <img src="Insights.png" alt="AI-powered insights">
+    <img src="Lower.png" alt="Lower processing costs">
+    <img src="Boost.png" alt="Boost your profits">
   </div>
 
-  <footer>Fortified Capital LLC © All rights reserved.</footer>
+  <footer>
+    Fortified Capital LLC. All rights reserved.
+  </footer>
 
   <script src="pbj-client.js"></script>
 </body>
