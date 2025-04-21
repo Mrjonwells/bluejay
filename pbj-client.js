@@ -1,17 +1,11 @@
-// Generate or retrieve client_id
 let clientId = localStorage.getItem("bluejay_client_id");
 if (!clientId) {
   clientId = crypto.randomUUID();
   localStorage.setItem("bluejay_client_id", clientId);
 }
 
-const submitBtn = document.getElementById("submitBtn");
-const userInput = document.getElementById("userInput");
-const responseDiv = document.getElementById("response");
-
-submitBtn.addEventListener("click", submitQuestion);
-
-userInput.addEventListener("keypress", function (e) {
+document.getElementById("submitBtn").addEventListener("click", submitQuestion);
+document.getElementById("userInput").addEventListener("keypress", function (e) {
   if (e.key === "Enter") {
     e.preventDefault();
     submitQuestion();
@@ -19,51 +13,41 @@ userInput.addEventListener("keypress", function (e) {
 });
 
 async function submitQuestion() {
-  const input = userInput.value.trim();
-  if (!input) {
-    responseDiv.innerHTML += `<div><em>Please enter a question.</em></div>`;
+  const inputField = document.getElementById("userInput");
+  const responseDiv = document.getElementById("response");
+  const userInput = inputField.value.trim();
+
+  if (!userInput) {
+    responseDiv.innerHTML = "<strong>Please enter a question.</strong>";
     return;
   }
 
-  responseDiv.innerHTML += `<div><strong>You:</strong> ${input}</div>`;
-  userInput.value = "";
-  responseDiv.innerHTML += `<div><em>BlueJay is thinking...</em></div>`;
+  responseDiv.innerHTML = "<em>BlueJay is thinking...</em>";
 
   try {
     const res = await fetch("https://pbj-server1.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        message: input,
+        message: userInput,
         client_id: clientId
       }),
     });
 
     const data = await res.json();
-    const reply = data.response || "No response received.";
+    inputField.value = "";
 
-    // Clear the "thinking" message
-    const allLines = responseDiv.innerHTML.split("<div>");
-    const filteredLines = allLines.filter(line => !line.includes("BlueJay is thinking..."));
-    responseDiv.innerHTML = filteredLines.join("<div>");
+    let output = `<strong>You:</strong> ${userInput}<br><br><strong>BlueJay:</strong> ${data.response || "No response received."}`;
 
-    // Show BlueJay's response
-    responseDiv.innerHTML += `<div><strong>BlueJay:</strong> ${reply}</div>`;
-
-    // Optionally show savings if returned
     if (data.savings) {
-      const savings = data.savings;
-      responseDiv.innerHTML += `
-        <div style="margin-top: 1rem; padding: 10px; background: #dff0d8; border-radius: 5px;">
-          <strong>Estimated Savings:</strong><br />
-          Monthly: $${savings.monthly_savings}<br />
-          Yearly: $${savings.yearly_savings}
-        </div>`;
+      output += "<br><br><strong>Estimated Savings:</strong><br>";
+      output += `Monthly: $${data.savings.monthly_savings}<br>`;
+      output += `Yearly: $${data.savings.yearly_savings}<br>`;
     }
 
-    responseDiv.scrollTop = responseDiv.scrollHeight;
+    responseDiv.innerHTML = output;
 
   } catch (error) {
-    responseDiv.innerHTML += `<div><strong>Error:</strong> ${error.message}</div>`;
+    responseDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
   }
 }
