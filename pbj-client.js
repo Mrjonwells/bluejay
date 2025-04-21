@@ -1,45 +1,69 @@
-document.getElementById('submitBtn').addEventListener('click', async () => {
-  const userInput = document.getElementById('userInput').value.trim();
-  const responseDiv = document.getElementById('response');
-  const savingsDiv = document.getElementById('savings-summary');
+// Generate or retrieve client_id
+let clientId = localStorage.getItem("bluejay_client_id");
+if (!clientId) {
+  clientId = crypto.randomUUID();
+  localStorage.setItem("bluejay_client_id", clientId);
+}
 
-  if (!userInput) {
-    responseDiv.textContent = "Please enter a question.";
+const submitBtn = document.getElementById("submitBtn");
+const userInput = document.getElementById("userInput");
+const responseDiv = document.getElementById("response");
+
+submitBtn.addEventListener("click", submitQuestion);
+
+userInput.addEventListener("keypress", function (e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    submitQuestion();
+  }
+});
+
+async function submitQuestion() {
+  const input = userInput.value.trim();
+  if (!input) {
+    responseDiv.innerHTML += `<div><em>Please enter a question.</em></div>`;
     return;
   }
 
-  responseDiv.textContent = "BlueJay is thinking...";
-  savingsDiv.style.display = 'none';
-  savingsDiv.textContent = "";
+  responseDiv.innerHTML += `<div><strong>You:</strong> ${input}</div>`;
+  userInput.value = "";
+  responseDiv.innerHTML += `<div><em>BlueJay is thinking...</em></div>`;
 
   try {
-    const clientId = localStorage.getItem('client_id') || crypto.randomUUID();
-    localStorage.setItem('client_id', clientId);
-
     const res = await fetch("https://pbj-server1.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userInput, client_id: clientId })
+      body: JSON.stringify({
+        message: input,
+        client_id: clientId
+      }),
     });
 
     const data = await res.json();
-    responseDiv.textContent = data.response || "No response received.";
+    const reply = data.response || "No response received.";
 
-    // Show savings if returned from backend
+    // Clear the "thinking" message
+    const allLines = responseDiv.innerHTML.split("<div>");
+    const filteredLines = allLines.filter(line => !line.includes("BlueJay is thinking..."));
+    responseDiv.innerHTML = filteredLines.join("<div>");
+
+    // Show BlueJay's response
+    responseDiv.innerHTML += `<div><strong>BlueJay:</strong> ${reply}</div>`;
+
+    // Optionally show savings if returned
     if (data.savings) {
-      let summary = "";
-      if (data.savings.monthly) {
-        summary += `Monthly Savings: $${data.savings.monthly.toFixed(2)}\n`;
-      }
-      if (data.savings.yearly) {
-        summary += `Yearly Savings: $${data.savings.yearly.toFixed(2)}`;
-      }
-      savingsDiv.textContent = summary;
-      savingsDiv.style.display = 'block';
+      const savings = data.savings;
+      responseDiv.innerHTML += `
+        <div style="margin-top: 1rem; padding: 10px; background: #dff0d8; border-radius: 5px;">
+          <strong>Estimated Savings:</strong><br />
+          Monthly: $${savings.monthly_savings}<br />
+          Yearly: $${savings.yearly_savings}
+        </div>`;
     }
 
-    document.getElementById('userInput').value = "";
+    responseDiv.scrollTop = responseDiv.scrollHeight;
+
   } catch (error) {
-    responseDiv.textContent = "Error: " + error.message;
+    responseDiv.innerHTML += `<div><strong>Error:</strong> ${error.message}</div>`;
   }
-});
+}
