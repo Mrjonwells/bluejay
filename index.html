@@ -3,125 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk to BlueJay — The Merchant Savings Bot</title>
+  <title>BlueJay — Merchant Savings Bot</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
       background-color: #f0f8ff;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    header {
-      background-color: #0077cc;
-      color: white;
-      width: 100%;
-      padding: 1rem;
+      color: #333;
       text-align: center;
     }
 
-    .chatbox {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      margin-top: 2rem;
-      padding: 1rem;
-      width: 90%;
+    h1 {
+      color: #005eb8;
+      margin-bottom: 0.5rem;
+    }
+
+    .subheading {
+      font-size: 1.1rem;
+      color: #444;
+      margin-bottom: 2rem;
+    }
+
+    #chat-box {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 0 auto;
       max-width: 700px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    .chatlog {
-      background: #f9f9f9;
-      border-radius: 6px;
-      padding: 1rem;
-      min-height: 180px;
-      margin-bottom: 1rem;
-      white-space: pre-wrap;
-    }
-
-    .input-area {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      font-size: 1rem;
+    input, button {
+      padding: 12px;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 100%;
+      max-width: 500px;
+      box-sizing: border-box;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 5px;
     }
 
     button {
-      padding: 10px 16px;
-      background-color: #0077cc;
+      background-color: #0074d9;
       color: white;
+      font-weight: bold;
       border: none;
-      border-radius: 4px;
-      font-size: 1rem;
       cursor: pointer;
+      transition: background 0.3s;
     }
 
     button:hover {
       background-color: #005fa3;
     }
 
-    .savings-box {
-      margin-top: 1rem;
-      background-color: #e0f4ff;
-      padding: 1rem;
-      border-left: 5px solid #00aaff;
+    #response {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eaf4ff;
       border-radius: 6px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      white-space: pre-wrap;
+      font-size: 1rem;
+    }
+
+    #savings-summary {
+      margin-top: 25px;
+      background-color: #d9f8e5;
+      padding: 15px;
+      border-left: 5px solid #1ca14a;
+      border-radius: 8px;
+      display: none;
       font-weight: bold;
-      color: #003f5c;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .branding {
-      margin-top: 2rem;
+    .feature-icons {
+      margin-top: 30px;
       display: flex;
-      justify-content: space-around;
-      width: 90%;
-      max-width: 700px;
+      justify-content: center;
+      gap: 30px;
     }
 
-    .branding img {
-      height: 60px;
+    .feature-icons img {
+      width: 80px;
+      height: auto;
     }
 
-    footer {
-      margin-top: 3rem;
+    .footer {
+      margin-top: 40px;
       font-size: 0.9rem;
-      color: #888;
+      color: #777;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h2>Talk to BlueJay — The Merchant Savings Bot</h2>
-    <p><strong>BlueJay. Save smart. Scale faster.</strong></p>
-  </header>
+  <h1>Talk to BlueJay — The Merchant Savings Bot</h1>
+  <div class="subheading">BlueJay. Save smart. Scale faster.</div>
 
-  <div class="chatbox">
-    <div id="chatlog" class="chatlog">Welcome! How can I help your business today?</div>
-    <div class="input-area">
-      <input type="text" id="userInput" placeholder="Tell me about your business..." />
-      <button id="submitBtn">Send</button>
-    </div>
-    <div id="savingsDisplay" class="savings-box" style="display: none;"></div>
+  <div id="chat-box">
+    <div id="response">Welcome! How can I help your business today?</div>
+    <input type="text" id="userInput" placeholder="Tell me about your business..." />
+    <button id="submitBtn">Send</button>
   </div>
 
-  <div class="branding">
-    <img src="https://cdn-icons-png.flaticon.com/512/6149/6149706.png" alt="AI Insights" />
-    <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" alt="Lower Fees" />
-    <img src="https://cdn-icons-png.flaticon.com/512/7435/7435972.png" alt="Boost Profits" />
+  <div id="savings-summary"></div>
+
+  <div class="feature-icons">
+    <div><img src="ai-icon.png" alt="AI Insights"/><div>AI-powered insights</div></div>
+    <div><img src="fees-icon.png" alt="Lower Fees"/><div>Lower processing costs</div></div>
+    <div><img src="profits-icon.png" alt="Boost Profits"/><div>Boost your profits</div></div>
   </div>
 
-  <footer>
-    &copy; Fortified Capital LLC. All rights reserved.
-  </footer>
+  <div class="footer">Fortified Capital LLC. | All rights reserved.</div>
 
   <script src="pbj-client.js"></script>
 </body>
