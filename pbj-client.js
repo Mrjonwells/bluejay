@@ -1,53 +1,63 @@
-let clientId = localStorage.getItem("bluejay_client_id");
-if (!clientId) {
-  clientId = crypto.randomUUID();
-  localStorage.setItem("bluejay_client_id", clientId);
-}
-
-document.getElementById("submitBtn").addEventListener("click", submitQuestion);
-document.getElementById("userInput").addEventListener("keypress", function (e) {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    submitQuestion();
-  }
-});
-
-async function submitQuestion() {
-  const inputField = document.getElementById("userInput");
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("userInput");
   const responseDiv = document.getElementById("response");
-  const userInput = inputField.value.trim();
+  const sendBtn = document.getElementById("submitBtn");
+  const clientId = localStorage.getItem("client_id") || crypto.randomUUID();
+  localStorage.setItem("client_id", clientId);
 
-  if (!userInput) {
-    responseDiv.innerHTML = "<strong>Please enter a question.</strong>";
-    return;
-  }
+  // Function to send the user's question
+  async function sendQuestion() {
+    const userText = input.value.trim();
+    if (!userText) return;
 
-  responseDiv.innerHTML = "<em>BlueJay is thinking...</em>";
+    // Show user input in the chat
+    appendMessage("You", userText);
+    responseDiv.scrollTop = responseDiv.scrollHeight;
+    input.value = "";
 
-  try {
-    const res = await fetch("https://pbj-server1.onrender.com/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: userInput,
-        client_id: clientId
-      }),
-    });
+    appendMessage("BlueJay", "Thinking...");
 
-    const data = await res.json();
-    inputField.value = "";
+    try {
+      const res = await fetch("https://pbj-server1.onrender.com/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: userText,
+          client_id: clientId
+        })
+      });
 
-    let output = `<strong>You:</strong> ${userInput}<br><br><strong>BlueJay:</strong> ${data.response || "No response received."}`;
-
-    if (data.savings) {
-      output += "<br><br><strong>Estimated Savings:</strong><br>";
-      output += `Monthly: $${data.savings.monthly_savings}<br>`;
-      output += `Yearly: $${data.savings.yearly_savings}<br>`;
+      const data = await res.json();
+      const messages = responseDiv.querySelectorAll(".message");
+      if (messages[messages.length - 1].textContent === "BlueJay: Thinking...") {
+        messages[messages.length - 1].remove();
+      }
+      appendMessage("BlueJay", data.response || "No response received.");
+    } catch (error) {
+      appendMessage("BlueJay", "Error: " + error.message);
     }
 
-    responseDiv.innerHTML = output;
-
-  } catch (error) {
-    responseDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+    responseDiv.scrollTop = responseDiv.scrollHeight;
   }
-}
+
+  // Function to display messages
+  function appendMessage(sender, text) {
+    const msg = document.createElement("div");
+    msg.classList.add("message");
+    msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    responseDiv.appendChild(msg);
+  }
+
+  // Send on click
+  sendBtn.addEventListener("click", sendQuestion);
+
+  // Send on Enter
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendQuestion();
+    }
+  });
+});
