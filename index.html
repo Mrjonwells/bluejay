@@ -3,116 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk to BlueJay — The Merchant Savings Bot</title>
+  <title>Ask BlueJay</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f9ff;
-      color: #333;
-      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
+      padding: 2rem;
+      background: linear-gradient(to right, #f5faff, #e8f0ff);
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     h1 {
-      background-color: #0077cc;
-      color: white;
-      width: 100%;
-      text-align: center;
-      padding: 1rem;
-      margin: 0;
-    }
-
-    h2 {
-      margin-top: 10px;
-      color: #0077cc;
+      color: #0066cc;
+      margin-bottom: 0.5rem;
     }
 
     .chat-container {
-      margin-top: 20px;
       background: white;
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 700px;
-      padding: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
 
-    .input-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    input[type="text"] {
-      flex-grow: 1;
+    input, button {
       padding: 12px;
       font-size: 16px;
-      border-radius: 5px;
+      margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
       border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
     button {
-      background-color: #0077cc;
+      background-color: #0066cc;
       color: white;
       border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      border-radius: 5px;
       cursor: pointer;
+      margin-top: 1rem;
     }
 
     button:hover {
-      background-color: #005fa3;
+      background-color: #005bb5;
     }
 
     #response {
       margin-top: 20px;
-      background: #e9f4ff;
       padding: 15px;
-      border-left: 4px solid #0077cc;
+      background: #eaf4ff;
+      border-radius: 6px;
       white-space: pre-wrap;
+      font-size: 1rem;
     }
 
-    #savings-box {
-      background-color: #dffbe4;
-      border-left: 5px solid #3bb273;
-      margin-top: 15px;
-      padding: 12px;
-      display: none;
+    #savingsBox {
+      margin-top: 20px;
+      padding: 15px;
+      background: #d9ffe6;
+      border: 2px dashed #00a152;
+      border-radius: 6px;
+      color: #006633;
+      font-size: 1.1rem;
     }
 
-    .branding-bar {
-      margin-top: 40px;
-      display: flex;
-      gap: 25px;
-      justify-content: center;
+    .logo {
+      margin-bottom: 1.5rem;
     }
 
-    .branding-bar img {
-      width: 90px;
-      height: auto;
+    .logo img {
+      max-height: 60px;
     }
   </style>
 </head>
 <body>
-  <h1>Talk to BlueJay — The Merchant Savings Bot</h1>
-  <div class="chat-container">
-    <h2>BlueJay. Save smart. Scale faster.</h2>
-    <div id="response">Welcome! How can I help your business today?</div>
-    <div id="savings-box"></div>
-    <div class="input-group">
-      <input type="text" id="userInput" placeholder="Tell me about your business..." />
-      <button id="submitBtn">Send</button>
-    </div>
+
+  <div class="logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/Bluejay_illustration.png" alt="BlueJay Logo" />
   </div>
 
-  <div class="branding-bar">
-    <img src="https://img.icons8.com/ios-filled/100/4a90e2/robot.png" alt="AI-powered insights"/>
-    <img src="https://img.icons8.com/ios-filled/100/4a90e2/cash-in-hand.png" alt="Lower processing costs"/>
-    <img src="https://img.icons8.com/ios-filled/100/4a90e2/shop.png" alt="Boost your profits"/>
+  <h1>Ask BlueJay</h1>
+
+  <div class="chat-container">
+    <input type="text" id="userInput" placeholder="Type your question..." />
+    <button id="submitBtn">Submit</button>
+
+    <div id="response"></div>
+    <div id="savingsBox" style="display:none;"></div>
   </div>
 
   <script src="pbj-client.js"></script>
