@@ -10,139 +10,118 @@
       background-color: #f0f8ff;
       margin: 0;
       padding: 0;
-      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     header {
       background-color: #0077cc;
-      color: #fff;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-
-    h2 {
-      color: #0066cc;
-      text-align: center;
-      margin-top: 1.2rem;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
-    }
-
-    .chat-box {
+      color: white;
       width: 100%;
-      max-width: 700px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       padding: 1rem;
-      margin-bottom: 1rem;
+      text-align: center;
     }
 
-    #chat {
-      min-height: 200px;
-      white-space: pre-wrap;
-      border: 1px solid #ccc;
+    .chatbox {
+      background: #fff;
       border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 2rem;
       padding: 1rem;
+      width: 90%;
+      max-width: 700px;
+    }
+
+    .chatlog {
+      background: #f9f9f9;
+      border-radius: 6px;
+      padding: 1rem;
+      min-height: 180px;
       margin-bottom: 1rem;
-      background: #fdfdfd;
+      white-space: pre-wrap;
     }
 
     .input-area {
       display: flex;
-      width: 100%;
+      gap: 0.5rem;
     }
 
-    #userInput {
+    input[type="text"] {
       flex: 1;
-      padding: 0.75rem;
+      padding: 10px;
       font-size: 1rem;
-      border: 1px solid #bbb;
-      border-radius: 4px 0 0 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
 
-    #submitBtn {
+    button {
+      padding: 10px 16px;
       background-color: #0077cc;
       color: white;
       border: none;
-      padding: 0 1.5rem;
+      border-radius: 4px;
       font-size: 1rem;
-      border-radius: 0 4px 4px 0;
       cursor: pointer;
     }
 
-    #submitBtn:hover {
+    button:hover {
       background-color: #005fa3;
     }
 
-    .savings-card {
-      background: #e0f7ff;
-      border-left: 6px solid #0077cc;
-      padding: 1rem;
-      border-radius: 6px;
-      font-size: 1rem;
+    .savings-box {
       margin-top: 1rem;
-      width: 100%;
-      max-width: 700px;
-      display: none;
+      background-color: #e0f4ff;
+      padding: 1rem;
+      border-left: 5px solid #00aaff;
+      border-radius: 6px;
+      font-weight: bold;
+      color: #003f5c;
     }
 
-    .features {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
+    .branding {
       margin-top: 2rem;
+      display: flex;
+      justify-content: space-around;
+      width: 90%;
+      max-width: 700px;
     }
 
-    .features img {
+    .branding img {
       height: 60px;
     }
 
-    .footer {
-      text-align: center;
+    footer {
       margin-top: 3rem;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: #888;
     }
-
   </style>
 </head>
 <body>
-  <header>Talk to BlueJay — The Merchant Savings Bot</header>
+  <header>
+    <h2>Talk to BlueJay — The Merchant Savings Bot</h2>
+    <p><strong>BlueJay. Save smart. Scale faster.</strong></p>
+  </header>
 
-  <div class="container">
-    <h2>BlueJay. Save smart. Scale faster.</h2>
-
-    <div class="chat-box">
-      <div id="chat">Welcome! How can I help your business today?</div>
-      <div class="input-area">
-        <input type="text" id="userInput" placeholder="Tell me about your business…" />
-        <button id="submitBtn">Send</button>
-      </div>
+  <div class="chatbox">
+    <div id="chatlog" class="chatlog">Welcome! How can I help your business today?</div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Tell me about your business..." />
+      <button id="submitBtn">Send</button>
     </div>
-
-    <div id="savingsCard" class="savings-card">
-      <strong>Estimated Savings:</strong>
-      <div id="savingsText"></div>
-    </div>
-
-    <div class="features">
-      <div><img src="https://img.icons8.com/ios-filled/100/000000/ai.png"/><div>AI-powered insights</div></div>
-      <div><img src="https://img.icons8.com/ios-filled/100/000000/money.png"/><div>Lower processing costs</div></div>
-      <div><img src="https://img.icons8.com/ios-filled/100/000000/shop.png"/><div>Boost your profits</div></div>
-    </div>
-
-    <div class="footer">
-      Fortified Capital LLC. — Empowering Businesses with BlueJay
-    </div>
+    <div id="savingsDisplay" class="savings-box" style="display: none;"></div>
   </div>
+
+  <div class="branding">
+    <img src="https://cdn-icons-png.flaticon.com/512/6149/6149706.png" alt="AI Insights" />
+    <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" alt="Lower Fees" />
+    <img src="https://cdn-icons-png.flaticon.com/512/7435/7435972.png" alt="Boost Profits" />
+  </div>
+
+  <footer>
+    &copy; Fortified Capital LLC. All rights reserved.
+  </footer>
 
   <script src="pbj-client.js"></script>
 </body>
