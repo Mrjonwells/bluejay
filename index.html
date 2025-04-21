@@ -3,97 +3,145 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ask BlueJay</title>
+  <title>Talk to BlueJay — The Merchant Savings Bot</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f8ff;
       margin: 0;
-      padding: 2rem;
-      background: linear-gradient(to right, #f5faff, #e8f0ff);
-      color: #333;
+      padding: 0;
+      color: #222;
+    }
+
+    header {
+      background-color: #0077cc;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    h2 {
+      color: #0066cc;
+      text-align: center;
+      margin-top: 1.2rem;
+    }
+
+    .container {
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 2rem 1rem;
     }
 
-    h1 {
-      color: #0066cc;
-      margin-bottom: 0.5rem;
-    }
-
-    .chat-container {
-      background: white;
-      border-radius: 8px;
-      padding: 2rem;
+    .chat-box {
       width: 100%;
-      max-width: 600px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      max-width: 700px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 1rem;
+      margin-bottom: 1rem;
     }
 
-    input, button {
-      padding: 12px;
-      font-size: 16px;
-      margin-top: 10px;
-      width: 100%;
-      box-sizing: border-box;
+    #chat {
+      min-height: 200px;
+      white-space: pre-wrap;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #fdfdfd;
     }
 
-    button {
-      background-color: #0066cc;
+    .input-area {
+      display: flex;
+      width: 100%;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #bbb;
+      border-radius: 4px 0 0 4px;
+    }
+
+    #submitBtn {
+      background-color: #0077cc;
       color: white;
       border: none;
-      cursor: pointer;
-      margin-top: 1rem;
-    }
-
-    button:hover {
-      background-color: #005bb5;
-    }
-
-    #response {
-      margin-top: 20px;
-      padding: 15px;
-      background: #eaf4ff;
-      border-radius: 6px;
-      white-space: pre-wrap;
+      padding: 0 1.5rem;
       font-size: 1rem;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
     }
 
-    #savingsBox {
-      margin-top: 20px;
-      padding: 15px;
-      background: #d9ffe6;
-      border: 2px dashed #00a152;
+    #submitBtn:hover {
+      background-color: #005fa3;
+    }
+
+    .savings-card {
+      background: #e0f7ff;
+      border-left: 6px solid #0077cc;
+      padding: 1rem;
       border-radius: 6px;
-      color: #006633;
-      font-size: 1.1rem;
+      font-size: 1rem;
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 700px;
+      display: none;
     }
 
-    .logo {
-      margin-bottom: 1.5rem;
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2rem;
     }
 
-    .logo img {
-      max-height: 60px;
+    .features img {
+      height: 60px;
     }
+
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
   </style>
 </head>
 <body>
+  <header>Talk to BlueJay — The Merchant Savings Bot</header>
 
-  <div class="logo">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/Bluejay_illustration.png" alt="BlueJay Logo" />
-  </div>
+  <div class="container">
+    <h2>BlueJay. Save smart. Scale faster.</h2>
 
-  <h1>Ask BlueJay</h1>
+    <div class="chat-box">
+      <div id="chat">Welcome! How can I help your business today?</div>
+      <div class="input-area">
+        <input type="text" id="userInput" placeholder="Tell me about your business…" />
+        <button id="submitBtn">Send</button>
+      </div>
+    </div>
 
-  <div class="chat-container">
-    <input type="text" id="userInput" placeholder="Type your question..." />
-    <button id="submitBtn">Submit</button>
+    <div id="savingsCard" class="savings-card">
+      <strong>Estimated Savings:</strong>
+      <div id="savingsText"></div>
+    </div>
 
-    <div id="response"></div>
-    <div id="savingsBox" style="display:none;"></div>
+    <div class="features">
+      <div><img src="https://img.icons8.com/ios-filled/100/000000/ai.png"/><div>AI-powered insights</div></div>
+      <div><img src="https://img.icons8.com/ios-filled/100/000000/money.png"/><div>Lower processing costs</div></div>
+      <div><img src="https://img.icons8.com/ios-filled/100/000000/shop.png"/><div>Boost your profits</div></div>
+    </div>
+
+    <div class="footer">
+      Fortified Capital LLC. — Empowering Businesses with BlueJay
+    </div>
   </div>
 
   <script src="pbj-client.js"></script>
