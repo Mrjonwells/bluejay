@@ -3,122 +3,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BlueJay AI — Slash Your Merchant Fees with Smart Automation</title>
-
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="BlueJay is your AI-powered assistant for reducing credit card processing fees. Start saving money with zero-fee processing insights and automated recommendations." />
-  <meta name="keywords" content="AI for merchant processing, reduce credit card fees, zero fee processing, Clover POS savings, BlueJay chatbot, payment automation, small business savings, merchant account help" />
-  <meta name="author" content="BlueJay AI" />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="BlueJay AI — Your Smart Merchant Savings Assistant" />
-  <meta property="og:description" content="Talk to BlueJay, your automated assistant for lowering payment processing costs and boosting profitability." />
-  <meta property="og:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
-  <meta property="og:url" content="https://yourdomain.com" />
-  <meta property="og:type" content="website" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="BlueJay AI" />
-  <meta name="twitter:description" content="Cut merchant fees with smart AI. Try BlueJay now." />
-  <meta name="twitter:image" content="https://yourdomain.com/bluejay-logo.jpeg" />
-
+  <title>Talk to BlueJay — The Merchant Savings Bot</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5faff;
-      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f9ff;
+      color: #333;
       padding: 0;
-      text-align: center;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    header {
+
+    h1 {
       background-color: #0077cc;
       color: white;
+      width: 100%;
+      text-align: center;
       padding: 1rem;
-      font-size: 1.5rem;
+      margin: 0;
     }
-    .motto {
-      margin-top: 40px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #003366;
+
+    h2 {
+      margin-top: 10px;
+      color: #0077cc;
     }
+
     .chat-container {
-      margin: 30px auto;
-      background-color: #fff;
-      border-radius: 10px;
-      padding: 20px;
+      margin-top: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 90%;
       max-width: 700px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
     }
-    .chat-box {
-      min-height: 150px;
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 15px;
-      background-color: #f9f9f9;
-      border-radius: 6px;
-      overflow-y: auto;
-      text-align: left;
-    }
-    .input-row {
+
+    .input-group {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
       gap: 10px;
+      margin-top: 10px;
     }
+
     input[type="text"] {
-      padding: 10px;
-      width: 60%;
-      min-width: 220px;
-      border-radius: 4px;
+      flex-grow: 1;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
       border: 1px solid #ccc;
     }
+
     button {
-      padding: 10px 20px;
-      font-size: 16px;
       background-color: #0077cc;
-      color: #fff;
+      color: white;
       border: none;
-      border-radius: 4px;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 5px;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #005fa3;
     }
-    .icons-row {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      margin-top: 40px;
-      flex-wrap: wrap;
-      padding-bottom: 40px;
+
+    #response {
+      margin-top: 20px;
+      background: #e9f4ff;
+      padding: 15px;
+      border-left: 4px solid #0077cc;
+      white-space: pre-wrap;
     }
-    .icons-row img {
-      width: 120px;
+
+    #savings-box {
+      background-color: #dffbe4;
+      border-left: 5px solid #3bb273;
+      margin-top: 15px;
+      padding: 12px;
+      display: none;
+    }
+
+    .branding-bar {
+      margin-top: 40px;
+      display: flex;
+      gap: 25px;
+      justify-content: center;
+    }
+
+    .branding-bar img {
+      width: 90px;
       height: auto;
     }
   </style>
 </head>
 <body>
-  <header>Talk to BlueJay — The Merchant Savings Bot</header>
-
-  <div class="motto">BlueJay. Save smart. Scale faster.</div>
-
+  <h1>Talk to BlueJay — The Merchant Savings Bot</h1>
   <div class="chat-container">
-    <div class="chat-box" id="chat-box">Welcome! How can I help your business today?</div>
-    <div class="input-row">
-      <input type="text" id="user-input" placeholder="Tell me about your business..." />
-      <button id="send-btn">Send</button>
+    <h2>BlueJay. Save smart. Scale faster.</h2>
+    <div id="response">Welcome! How can I help your business today?</div>
+    <div id="savings-box"></div>
+    <div class="input-group">
+      <input type="text" id="userInput" placeholder="Tell me about your business..." />
+      <button id="submitBtn">Send</button>
     </div>
   </div>
 
-  <div class="icons-row">
-    <img src="Insights.png" alt="AI-powered insights">
-    <img src="Lower.png" alt="Lower processing costs">
-    <img src="Boost.png" alt="Boost your profits">
+  <div class="branding-bar">
+    <img src="https://img.icons8.com/ios-filled/100/4a90e2/robot.png" alt="AI-powered insights"/>
+    <img src="https://img.icons8.com/ios-filled/100/4a90e2/cash-in-hand.png" alt="Lower processing costs"/>
+    <img src="https://img.icons8.com/ios-filled/100/4a90e2/shop.png" alt="Boost your profits"/>
   </div>
 
-  <script src="chat.js"></script>
+  <script src="pbj-client.js"></script>
 </body>
 </html>
