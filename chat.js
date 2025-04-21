@@ -1,46 +1,69 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const sendBtn = document.getElementById("send-btn");
-  const userInput = document.getElementById("user-input");
+document.getElementById("input").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+document.getElementById("send-button").addEventListener("click", function () {
+  sendMessage();
+});
+
+async function sendMessage() {
+  const inputField = document.getElementById("input");
+  const message = inputField.value.trim();
+  if (!message) return;
+
   const chatBox = document.getElementById("chat-box");
 
-  function appendMessage(sender, text) {
-    const message = document.createElement("div");
-    message.innerHTML = `<strong>${sender}:</strong> ${text}`;
-    chatBox.appendChild(message);
+  // Add user message to chat
+  const userMessage = document.createElement("div");
+  userMessage.className = "message user-message";
+  userMessage.innerText = message;
+  chatBox.appendChild(userMessage);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  // Clear input
+  inputField.value = "";
+
+  // Send message to backend
+  try {
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
+    });
+
+    const data = await response.json();
+
+    // Add assistant reply to chat
+    const botMessage = document.createElement("div");
+    botMessage.className = "message bot-message";
+    botMessage.innerText = data.reply;
+    chatBox.appendChild(botMessage);
     chatBox.scrollTop = chatBox.scrollHeight;
-  }
 
-  async function sendMessage() {
-    const message = userInput.value.trim();
-    if (!message) return;
-
-    appendMessage("You", message);
-    userInput.value = "";
-    userInput.disabled = true;
-    sendBtn.disabled = true;
-
-    try {
-      const response = await fetch("https://pbj-server1.onrender.com/chat", {
+    // HubSpot trigger logic
+    const lowerMsg = message.toLowerCase();
+    const triggerPhrases = ["done", "submit", "that's all", "send it", "ready to submit"];
+    if (triggerPhrases.includes(lowerMsg)) {
+      await fetch("/submit-to-hubspot", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
       });
-
-      const data = await response.json();
-      appendMessage("BlueJay", data.response || "There was an error. Please try again.");
-    } catch (err) {
-      appendMessage("BlueJay", "There was an error reaching the server. Please try again later.");
-    } finally {
-      userInput.disabled = false;
-      sendBtn.disabled = false;
-      userInput.focus();
+      const confirmation = document.createElement("div");
+      confirmation.className = "message bot-message";
+      confirmation.innerText = "Thanks! I've submitted your info.";
+      chatBox.appendChild(confirmation);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+  } catch (error) {
+    console.error("Error sending message:", error);
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "message bot-message";
+    errorMsg.innerText = "Oops! Something went wrong.";
+    chatBox.appendChild(errorMsg);
   }
-
-  sendBtn.addEventListener("click", sendMessage);
-  userInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  });
-});
+}
