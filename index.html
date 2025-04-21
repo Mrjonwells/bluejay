@@ -1,142 +1,97 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BlueJay Chat Assistant</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5faff;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f5faff;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
 
-      /* OPTION A — full background image */
-      background-image: url('storefront.png');
-      background-repeat: no-repeat;
-      background-position: bottom center;
-      background-size: cover;
-      background-attachment: fixed;
-    }
+  h1 {
+    background-color: #0066cc;
+    color: white;
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+  }
 
-    h1 {
-      background-color: #0066cc;
-      color: white;
-      margin: 0;
-      padding: 1rem;
-      text-align: center;
-    }
+  #chat-container {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
 
-    #chat-container {
-      flex: 1;
-      padding: 1rem;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+  .bubble {
+    max-width: 70%;
+    padding: 12px;
+    border-radius: 12px;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
 
-    .bubble {
-      max-width: 70%;
-      padding: 12px;
-      border-radius: 12px;
-      white-space: pre-wrap;
-      line-height: 1.4;
-    }
+  .user {
+    align-self: flex-end;
+    background: #cce5ff;
+    border-bottom-right-radius: 0;
+  }
 
-    .user {
-      align-self: flex-end;
-      background: #cce5ff;
-      border-bottom-right-radius: 0;
-    }
+  .bot {
+    align-self: flex-start;
+    background: #eaf4ff;
+    border-bottom-left-radius: 0;
+  }
 
-    .bot {
-      align-self: flex-start;
-      background: #eaf4ff;
-      border-bottom-left-radius: 0;
-    }
+  #input-area {
+    display: flex;
+    padding: 1rem;
+    background: white;
+    border-top: 1px solid #ccc;
+  }
 
-    #input-area {
-      display: flex;
-      padding: 1rem;
-      background: white;
-      border-top: 1px solid #ccc;
-    }
+  #userInput {
+    flex: 1;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
 
-    #userInput {
-      flex: 1;
-      padding: 10px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
+  #submitBtn {
+    padding: 10px 20px;
+    margin-left: 10px;
+    font-size: 1rem;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
 
-    #submitBtn {
-      padding: 10px 20px;
-      margin-left: 10px;
-      font-size: 1rem;
-      background-color: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+  #submitBtn:hover {
+    background-color: #004d99;
+  }
 
-    #submitBtn:hover {
-      background-color: #004d99;
-    }
+  .dots {
+    font-style: italic;
+  }
 
-    /* Typing animation */
-    .dots {
-      font-style: italic;
-    }
+  .dot {
+    animation: blink 1.5s infinite;
+    opacity: 0;
+  }
 
-    .dot {
-      animation: blink 1.5s infinite;
-      opacity: 0;
-    }
+  .dot.one { animation-delay: 0s; }
+  .dot.two { animation-delay: 0.2s; }
+  .dot.three { animation-delay: 0.4s; }
 
-    .dot.one { animation-delay: 0s; }
-    .dot.two { animation-delay: 0.2s; }
-    .dot.three { animation-delay: 0.4s; }
-
-    @keyframes blink {
-      0% { opacity: 0; }
-      50% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
-    /* OPTION B — apply background only to footer area */
-    .footer-bg {
-      background-image: url('storefront.png');
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      padding: 100px 0;
-    }
-  </style>
-</head>
-
-<body>
-  <h1>Chat with BlueJay</h1>
-
-  <div id="chat-container"></div>
-
-  <div id="input-area">
-    <input type="text" id="userInput" placeholder="Type your question..." />
-    <button id="submitBtn">Send</button>
-  </div>
-
-  <!-- OPTION B — bottom background section only -->
-  <div class="footer-bg">
-    <p style="text-align:center; color:#fff; font-weight:bold;">
-      BlueJay is here to help you save on every swipe.
-    </p>
-  </div>
-
-  <script src="pbj-chat.js"></script>
-</body>
-</html>
+  @keyframes blink {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+</style>
