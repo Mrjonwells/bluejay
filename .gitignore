@@ -1,0 +1,32 @@
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Netlify build/cache (if any)
+.netlify/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Node (just in case any package gets initialized)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Optional: zip or backup artifacts
+*.zip
+*.tar.gz
+*.bak
+*.tmp
+
+# Mac-specific metadata
+.AppleDouble
+.LSOverride
+
+# System generated
+ehthumbs.db
+Desktop.ini
