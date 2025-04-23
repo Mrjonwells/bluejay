@@ -1,77 +1,43 @@
-const chatBox = document.getElementById("chat-box");
-const userInput = document.getElementById("user-input");
-const sendBtn = document.getElementById("send-btn");
+document.addEventListener('DOMContentLoaded', () => {
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+  const chatBox = document.getElementById('chat-box');
 
-function appendMessage(sender, message) {
-  const bubble = document.createElement("div");
-  bubble.classList.add(sender === "user" ? "user-bubble" : "bot-bubble");
-  bubble.innerText = message;
-  chatBox.appendChild(bubble);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userMessage = chatInput.value.trim();
+    if (!userMessage) return;
 
-sendBtn.addEventListener("click", async () => {
-  const message = userInput.value.trim();
-  if (message === "") return;
+    // Display user's message
+    appendMessage('user', userMessage);
+    chatInput.value = '';
 
-  appendMessage("user", message);
-  userInput.value = "";
+    try {
+      const response = await fetch('/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: userMessage })
+      });
 
-  if (message.toLowerCase().includes("submit my info")) {
-    await handleHubSpotSubmission();
-    return;
-  }
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.statusText}`);
+      }
 
-  try {
-    const response = await fetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
-    });
-
-    const data = await response.json();
-    appendMessage("bot", data.reply || "There was an error processing your message.");
-  } catch (err) {
-    appendMessage("bot", "Error processing your message.");
-  }
-});
-
-userInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") sendBtn.click();
-});
-
-async function handleHubSpotSubmission() {
-  try {
-    const fullName = prompt("Please enter your full name:");
-    if (!fullName) return appendMessage("bot", "Submission cancelled.");
-
-    const phone = prompt("Please enter your phone number:");
-    if (!phone) return appendMessage("bot", "Submission cancelled.");
-
-    const email = prompt("Please enter your email address:");
-    if (!email) return appendMessage("bot", "Submission cancelled.");
-
-    const company = prompt("Please enter your business name:");
-    if (!company) return appendMessage("bot", "Submission cancelled.");
-
-    appendMessage("bot", `Confirming name: ${fullName}`);
-    appendMessage("bot", `Confirming phone: ${phone}`);
-    appendMessage("bot", `Confirming email: ${email}`);
-    appendMessage("bot", `Confirming business: ${company}`);
-
-    const response = await fetch("/submit-to-hubspot", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullName, phone, email, company }),
-    });
-
-    const result = await response.json();
-    if (result.status === "success") {
-      appendMessage("bot", "Thanks! Your info has been submitted.");
-    } else {
-      appendMessage("bot", "There was an error sending your info.");
+      const data = await response.json();
+      appendMessage('assistant', data.reply);
+    } catch (error) {
+      console.error('Error:', error);
+      appendMessage('assistant', 'Sorry, there was an error processing your message.');
     }
-  } catch (err) {
-    appendMessage("bot", "There was an error during submission.");
+  });
+
+  function appendMessage(sender, message) {
+    const messageElem = document.createElement('div');
+    messageElem.className = `message ${sender}`;
+    messageElem.textContent = message;
+    chatBox.appendChild(messageElem);
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
-}
+});
