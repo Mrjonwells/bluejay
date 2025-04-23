@@ -1,7 +1,18 @@
 [build]
-  base    = "Frontend-build"
-  publish = "."
+  publish = "frontend"
   command = ""
 
 [functions]
   directory = "netlify/functions"
+
+[dev]
+  framework = "#custom"
+  command = ""
+  targetPort = 8888
+  port = 8888
+  publish = "frontend"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
