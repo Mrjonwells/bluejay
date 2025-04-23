@@ -1,43 +1,49 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const chatForm = document.getElementById('chat-form');
-  const chatInput = document.getElementById('chat-input');
-  const chatBox = document.getElementById('chat-box');
+document.addEventListener("DOMContentLoaded", function () {
+    const sendBtn = document.getElementById("send-btn");
+    const inputField = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
 
-  chatForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const userMessage = chatInput.value.trim();
-    if (!userMessage) return;
+    async function sendMessage() {
+        const message = inputField.value.trim();
+        if (!message) return;
 
-    // Display user's message
-    appendMessage('user', userMessage);
-    chatInput.value = '';
+        // Display user message
+        const userMsg = document.createElement("div");
+        userMsg.className = "chat user";
+        userMsg.textContent = message;
+        chatBox.appendChild(userMsg);
 
-    try {
-      const response = await fetch('/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message: userMessage })
-      });
+        inputField.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.statusText}`);
-      }
+        try {
+            const response = await fetch("https://pbj-server1.onrender.com/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
 
-      const data = await response.json();
-      appendMessage('assistant', data.reply);
-    } catch (error) {
-      console.error('Error:', error);
-      appendMessage('assistant', 'Sorry, there was an error processing your message.');
+            const data = await response.json();
+            const reply = data.reply || "There was an error processing your message.";
+
+            const botMsg = document.createElement("div");
+            botMsg.className = "chat bot";
+            botMsg.textContent = reply;
+            chatBox.appendChild(botMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (err) {
+            const errorMsg = document.createElement("div");
+            errorMsg.className = "chat bot";
+            errorMsg.textContent = "There was an error processing your message.";
+            chatBox.appendChild(errorMsg);
+        }
     }
-  });
 
-  function appendMessage(sender, message) {
-    const messageElem = document.createElement('div');
-    messageElem.className = `message ${sender}`;
-    messageElem.textContent = message;
-    chatBox.appendChild(messageElem);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+    sendBtn?.addEventListener("click", sendMessage);
+    inputField?.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
 });
