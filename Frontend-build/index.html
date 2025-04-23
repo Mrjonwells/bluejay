@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk to BlueJay — Your Merchant Savings Bot</title>
+  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,23 +13,27 @@
       padding: 0;
       text-align: center;
     }
+
     header {
       background-color: #0077cc;
       color: white;
       padding: 1rem;
       font-size: 1.5rem;
     }
+
     .logo {
       display: block;
       margin: 20px auto;
       width: 150px;
     }
+
     .motto {
       font-size: 22px;
       font-weight: bold;
       margin: 10px;
       color: #003366;
     }
+
     .chat-container {
       background-color: #ffffff;
       padding: 20px;
@@ -37,6 +42,7 @@
       border-radius: 10px;
       box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
     }
+
     .chat-box {
       min-height: 200px;
       max-height: 400px;
@@ -47,29 +53,36 @@
       border: 1px solid #ccc;
       border-radius: 6px;
     }
+
     .message {
       padding: 8px 12px;
       margin: 8px 0;
       border-radius: 6px;
       max-width: 80%;
+      border: 1px solid transparent;
     }
+
     .user-message {
-      background-color: #dcf8c6;
+      background-color: #d0e9ff; /* Soft blue */
       align-self: flex-end;
       text-align: right;
       margin-left: auto;
     }
+
     .bot-message {
-      background-color: #f1f0f0;
+      background-color: #ffffff;
+      border: 1px solid #0077cc;
       align-self: flex-start;
       text-align: left;
       margin-right: auto;
     }
+
     .input-row {
       display: flex;
       justify-content: center;
       margin-top: 10px;
     }
+
     input[type="text"] {
       flex: 1;
       padding: 10px;
@@ -78,6 +91,7 @@
       border-radius: 4px;
       max-width: 500px;
     }
+
     button {
       padding: 10px 16px;
       font-size: 16px;
@@ -88,22 +102,46 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #005fa3;
     }
+
+    .icons-row {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+      padding-bottom: 40px;
+    }
+
+    .icons-row img {
+      width: 120px;
+      height: auto;
+    }
   </style>
 </head>
+
 <body>
-  <header>Talk to BlueJay — The Merchant Savings Bot</header>
+  <header>Talk with BlueJay — Your Merchant Savings Bot</header>
+
   <img src="bluejay.png" alt="BlueJay Logo" class="logo" />
+
   <div class="motto">Save Smart. Scale Faster.</div>
 
   <div class="chat-container">
-    <div class="chat-box" id="chat-box"></div>
+    <div class="chat-box" id="chat-box">Welcome! How can I help your business today?</div>
     <div class="input-row">
       <input type="text" id="user-input" placeholder="Type your question..." />
       <button onclick="sendMessage()">Send</button>
     </div>
+  </div>
+
+  <div class="icons-row">
+    <img src="Insights.png" alt="AI-powered insights">
+    <img src="Lower.png" alt="Lower processing costs">
+    <img src="Boost.png" alt="Boost your profits">
   </div>
 
   <script src="chat.js"></script>
