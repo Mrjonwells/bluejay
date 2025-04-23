@@ -1,46 +1,38 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const sendBtn = document.getElementById("send-btn");
-  const userInput = document.getElementById("user-input");
+const API_BASE = "https://pbj-server1.onrender.com";
+
+function appendMessage(content, type) {
   const chatBox = document.getElementById("chat-box");
+  const msg = document.createElement("div");
+  msg.className = `message ${type}-message`;
+  msg.innerText = content;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
 
-  function appendMessage(sender, text) {
-    const message = document.createElement("div");
-    message.innerHTML = `<strong>${sender}:</strong> ${text}`;
-    chatBox.appendChild(message);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+async function sendMessage() {
+  const input = document.getElementById("user-input");
+  const message = input.value.trim();
+  if (!message) return;
 
-  async function sendMessage() {
-    const message = userInput.value.trim();
-    if (!message) return;
+  appendMessage(message, "user");
+  input.value = "";
 
-    appendMessage("You", message);
-    userInput.value = "";
-    userInput.disabled = true;
-    sendBtn.disabled = true;
+  try {
+    const res = await fetch(`${API_BASE}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
 
-    try {
-      const response = await fetch("https://pbj-server1.onrender.com/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-      });
+    const data = await res.json();
+    appendMessage(data.reply, "bot");
 
-      const data = await response.json();
-      appendMessage("BlueJay", data.response || "There was an error. Please try again.");
-    } catch (err) {
-      appendMessage("BlueJay", "There was an error reaching the server. Please try again later.");
-    } finally {
-      userInput.disabled = false;
-      sendBtn.disabled = false;
-      userInput.focus();
+    if (["done", "submit", "that's all"].includes(message.toLowerCase())) {
+      await fetch(`${API_BASE}/submit-to-hubspot`, { method: "POST" });
+      appendMessage("Thanks! I’ve submitted your info.", "bot");
     }
+  } catch (err) {
+    console.error("Chat error:", err);
+    appendMessage("Oops! Something went wrong. Please try again.", "bot");
   }
-
-  sendBtn.addEventListener("click", sendMessage);
-  userInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  });
-});
+}
