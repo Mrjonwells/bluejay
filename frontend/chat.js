@@ -1,49 +1,49 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const sendBtn = document.getElementById("send-btn");
-    const inputField = document.getElementById("user-input");
-    const chatBox = document.getElementById("chat-box");
+document.addEventListener("DOMContentLoaded", () => {
+  const chatBox = document.getElementById("chat-box");
+  const userInput = document.getElementById("user-input");
+  const sendBtn = document.getElementById("send-btn");
 
-    async function sendMessage() {
-        const message = inputField.value.trim();
-        if (!message) return;
+  function appendMessage(role, content) {
+    const msg = document.createElement("div");
+    msg.classList.add("message", role);
+    msg.textContent = content;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-        // Display user message
-        const userMsg = document.createElement("div");
-        userMsg.className = "chat user";
-        userMsg.textContent = message;
-        chatBox.appendChild(userMsg);
+  async function sendMessage() {
+    const message = userInput.value.trim();
+    if (!message) return;
 
-        inputField.value = "";
-        chatBox.scrollTop = chatBox.scrollHeight;
+    appendMessage("user", message);
+    userInput.value = "";
 
-        try {
-            const response = await fetch("https://pbj-server1.onrender.com/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message })
-            });
+    try {
+      const response = await fetch("https://pbj-server1.onrender.com/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
 
-            const data = await response.json();
-            const reply = data.reply || "There was an error processing your message.";
-
-            const botMsg = document.createElement("div");
-            botMsg.className = "chat bot";
-            botMsg.textContent = reply;
-            chatBox.appendChild(botMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        } catch (err) {
-            const errorMsg = document.createElement("div");
-            errorMsg.className = "chat bot";
-            errorMsg.textContent = "There was an error processing your message.";
-            chatBox.appendChild(errorMsg);
-        }
+      const data = await response.json();
+      appendMessage("assistant", data.reply || "No response received.");
+    } catch (err) {
+      console.error("Error:", err);
+      appendMessage("assistant", "Error processing your message.");
     }
+  }
 
-    sendBtn?.addEventListener("click", sendMessage);
-    inputField?.addEventListener("keypress", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+  // Event listener for the button click
+  sendBtn.addEventListener("click", () => {
+    console.log("Send button clicked");
+    sendMessage();
+  });
+
+  // Event listener for the Enter key
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      console.log("Enter key pressed");
+      sendMessage();
+    }
+  });
 });
