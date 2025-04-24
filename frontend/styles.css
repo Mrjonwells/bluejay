@@ -1,38 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header>Talk with BlueJay — Your Merchant Savings Bot</header>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f9f9f9;
+}
 
-  <img src="bluejay.png" alt="BlueJay Logo" class="logo" />
-  <div class="motto">Save Smart. Scale Faster.</div>
+header {
+  text-align: center;
+  padding: 1rem;
+  font-size: 1.5rem;
+  background-color: #0d1a26;
+  color: #fff;
+}
 
-  <div class="chat-container">
-    <div class="chat-box" id="chat-box">
-      <div class="message assistant">Welcome! How can I help your business today?</div>
-    </div>
+.logo {
+  display: block;
+  margin: 1rem auto 0.5rem;
+  height: 60px;
+}
 
-    <div class="input-row">
-      <input type="text" id="user-input" placeholder="Type your message here..." />
-      <button id="send-btn">Send</button>
-    </div>
-  </div>
+.motto {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
 
-  <div class="icons-row">
-    <img src="Insights.png" alt="AI-powered insights" />
-    <img src="Lower.png" alt="Lower processing costs" />
-    <img src="Boost.png" alt="Boost your profits" />
-  </div>
+.chat-container {
+  max-width: 600px;
+  margin: auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
 
-  <footer>
-    © 2025 Fortified Capital LLC. All rights reserved. This site, code, and content are protected intellectual property.
-  </footer>
+.chat-box {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
 
-  <script src="chat.js"></script>
-</body>
-</html>
+.message {
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.message.user {
+  background-color: #d2f0d2;
+  align-self: flex-end;
+}
+
+.message.assistant {
+  background-color: #e6ecf0;
+  align-self: flex-start;
+}
+
+.input-row {
+  display: flex;
+}
+
+.input-row input {
+  flex-grow: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 6px 0 0 6px;
+  border: 1px solid #ccc;
+}
+
+.input-row button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background: #0074cc;
+  color: #fff;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+}
+
+.input-row button:hover {
+  background: #005fa3;
+}
+
+.icons-row {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.icons-row img {
+  height: 40px;
+  margin: 0 0.5rem;
+}
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  color: gray;
+  margin-top: 2rem;
+}
