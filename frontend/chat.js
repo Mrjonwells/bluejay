@@ -1,5 +1,5 @@
 document.getElementById("send-btn").addEventListener("click", sendMessage);
-document.getElementById("user-input").addEventListener("keypress", function(e) {
+document.getElementById("user-input").addEventListener("keypress", function (e) {
   if (e.key === "Enter") sendMessage();
 });
 
@@ -14,24 +14,23 @@ function sendMessage() {
 
   appendMessage("assistant", "Thinking...");
 
-  fetch("https://pbj-server1.onrender.com/chat", {
+  fetch("/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
-    credentials: "include" // <-- required to persist session
   })
-  .then(res => res.json())
-  .then(data => {
-    updateLastAssistantMessage(data.reply || "No response received.");
-    input.disabled = false;
-    input.focus();
-  })
-  .catch(err => {
-    console.error("Chat error:", err);
-    updateLastAssistantMessage("Oops! Something went wrong.");
-    input.disabled = false;
-    input.focus();
-  });
+    .then((res) => res.json())
+    .then((data) => {
+      updateLastAssistantMessage(data.reply || "No response received.");
+      input.disabled = false;
+      input.focus();
+    })
+    .catch((err) => {
+      console.error("Chat error:", err);
+      updateLastAssistantMessage("Oops! Something went wrong.");
+      input.disabled = false;
+      input.focus();
+    });
 }
 
 function appendMessage(role, text) {
