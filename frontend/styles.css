@@ -64,7 +64,6 @@ header {
 .input-row {
   display: flex;
   align-items: center;
-  position: relative;
 }
 
 .input-row input {
@@ -87,23 +86,6 @@ header {
 
 .input-row button:hover {
   background: #005fa3;
-}
-
-#thinking-indicator {
-  position: absolute;
-  left: -25px;
-  width: 20px;
-  height: 20px;
-  border: 3px solid #0074cc;
-  border-top: 3px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  display: none;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .icons-row {
