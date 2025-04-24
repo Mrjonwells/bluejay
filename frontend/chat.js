@@ -1,43 +1,49 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("user-input");
-  const sendBtn = document.getElementById("send-btn");
-  const chatBox = document.getElementById("chat-box");
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
 
-  function appendMessage(content, className) {
-    const messageDiv = document.createElement("div");
-    messageDiv.className = `message ${className}`;
-    messageDiv.textContent = content;
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+// Add message to UI
+function addMessage(role, text) {
+  const message = document.createElement("div");
+  message.classList.add("message", role);
+  message.innerText = text;
+  chatBox.appendChild(message);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Send user message to Flask
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
+
+  addMessage("user", message);
+  userInput.value = "";
+  sendBtn.disabled = true;
+
+  addMessage("assistant", "Thinking...");
+
+  try {
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+
+    const data = await response.json();
+    const assistantMessages = document.querySelectorAll(".message.assistant");
+    const lastAssistantMessage = assistantMessages[assistantMessages.length - 1];
+
+    lastAssistantMessage.innerText = data.reply || "Sorry, no response.";
+  } catch (err) {
+    console.error("Chat error:", err);
+    addMessage("assistant", "Oops! Something went wrong.");
   }
 
-  async function sendMessage() {
-    const message = input.value.trim();
-    if (!message) return;
+  sendBtn.disabled = false;
+}
 
-    appendMessage(message, "user");
-    input.value = "";
-
-    try {
-      const response = await fetch("https://pbj-server1.onrender.com/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
-
-      const data = await response.json();
-      appendMessage(data.reply || "No response received from BlueJay.", "assistant");
-    } catch (error) {
-      console.error("Error talking to BlueJay:", error);
-      appendMessage("Error connecting to BlueJay backend.", "assistant");
-    }
-  }
-
-  sendBtn.addEventListener("click", sendMessage);
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
+// Send on button click or Enter key
+sendBtn.addEventListener("click", sendMessage);
+userInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendMessage();
 });
