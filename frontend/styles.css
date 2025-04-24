@@ -1,16 +1,15 @@
 body {
-  font-family: "Arial", sans-serif;
+  font-family: Arial, sans-serif;
   margin: 0;
-  background: #f4f6f8;
+  background: #f9f9f9;
 }
 
 header {
   text-align: center;
   padding: 1rem;
-  font-size: 1.6rem;
-  font-weight: bold;
-  background-color: #003153; /* BlueJay brand navy */
-  color: white;
+  font-size: 1.5rem;
+  background-color: #003366;
+  color: #fff;
 }
 
 .logo {
@@ -22,70 +21,65 @@ header {
 .motto {
   text-align: center;
   font-size: 1.1rem;
-  color: #333;
+  color: #555;
   margin-bottom: 1rem;
 }
 
 .chat-container {
-  max-width: 640px;
+  max-width: 600px;
   margin: auto;
-  background: white;
+  background: #fff;
   border-radius: 10px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.08);
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
   padding: 1rem;
 }
 
 .chat-box {
-  max-height: 420px;
+  max-height: 400px;
   overflow-y: auto;
-  padding: 0.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  background-color: #fcfcfc;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .message {
-  display: inline-block;
-  max-width: 85%;
-  margin: 0.4rem 0;
+  margin: 0.5rem 0;
   padding: 0.75rem;
-  border-radius: 10px;
-  line-height: 1.4;
+  border-radius: 8px;
+  max-width: 90%;
   word-wrap: break-word;
 }
 
 .message.user {
-  background-color: #d1f2eb;
-  color: #083;
+  background-color: #d2f0d2;
   align-self: flex-end;
-  margin-left: auto;
 }
 
 .message.assistant {
-  background-color: #e7eff6;
-  color: #003153;
+  background-color: #e6ecf0;
   align-self: flex-start;
-  margin-right: auto;
+  color: #003366;
 }
 
 .input-row {
   display: flex;
-  margin-top: 1rem;
+  align-items: center;
+  position: relative;
 }
 
 .input-row input {
-  flex: 1;
-  padding: 0.6rem;
+  flex-grow: 1;
+  padding: 0.5rem;
   font-size: 1rem;
   border-radius: 6px 0 0 6px;
   border: 1px solid #ccc;
 }
 
 .input-row button {
-  padding: 0.6rem 1.2rem;
+  padding: 0.5rem 1rem;
   font-size: 1rem;
   background: #0074cc;
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 0 6px 6px 0;
   cursor: pointer;
@@ -95,19 +89,36 @@ header {
   background: #005fa3;
 }
 
+#thinking-indicator {
+  position: absolute;
+  left: -25px;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #0074cc;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: none;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .icons-row {
   text-align: center;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .icons-row img {
   height: 40px;
-  margin: 0 10px;
+  margin: 0 0.5rem;
 }
 
 footer {
   text-align: center;
   font-size: 12px;
-  color: #666;
+  color: gray;
   margin-top: 2rem;
 }
