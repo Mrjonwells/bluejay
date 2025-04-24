@@ -3,35 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
+  <meta name="description" content="Talk with BlueJay — Your Merchant Savings Bot"/>
+  <title>BlueJay 5.0</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="background.png" type="image/png">
 </head>
 <body>
-  <header>Talk with BlueJay — Your Merchant Savings Bot</header>
+  <header>
+    <img src="background.png" alt="BlueJay Logo" class="logo" />
+    <h1>Talk with BlueJay — Your Merchant Savings Bot</h1>
+  </header>
 
-  <img src="bluejay.png" alt="BlueJay Logo" class="logo" />
-  <div class="motto">Save Smart. Scale Faster.</div>
-
-  <div class="chat-container">
-    <div class="chat-box" id="chat-box">
-      <div class="message assistant">Welcome! How can I help your business today?</div>
-    </div>
-
-    <div class="input-row">
-      <div class="thinking-icon" id="thinking-icon" style="display: none;">⏳</div>
-      <input type="text" id="user-input" placeholder="Type your message here..." />
-      <button id="send-btn">Send</button>
-    </div>
-  </div>
-
-  <div class="icons-row">
-    <img src="Insights.png" alt="AI-powered insights" />
-    <img src="Lower.png" alt="Lower processing costs" />
-    <img src="Boost.png" alt="Boost your profits" />
-  </div>
+  <main id="chat-container">
+    <div id="chat-box"></div>
+    <div id="thinking-icon" class="thinking">💲</div>
+    <form id="chat-form">
+      <input type="text" id="user-input" placeholder="Ask me anything..." autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
+  </main>
 
   <footer>
-    © 2025 Fortified Capital LLC. All rights reserved. This site, code, and content are protected intellectual property.
+    <p>&copy; 2025 Fortified Capital LLC. All rights reserved.</p>
   </footer>
 
   <script src="chat.js"></script>
