@@ -8,7 +8,7 @@ header {
   text-align: center;
   padding: 1rem;
   font-size: 1.5rem;
-  background-color: #003366;
+  background-color: #0d1a26;
   color: #fff;
 }
 
@@ -30,7 +30,7 @@ header {
   margin: auto;
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 1rem;
 }
 
@@ -38,16 +38,13 @@ header {
   max-height: 400px;
   overflow-y: auto;
   margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
 }
 
 .message {
   margin: 0.5rem 0;
   padding: 0.75rem;
   border-radius: 8px;
-  max-width: 90%;
-  word-wrap: break-word;
+  line-height: 1.4;
 }
 
 .message.user {
@@ -58,19 +55,19 @@ header {
 .message.assistant {
   background-color: #e6ecf0;
   align-self: flex-start;
-  color: #003366;
 }
 
 .input-row {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .input-row input {
   flex-grow: 1;
   padding: 0.5rem;
   font-size: 1rem;
-  border-radius: 6px 0 0 6px;
+  border-radius: 6px;
   border: 1px solid #ccc;
 }
 
@@ -80,12 +77,17 @@ header {
   background: #0074cc;
   color: #fff;
   border: none;
-  border-radius: 0 6px 6px 0;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .input-row button:hover {
   background: #005fa3;
+}
+
+.thinking-icon {
+  font-size: 1.2rem;
+  color: #999;
 }
 
 .icons-row {
