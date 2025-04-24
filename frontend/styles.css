@@ -1,15 +1,16 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Arial", sans-serif;
   margin: 0;
-  background: #f9f9f9;
+  background: #f4f6f8;
 }
 
 header {
   text-align: center;
   padding: 1rem;
-  font-size: 1.5rem;
-  background-color: #0d1a26;
-  color: #fff;
+  font-size: 1.6rem;
+  font-weight: bold;
+  background-color: #003153; /* BlueJay brand navy */
+  color: white;
 }
 
 .logo {
@@ -21,58 +22,70 @@ header {
 .motto {
   text-align: center;
   font-size: 1.1rem;
-  color: #555;
+  color: #333;
   margin-bottom: 1rem;
 }
 
 .chat-container {
-  max-width: 600px;
+  max-width: 640px;
   margin: auto;
-  background: #fff;
+  background: white;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 15px rgba(0,0,0,0.08);
   padding: 1rem;
 }
 
 .chat-box {
-  max-height: 400px;
+  max-height: 420px;
   overflow-y: auto;
-  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #fcfcfc;
 }
 
 .message {
-  margin: 0.5rem 0;
+  display: inline-block;
+  max-width: 85%;
+  margin: 0.4rem 0;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: 10px;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 
 .message.user {
-  background-color: #d2f0d2;
+  background-color: #d1f2eb;
+  color: #083;
   align-self: flex-end;
+  margin-left: auto;
 }
 
 .message.assistant {
-  background-color: #e6ecf0;
+  background-color: #e7eff6;
+  color: #003153;
   align-self: flex-start;
+  margin-right: auto;
 }
 
 .input-row {
   display: flex;
+  margin-top: 1rem;
 }
 
 .input-row input {
-  flex-grow: 1;
-  padding: 0.5rem;
+  flex: 1;
+  padding: 0.6rem;
   font-size: 1rem;
   border-radius: 6px 0 0 6px;
   border: 1px solid #ccc;
 }
 
 .input-row button {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   font-size: 1rem;
   background: #0074cc;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 0 6px 6px 0;
   cursor: pointer;
@@ -84,17 +97,17 @@ header {
 
 .icons-row {
   text-align: center;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
 .icons-row img {
   height: 40px;
-  margin: 0 0.5rem;
+  margin: 0 10px;
 }
 
 footer {
   text-align: center;
   font-size: 12px;
-  color: gray;
+  color: #666;
   margin-top: 2rem;
 }
