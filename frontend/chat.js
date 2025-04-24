@@ -1,73 +1,50 @@
-// chat.js
+const chatBox = document.getElementById("chat-box");
+const form = document.getElementById("chat-form");
+const input = document.getElementById("user-input");
+const thinkingIcon = document.getElementById("thinking-icon");
 
-// Function to retrieve or generate a UUID for the user session
-function getUserId() {
-  let userId = localStorage.getItem("user_id");
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem("user_id", userId);
-  }
-  return userId;
+const userIdKey = "bluejay_user_id";
+
+if (!localStorage.getItem(userIdKey)) {
+  localStorage.setItem(userIdKey, crypto.randomUUID());
 }
 
-// Event listeners for sending messages
-document.getElementById("send-btn").addEventListener("click", sendMessage);
-document.getElementById("user-input").addEventListener("keypress", function (e) {
-  if (e.key === "Enter") sendMessage();
-});
+const userId = localStorage.getItem(userIdKey);
 
-// Function to send the user's message to the server
-function sendMessage() {
-  const input = document.getElementById("user-input");
-  const message = input.value.trim();
-  if (!message) return;
-
-  appendMessage("user", message);
-  input.value = "";
-  input.disabled = true;
-  showThinking();
-
-  fetch("https://pbj-server1.onrender.com/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      message,
-      user_id: getUserId()
-    }),
-    credentials: "include"
-  })
-    .then(res => res.json())
-    .then(data => {
-      updateLastAssistantMessage(data.reply || "No response received.");
-      input.disabled = false;
-      input.focus();
-    })
-    .catch(err => {
-      console.error("Chat error:", err);
-      updateLastAssistantMessage("Oops! Something went wrong.");
-      input.disabled = false;
-      input.focus();
-    });
-}
-
-// Function to append a message to the chat box
-function appendMessage(role, text) {
-  const chatBox = document.getElementById("chat-box");
+const addMessage = (text, sender) => {
   const msg = document.createElement("div");
-  msg.className = `message ${role}`;
+  msg.className = `message ${sender}`;
   msg.textContent = text;
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
-}
+};
 
-// Function to update the last assistant message
-function updateLastAssistantMessage(newText) {
-  const messages = document.querySelectorAll(".message.assistant");
-  const last = messages[messages.length - 1];
-  if (last) last.textContent = newText;
-}
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const userInput = input.value.trim();
+  if (!userInput) return;
 
-// Function to show a thinking indicator
-function showThinking() {
-  appendMessage("assistant", "Thinking...");
-}
+  addMessage(userInput, "user");
+  input.value = "";
+  thinkingIcon.style.display = "inline-block";
+
+  try {
+    const res = await fetch("https://pbj-server1.onrender.com/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userInput, user_id: userId })
+    });
+
+    const data = await res.json();
+    thinkingIcon.style.display = "none";
+
+    if (data.reply) {
+      addMessage(data.reply, "bot");
+    } else {
+      addMessage("Something went wrong. Please try again.", "bot");
+    }
+  } catch (err) {
+    thinkingIcon.style.display = "none";
+    addMessage("Network error. Try again later.", "bot");
+  }
+});
