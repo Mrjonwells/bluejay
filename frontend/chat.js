@@ -1,66 +1,39 @@
-// Store or generate UUID in localStorage
-function getUserId() {
-  let userId = localStorage.getItem("user_id");
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem("user_id", userId);
-  }
-  return userId;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>Talk with BlueJay — Your Merchant Savings Bot</header>
 
-document.getElementById("send-btn").addEventListener("click", sendMessage);
-document.getElementById("user-input").addEventListener("keypress", function (e) {
-  if (e.key === "Enter") sendMessage();
-});
+  <img src="bluejay.png" alt="BlueJay Logo" class="logo" />
+  <div class="motto">Save Smart. Scale Faster.</div>
 
-function sendMessage() {
-  const input = document.getElementById("user-input");
-  const message = input.value.trim();
-  if (!message) return;
+  <div class="chat-container">
+    <div class="chat-box" id="chat-box">
+      <div class="message assistant">Welcome! How can I help your business today?</div>
+    </div>
 
-  appendMessage("user", message);
-  input.value = "";
-  input.disabled = true;
-  showThinking();
+    <div class="input-row">
+      <div class="thinking-icon" id="thinking-icon" style="display: none;">⏳</div>
+      <input type="text" id="user-input" placeholder="Type your message here..." />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
 
-  fetch("https://pbj-server1.onrender.com/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      message,
-      user_id: getUserId()
-    }),
-    credentials: "include"
-  })
-    .then(res => res.json())
-    .then(data => {
-      updateLastAssistantMessage(data.reply || "No response received.");
-      input.disabled = false;
-      input.focus();
-    })
-    .catch(err => {
-      console.error("Chat error:", err);
-      updateLastAssistantMessage("Oops! Something went wrong.");
-      input.disabled = false;
-      input.focus();
-    });
-}
+  <div class="icons-row">
+    <img src="Insights.png" alt="AI-powered insights" />
+    <img src="Lower.png" alt="Lower processing costs" />
+    <img src="Boost.png" alt="Boost your profits" />
+  </div>
 
-function appendMessage(role, text) {
-  const chatBox = document.getElementById("chat-box");
-  const msg = document.createElement("div");
-  msg.className = `message ${role}`;
-  msg.textContent = text;
-  chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
+  <footer>
+    © 2025 Fortified Capital LLC. All rights reserved. This site, code, and content are protected intellectual property.
+  </footer>
 
-function updateLastAssistantMessage(newText) {
-  const messages = document.querySelectorAll(".message.assistant");
-  const last = messages[messages.length - 1];
-  if (last) last.textContent = newText;
-}
-
-function showThinking() {
-  appendMessage("assistant", "Thinking...");
-}
+  <script src="chat.js"></script>
+</body>
+</html>
