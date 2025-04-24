@@ -1,44 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
+from flask import Flask, request, jsonify, session, send_from_directory
+from flask_cors import CORS
+from openai import OpenAI
+import os
+import time
+import requests
+import re
 
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header>Talk with BlueJay — Your Merchant Savings Bot</header>
+app = Flask(__name__)
+CORS(app)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")
 
-  <!-- Logo -->
-  <img src="bluejay.png" alt="BlueJay Logo" class="logo" />
+# === OpenAI Setup (Assistants API v2) ===
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID", "asst_bLMfZI9fO9E5jltHY8KDq9ZT")
 
-  <!-- Motto -->
-  <div class="motto">Save Smart. Scale Faster.</div>
+# === HubSpot Setup ===
+PORTAL_ID = os.getenv("HUBSPOT_PORTAL_ID", "45853776")
+FORM_GUID = os.getenv("HUBSPOT_FORM_GUID", "3b7c289f-566e-4403-ac4b-5e2387c3c5d1")
 
-  <!-- Chat Container -->
-  <div class="chat-container">
-    <div class="chat-box" id="chat-box">
-      <div class="message assistant">Welcome! How can I help your business today?</div>
-    </div>
+# === Serve Frontend ===
+@app.route("/")
+def serve_index():
+    return send_from_directory("frontend", "index.html")
 
-    <div class="input-row">
-      <input type="text" id="user-input" placeholder="Type your message here..." />
-      <button id="send-btn">Send</button>
-    </div>
-  </div>
+@app.route("/<path:filename>")
+def serve_static(filename):
+    return send_from_directory("frontend", filename)
 
-  <!-- Icons -->
-  <div class="icons-row">
-    <img src="Insights.png" alt="AI-powered insights" />
-    <img src="Lower.png" alt="Lower processing costs" />
-    <img src="Boost.png" alt="Boost your profits" />
-  </div>
+# === Main Chat Endpoint ===
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_message = request.json.get("message", "").strip()
+    if not user_message:
+        return jsonify({"reply": "Please enter a message."}), 400
 
-  <script src="chat.js"></script>
-  <footer style="text-align: center; font-size: 12px; color: gray; margin-top: 20px;">
-    © 2025 Fortified Capital LLC. All rights reserved.  
-    This site, code, and content are protected intellectual property.
-</footer>
-</body>
-</html>
+    if "messages" not in session:
+        session["messages"] = []
+
+    session["messages"].append({"role": "user", "content": user_message})
+
+    try:
+        # Create Assistant thread and run
+        thread = client.beta.threads.create(messages=session["messages"])
+        run = client.beta.threads.runs.create(thread_id=thread.id, assistant_id=ASSISTANT_ID)
+
+        while True:
+            run_status = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
+            if run_status.status == "completed":
+                break
+            time.sleep(0.6)
+
+        # Get the assistant's reply
+        messages = client.beta.threads.messages.list(thread_id=thread.id)
+        assistant_reply = next(
+            (m.content[0].text.value for m in messages.data if m.role == "assistant"),
+            "..."
+        )
+
+        session["messages"].append({"role": "assistant", "content": assistant_reply})
+
+        # Check if message should trigger HubSpot submission
+        if any(kw in user_message.lower() for kw in ["business", "contact", "merchant", "phone", "email", "name"]):
+            submit_to_hubspot(user_message)
+
+        return jsonify({"reply": assistant_reply})
+
+    except Exception as e:
+        print("OpenAI error:", e)
+        return jsonify({"reply": "Oops! Something went wrong."}), 500
+
+# === HubSpot Submission Logic ===
+def submit_to_hubspot(text):
+    try:
+        email_match = re.search(r"[\w\.-]+@[\w\.-]+\.\w+", text)
+        phone_match = re.search(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", text)
+        name_match = re.search(r"my name is ([A-Za-z\s]+)", text, re.IGNORECASE)
+
+        email = email_match.group(0) if email_match else ""
+        phone = phone_match.group(0) if phone_match else ""
+        name = name_match.group(1).strip() if name_match else "Unknown"
+
+        data = {
+            "fields": [
+                {"name": "email", "value": email},
+                {"name": "phone", "value": phone},
+                {"name": "firstname", "value": name},
+                {"name": "message", "value": text}
+            ]
+        }
+
+        url = f"https://api.hsforms.com/submissions/v3/integration/submit/{PORTAL_ID}/{FORM_GUID}"
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+
+    except Exception as e:
+        print("HubSpot error:", str(e))
+
+# === Run Locally (for testing) ===
+if __name__ == "__main__":
+    app.run(debug=True)
