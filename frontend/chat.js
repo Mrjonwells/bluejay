@@ -4,11 +4,9 @@ const input = document.getElementById("user-input");
 const thinkingIcon = document.getElementById("thinking-icon");
 
 const userIdKey = "bluejay_user_id";
-
 if (!localStorage.getItem(userIdKey)) {
   localStorage.setItem(userIdKey, crypto.randomUUID());
 }
-
 const userId = localStorage.getItem(userIdKey);
 
 const addMessage = (text, sender) => {
@@ -16,7 +14,9 @@ const addMessage = (text, sender) => {
   msg.className = `message ${sender}`;
   msg.textContent = text;
   chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  setTimeout(() => {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }, 100);
 };
 
 form.addEventListener("submit", async (e) => {
@@ -26,6 +26,7 @@ form.addEventListener("submit", async (e) => {
 
   addMessage(userInput, "user");
   input.value = "";
+  input.disabled = true;
   thinkingIcon.style.display = "inline-block";
 
   try {
@@ -36,15 +37,16 @@ form.addEventListener("submit", async (e) => {
     });
 
     const data = await res.json();
-    thinkingIcon.style.display = "none";
-
     if (data.reply) {
       addMessage(data.reply, "bot");
     } else {
       addMessage("Something went wrong. Please try again.", "bot");
     }
   } catch (err) {
-    thinkingIcon.style.display = "none";
     addMessage("Network error. Try again later.", "bot");
+  } finally {
+    input.disabled = false;
+    input.focus();
+    thinkingIcon.style.display = "none";
   }
 });
