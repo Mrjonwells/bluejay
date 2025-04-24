@@ -17,7 +17,8 @@ function sendMessage() {
   fetch("https://pbj-server1.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message })
+    body: JSON.stringify({ message }),
+    credentials: "include" // <-- required to persist session
   })
   .then(res => res.json())
   .then(data => {
