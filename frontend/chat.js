@@ -1,49 +1,49 @@
-const chatBox = document.getElementById("chat-box");
-const userInput = document.getElementById("user-input");
-const sendBtn = document.getElementById("send-btn");
+document.getElementById("send-btn").addEventListener("click", sendMessage);
+document.getElementById("user-input").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") sendMessage();
+});
 
-// Add message to UI
-function addMessage(role, text) {
-  const message = document.createElement("div");
-  message.classList.add("message", role);
-  message.innerText = text;
-  chatBox.appendChild(message);
+function sendMessage() {
+  const input = document.getElementById("user-input");
+  const message = input.value.trim();
+  if (!message) return;
+
+  appendMessage("user", message);
+  input.value = "";
+  input.disabled = true;
+
+  appendMessage("assistant", "Thinking...");
+
+  fetch("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    updateLastAssistantMessage(data.reply || "No response received.");
+    input.disabled = false;
+    input.focus();
+  })
+  .catch(err => {
+    console.error("Chat error:", err);
+    updateLastAssistantMessage("Oops! Something went wrong.");
+    input.disabled = false;
+    input.focus();
+  });
+}
+
+function appendMessage(role, text) {
+  const chatBox = document.getElementById("chat-box");
+  const msg = document.createElement("div");
+  msg.className = `message ${role}`;
+  msg.textContent = text;
+  chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Send user message to Flask
-async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;
-
-  addMessage("user", message);
-  userInput.value = "";
-  sendBtn.disabled = true;
-
-  addMessage("assistant", "Thinking...");
-
-  try {
-    const response = await fetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
-
-    const data = await response.json();
-    const assistantMessages = document.querySelectorAll(".message.assistant");
-    const lastAssistantMessage = assistantMessages[assistantMessages.length - 1];
-
-    lastAssistantMessage.innerText = data.reply || "Sorry, no response.";
-  } catch (err) {
-    console.error("Chat error:", err);
-    addMessage("assistant", "Oops! Something went wrong.");
-  }
-
-  sendBtn.disabled = false;
+function updateLastAssistantMessage(newText) {
+  const messages = document.querySelectorAll(".message.assistant");
+  const last = messages[messages.length - 1];
+  if (last) last.textContent = newText;
 }
-
-// Send on button click or Enter key
-sendBtn.addEventListener("click", sendMessage);
-userInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendMessage();
-});
