@@ -2,6 +2,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const input = document.getElementById("user-input");
   const sendBtn = document.getElementById("send-btn");
 
+  // Generate or retrieve a persistent user ID
+  let userId = localStorage.getItem("bluejay_user_id");
+  if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem("bluejay_user_id", userId);
+  }
+
   sendBtn.addEventListener("click", sendMessage);
   input.addEventListener("keypress", function (e) {
     if (e.key === "Enter") sendMessage();
@@ -20,8 +27,8 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch("https://pbj-server1.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
-      credentials: "include"
+      credentials: "include",
+      body: JSON.stringify({ message, user_id: userId })
     })
       .then((res) => res.json())
       .then((data) => {
