@@ -1,5 +1,3 @@
-// frontend/chat.js
-
 function getUserId() {
   let userId = localStorage.getItem("bluejay_user_id");
   if (!userId) {
@@ -17,15 +15,12 @@ document.getElementById("chat-form").addEventListener("submit", async (e) => {
 
   const userId = getUserId();
   appendMessage("user", message);
-
   input.value = "";
   showThinking();
 
   const response = await fetch("https://pbj-server1.onrender.com/chat", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, user_id: userId })
   });
 
