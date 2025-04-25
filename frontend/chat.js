@@ -1,33 +1,40 @@
-// frontend/chat.js
+const backendUrl = 'https://pbj-server1.onrender.com';
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-input');
+const chatMessages = document.getElementById('chat-messages');
 
-function getUserId() {
-  let userId = localStorage.getItem("bluejay_user_id");
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem("bluejay_user_id", userId);
-  }
-  return userId;
+let userId = localStorage.getItem('user_id');
+if (!userId) {
+  userId = crypto.randomUUID();
+  localStorage.setItem('user_id', userId);
 }
 
-document.getElementById("chat-form").addEventListener("submit", async (e) => {
+function appendMessage(sender, message) {
+  const msg = document.createElement('div');
+  msg.innerHTML = `<strong>${sender}:</strong> ${message}`;
+  chatMessages.appendChild(msg);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+chatForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const input = document.getElementById("chat-input");
-  const message = input.value.trim();
-  if (!message) return;
+  const userMessage = chatInput.value.trim();
+  if (!userMessage) return;
 
-  const userId = getUserId();
-  appendMessage("user", message);
+  appendMessage('You', userMessage);
+  chatInput.value = '';
 
-  input.value = "";
-  showThinking();
+  try {
+    const response = await fetch(`${backendUrl}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, message: userMessage })
+    });
 
-  const response = await fetch("https://pbj-server1.onrender.com/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, user_id: userId })
-  });
-
-  const data = await response.json();
-  hideThinking();
-  appendMessage("assistant", data.reply);
+    const data = await response.json();
+    appendMessage('BlueJay', data.reply);
+  } catch (error) {
+    appendMessage('Error', 'There was a problem connecting to BlueJay.');
+    console.error(error);
+  }
 });
