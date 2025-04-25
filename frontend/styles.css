@@ -83,6 +83,13 @@ footer {
   border-top: 2px solid #a5cfff;
 }
 
+.footer-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .footer-icon {
   width: 80px;
   margin: 0 10px;
