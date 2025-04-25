@@ -1,30 +1,43 @@
-function getUserId() {
-  let userId = localStorage.getItem("bluejay_user_id");
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem("bluejay_user_id", userId);
-  }
-  return userId;
+const form = document.getElementById("chat-form");
+const input = document.getElementById("chat-input");
+const chatBox = document.getElementById("chat-messages");
+
+let user_id = localStorage.getItem("user_id");
+if (!user_id) {
+  user_id = crypto.randomUUID();
+  localStorage.setItem("user_id", user_id);
 }
 
-document.getElementById("chat-form").addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const input = document.getElementById("chat-input");
   const message = input.value.trim();
   if (!message) return;
 
-  const userId = getUserId();
-  appendMessage("user", message);
+  appendMessage("You", message);
   input.value = "";
-  showThinking();
 
+  appendMessage("BlueJay", "...");
   const response = await fetch("https://pbj-server1.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, user_id: userId })
+    body: JSON.stringify({ message, user_id })
   });
 
   const data = await response.json();
-  hideThinking();
-  appendMessage("assistant", data.reply);
+  removeLastMessageIfDots();
+  appendMessage("BlueJay", data.reply);
 });
+
+function appendMessage(sender, text) {
+  const div = document.createElement("div");
+  div.innerHTML = `<strong>${sender}:</strong> ${text}`;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function removeLastMessageIfDots() {
+  const last = chatBox.lastChild;
+  if (last && last.textContent.includes("...")) {
+    chatBox.removeChild(last);
+  }
+}
