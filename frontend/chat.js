@@ -1,4 +1,4 @@
-const backendUrl = "https://pbj-server1.onrender.com";
+const backendUrl = "https://your-new-backend-url.onrender.com"; // Replace this with your new Render backend URL
 
 document.getElementById("user-input")
   .addEventListener("keypress", function(event) {
@@ -17,15 +17,20 @@ async function sendMessage() {
   appendMessage(userInput, "user");
   inputField.value = "";
 
-  const response = await fetch(`${backendUrl}/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: userInput })
-  });
+  try {
+    const response = await fetch(`${backendUrl}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userInput })
+    });
 
-  const data = await response.json();
-  appendMessage(data.response, "bot");
-  showThinkingIcon(false);
+    const data = await response.json();
+    appendMessage(data.response, "bot");
+  } catch (error) {
+    appendMessage("Error: There was a problem connecting to BlueJay.", "bot");
+  } finally {
+    showThinkingIcon(false);
+  }
 }
 
 function appendMessage(message, sender) {
