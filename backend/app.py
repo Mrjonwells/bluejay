@@ -1,6 +1,6 @@
 import os
-import uuid
 import redis
+import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -11,51 +11,52 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-r = redis.Redis.from_url(os.getenv("REDIS_URL"))
+# Redis setup
+redis_url = os.getenv("REDIS_URL")
+r = redis.Redis.from_url(redis_url)
+
+# OpenAI setup
 client = OpenAI()
 
-@app.route("/chat", methods=["POST"])
+@app.route('/chat', methods=['POST'])
 def chat():
-    data = request.json
-    user_id = data.get("user_id") or str(uuid.uuid4())
-    message = data.get("message")
+    data = request.get_json()
+    user_input = data.get('message', '')
 
+    user_id = data.get('user_id') or str(uuid.uuid4())
     thread_key = f"thread:{user_id}"
 
     thread_id = r.get(thread_key)
-    if not thread_id:
+    if thread_id:
+        thread_id = thread_id.decode('utf-8')
+    else:
         thread = client.beta.threads.create()
         thread_id = thread.id
-        r.setex(thread_key, 1800, thread_id)  # 30-minute expiration
-    else:
-        r.expire(thread_key, 1800)  # Refresh TTL on every message
+        r.set(thread_key, thread_id)
 
-    client.beta.threads.messages.create(
+    message = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
-        content=message
+        content=user_input
     )
 
-    run = client.beta.threads.runs.create_and_poll(
+    run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=os.getenv("OPENAI_ASSISTANT_ID")
     )
 
+    while True:
+        status = client.beta.threads.runs.retrieve(
+            thread_id=thread_id,
+            run_id=run.id
+        )
+        if status.status == 'completed':
+            break
+
     messages = client.beta.threads.messages.list(thread_id=thread_id)
-    latest_reply = next((m for m in reversed(messages.data) if m.role == "assistant"), None)
+    last_message = messages.data[0].content[0].text.value
 
-    return jsonify({"reply": latest_reply.content[0].text.value})
+    return jsonify({"response": last_message})
 
-@app.route("/inspect", methods=["GET"])
-def inspect():
-    keys = r.keys("thread:*")
-    active_threads = []
-    for key in keys:
-        ttl = r.ttl(key)
-        value = r.get(key)
-        active_threads.append({
-            "key": key.decode(),
-            "ttl": ttl,
-            "thread_id": value.decode() if value else "None"
-        })
-    return jsonify(active_threads)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
