@@ -1,23 +1,40 @@
-async function sendMessage() {
-  const input = document.getElementById("user-input");
-  const message = input.value;
-  if (!message.trim()) return;
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
+const chatMessages = document.getElementById("chat-messages");
 
-  const chatBox = document.getElementById("chat-box");
-  const thinking = document.getElementById("thinking");
+const uuid = localStorage.getItem("user_id") || crypto.randomUUID();
+localStorage.setItem("user_id", uuid);
 
-  chatBox.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
-  input.value = "";
-  thinking.style.display = "inline-block";
+chatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const message = chatInput.value;
+  appendMessage("You", message);
+  chatInput.value = "";
 
-  const response = await fetch("https://pbj-server1.onrender.com/chat", {
+  appendMessage("BlueJay", "Thinking...");
+
+  const res = await fetch("https://pbj-server1.onrender.com/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, user_id: "bluejay-user" })
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: message,
+      user_id: uuid
+    })
   });
 
-  const data = await response.json();
-  chatBox.innerHTML += `<div><strong>BlueJay:</strong> ${data.reply}</div>`;
-  thinking.style.display = "none";
-  chatBox.scrollTop = chatBox.scrollHeight;
+  const data = await res.json();
+  const thinking = document.querySelector(".message:last-child");
+  if (thinking.textContent === "BlueJay: Thinking...") thinking.remove();
+
+  appendMessage("BlueJay", data.reply);
+});
+
+function appendMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.classList.add("message");
+  msg.innerText = `${sender}: ${text}`;
+  chatMessages.appendChild(msg);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
