@@ -1,33 +1,36 @@
-async function sendMessage() {
-  const input = document.getElementById("user-input");
-  const message = input.value;
-  if (!message.trim()) return;
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
+const chatMessages = document.getElementById("chat-messages");
 
-  const chatBox = document.getElementById("chat-box");
-  chatBox.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
-  input.value = "";
+chatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const userMessage = chatInput.value.trim();
+  if (!userMessage) return;
 
-  const response = await fetch("https://pbj-server1.onrender.com/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      message,
-      user_id: localStorage.getItem("user_id") || "bluejay-stream"
-    })
-  });
+  appendMessage("You", userMessage);
+  chatInput.value = "";
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let output = "";
+  appendMessage("BlueJay", "Thinking...");
 
-  chatBox.innerHTML += `<div id="bluejay-reply"><strong>BlueJay:</strong> <span></span></div>`;
-  const replySpan = document.querySelector("#bluejay-reply span");
+  try {
+    const response = await fetch("https://pbj-server1.onrender.com/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userMessage }),
+    });
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value);
-    output += chunk;
-    replySpan.textContent = output;
+    const data = await response.json();
+    chatMessages.lastChild.remove(); // remove "Thinking..."
+    appendMessage("BlueJay", data.reply || "Hmm... I didn’t get that.");
+  } catch (err) {
+    chatMessages.lastChild.remove();
+    appendMessage("BlueJay", "Something went wrong. Try again later.");
   }
+});
+
+function appendMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+  chatMessages.appendChild(msg);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
