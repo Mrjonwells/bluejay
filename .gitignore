@@ -1,32 +1,28 @@
-# OS-specific files
-.DS_Store
-Thumbs.db
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env.*
+.venv/
+venv/
+*.sqlite3
 
-# Logs
+# Flask / Gunicorn
+instance/
 *.log
 
-# Netlify build/cache (if any)
+# Redis (optional)
+dump.rdb
+
+# Netlify
 .netlify/
+dist/
+node_modules/  # just in case
 
-# IDE settings
+# OS / Editor
+.DS_Store
+Thumbs.db
 .vscode/
-.idea/
-
-# Node (just in case any package gets initialized)
-node_modules/
-package-lock.json
-yarn.lock
-
-# Optional: zip or backup artifacts
-*.zip
-*.tar.gz
-*.bak
-*.tmp
-
-# Mac-specific metadata
-.AppleDouble
-.LSOverride
-
-# System generated
-ehthumbs.db
-Desktop.ini
+*.swp
