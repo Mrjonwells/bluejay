@@ -11,30 +11,29 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Redis setup
+# Redis
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
-# OpenAI setup
+# OpenAI
 client = OpenAI()
 
-@app.route('/chat', methods=['POST'])
+@app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_input = data.get('message', '')
-
-    user_id = data.get('user_id') or str(uuid.uuid4())
+    user_input = data.get("message", "")
+    user_id = data.get("user_id") or str(uuid.uuid4())
     thread_key = f"thread:{user_id}"
 
     thread_id = r.get(thread_key)
     if thread_id:
-        thread_id = thread_id.decode('utf-8')
+        thread_id = thread_id.decode("utf-8")
     else:
         thread = client.beta.threads.create()
         thread_id = thread.id
         r.set(thread_key, thread_id)
 
-    message = client.beta.threads.messages.create(
+    client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
         content=user_input
@@ -46,11 +45,8 @@ def chat():
     )
 
     while True:
-        status = client.beta.threads.runs.retrieve(
-            thread_id=thread_id,
-            run_id=run.id
-        )
-        if status.status == 'completed':
+        status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+        if status.status == "completed":
             break
 
     messages = client.beta.threads.messages.list(thread_id=thread_id)
@@ -59,4 +55,4 @@ def chat():
     return jsonify({"response": last_message})
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000)
