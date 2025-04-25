@@ -3,25 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <title>BlueJay Merchant Assistant</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="chat-container">
-    <img src="background.png" alt="BlueJay Logo" class="logo">
-    <div class="header">Talk with BlueJay — Your Merchant Savings Bot</div>
-    <div id="chat-box" class="chat-box"></div>
-    <div class="input-area">
-      <span class="thinking-icon" id="thinking">💲</span>
-      <input type="text" id="user-input" placeholder="Type your message..." autofocus />
-      <button onclick="sendMessage()">Send</button>
-    </div>
-    <div class="footer-icons">
-      <img src="icon1.png" alt="Icon 1">
-      <img src="icon2.png" alt="Icon 2">
-      <img src="icon3.png" alt="Icon 3">
-    </div>
-  </div>
+  <header>
+    <img src="background.png" alt="BlueJay Logo" class="logo" />
+    <h1>Talk with BlueJay — Your Merchant Savings Bot</h1>
+  </header>
+
+  <main>
+    <div id="chat-messages" class="chat-box"></div>
+    <form id="chat-form">
+      <input id="chat-input" type="text" placeholder="Type a message..." />
+      <button type="submit">Send</button>
+    </form>
+  </main>
+
+  <footer>
+    <img src="icon1.png" class="footer-icon"/>
+    <img src="icon2.png" class="footer-icon"/>
+    <img src="icon3.png" class="footer-icon"/>
+  </footer>
+
   <script src="chat.js"></script>
 </body>
 </html>
