@@ -1,40 +1,33 @@
-const chatForm = document.getElementById("chat-form");
-const chatInput = document.getElementById("chat-input");
-const chatMessages = document.getElementById("chat-messages");
+async function sendMessage() {
+  const input = document.getElementById("user-input");
+  const message = input.value;
+  if (!message.trim()) return;
 
-const uuid = localStorage.getItem("user_id") || crypto.randomUUID();
-localStorage.setItem("user_id", uuid);
+  const chatBox = document.getElementById("chat-box");
+  chatBox.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
+  input.value = "";
 
-chatForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const message = chatInput.value;
-  appendMessage("You", message);
-  chatInput.value = "";
-
-  appendMessage("BlueJay", "Thinking...");
-
-  const res = await fetch("https://pbj-server1.onrender.com/chat", {
+  const response = await fetch("https://pbj-server1.onrender.com/chat", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      message: message,
-      user_id: uuid
+      message,
+      user_id: localStorage.getItem("user_id") || "bluejay-stream"
     })
   });
 
-  const data = await res.json();
-  const thinking = document.querySelector(".message:last-child");
-  if (thinking.textContent === "BlueJay: Thinking...") thinking.remove();
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let output = "";
 
-  appendMessage("BlueJay", data.reply);
-});
+  chatBox.innerHTML += `<div id="bluejay-reply"><strong>BlueJay:</strong> <span></span></div>`;
+  const replySpan = document.querySelector("#bluejay-reply span");
 
-function appendMessage(sender, text) {
-  const msg = document.createElement("div");
-  msg.classList.add("message");
-  msg.innerText = `${sender}: ${text}`;
-  chatMessages.appendChild(msg);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value);
+    output += chunk;
+    replySpan.textContent = output;
+  }
 }
