@@ -1,48 +1,48 @@
-const backendUrl = "https://your-new-backend-url.onrender.com"; // Replace this with your new Render backend URL
+const chatBox = document.getElementById("chat-box");
+const form = document.getElementById("chat-form");
+const input = document.getElementById("user-input");
+const thinkingIcon = document.getElementById("thinking-icon");
 
-document.getElementById("user-input")
-  .addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-      sendMessage();
-    }
-});
+const userIdKey = "bluejay_user_id";
+if (!localStorage.getItem(userIdKey)) {
+  localStorage.setItem(userIdKey, crypto.randomUUID());
+}
+const userId = localStorage.getItem(userIdKey);
 
-async function sendMessage() {
-  const inputField = document.getElementById("user-input");
-  const userInput = inputField.value.trim();
-  if (userInput === "") return;
+const addMessage = (text, sender) => {
+  const msg = document.createElement("div");
+  msg.className = `message ${sender}`;
+  msg.textContent = text;
+  chatBox.appendChild(msg);
+  setTimeout(() => {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }, 100);
+};
 
-  showThinkingIcon(true);
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const userInput = input.value.trim();
+  if (!userInput) return;
 
-  appendMessage(userInput, "user");
-  inputField.value = "";
+  addMessage(userInput, "user");
+  input.value = "";
+  input.disabled = true;
+  thinkingIcon.style.display = "inline-block";
 
   try {
-    const response = await fetch(`${backendUrl}/chat`, {
+    const res = await fetch("https://pbj-server1.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userInput })
+      body: JSON.stringify({ message: userInput, user_id: userId })
     });
 
-    const data = await response.json();
-    appendMessage(data.response, "bot");
-  } catch (error) {
-    appendMessage("Error: There was a problem connecting to BlueJay.", "bot");
+    const data = await res.json();
+    addMessage(data.reply || "No response", "bot");
+  } catch {
+    addMessage("Network error.", "bot");
   } finally {
-    showThinkingIcon(false);
+    input.disabled = false;
+    input.focus();
+    thinkingIcon.style.display = "none";
   }
-}
-
-function appendMessage(message, sender) {
-  const chatbox = document.getElementById("chatbox");
-  const messageElement = document.createElement("div");
-  messageElement.className = sender;
-  messageElement.innerText = message;
-  chatbox.appendChild(messageElement);
-  chatbox.scrollTop = chatbox.scrollHeight;
-}
-
-function showThinkingIcon(show) {
-  const icon = document.getElementById("thinking-icon");
-  icon.style.display = show ? "inline-block" : "none";
-}
+});
