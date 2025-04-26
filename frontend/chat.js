@@ -4,47 +4,56 @@ const chatContainer = document.getElementById("chat-container");
 const userInput = document.getElementById("user-input");
 const sendButton = document.getElementById("send-button");
 
-function addMessage(message, sender) {
-  const messageElement = document.createElement("div");
-  messageElement.classList.add("message", sender);
-  messageElement.innerText = message;
-  chatContainer.appendChild(messageElement);
+// Scroll to bottom
+function scrollToBottom() {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
+// Create a chat bubble
+function createMessageBubble(message, sender) {
+  const bubble = document.createElement("div");
+  bubble.classList.add("message-bubble", sender);
+  bubble.innerText = message;
+  chatContainer.appendChild(bubble);
+  scrollToBottom();
+}
+
+// Send message to backend
 async function sendMessage() {
   const message = userInput.value.trim();
   if (!message) return;
 
-  addMessage(message, "user");
+  createMessageBubble(message, "user");
   userInput.value = "";
 
   try {
     const response = await fetch(backendUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ message }),
     });
 
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      throw new Error("Server error. Please try again later.");
     }
 
     const data = await response.json();
-    if (data && data.reply) {
-      addMessage(data.reply, "bot");
-    } else {
-      addMessage("Hmm... no response received.", "bot");
-    }
+    const reply = data.reply || "Sorry, something went wrong.";
+    createMessageBubble(reply, "assistant");
   } catch (error) {
-    console.error("Error sending message:", error);
-    addMessage("Oops! There was a problem. Please try again.", "bot");
+    console.error(error);
+    createMessageBubble("Error contacting server.", "assistant");
   }
 }
 
-sendButton.addEventListener("click", sendMessage);
-userInput.addEventListener("keypress", function (e) {
+// Enter key sends message
+userInput.addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
     sendMessage();
   }
 });
+
+// Button click sends message
+sendButton.addEventListener("click", sendMessage);
