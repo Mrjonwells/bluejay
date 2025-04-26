@@ -1,7 +1,9 @@
 import os
-import redis
-import uuid
 import time
+import redis
+import requests
+import re
+import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -12,68 +14,74 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Environment Variables
-openai_api_key = os.getenv("OPENAI_API_KEY")
-assistant_id = os.getenv("ASSISTANT_ID")
+# Redis Setup
 redis_url = os.getenv("REDIS_URL")
-flask_secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")
+r = redis.Redis.from_url(redis_url)
 
-# Redis setup
-r = redis.from_url(redis_url)
+# OpenAI Setup
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
 
-# OpenAI setup
-client = OpenAI(api_key=openai_api_key)
+assistant_id = os.getenv("ASSISTANT_ID")
 
-@app.route("/chat", methods=["POST"])
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "BlueJay server is alive"}), 200
+
+@app.route('/chat', methods=['POST'])
 def chat():
-    data = request.get_json()
-    user_message = data.get("message", "").strip()
-    user_id = data.get("user_id")
+    try:
+        user_input = request.json.get('message', '')
+        user_id = request.json.get('user_id', str(uuid.uuid4()))
 
-    if not user_message or not user_id:
-        return jsonify({"error": "Invalid request"}), 400
+        thread_key = f"thread:{user_id}"
 
-    # Manage user session
-    thread_key = f"thread:{user_id}"
-    thread_id = r.get(thread_key)
+        # Get existing thread ID
+        thread_id = r.get(thread_key)
 
-    if not thread_id:
-        thread = client.beta.threads.create()
-        thread_id = thread.id
-        r.set(thread_key, thread_id)
+        if thread_id:
+            thread_id = thread_id.decode('utf-8')
+        else:
+            # Create new thread
+            thread = client.beta.threads.create()
+            thread_id = thread.id
+            r.set(thread_key, thread_id)
 
-    # Send user message
-    client.beta.threads.messages.create(
-        thread_id=thread_id,
-        role="user",
-        content=user_message
-    )
+        # Post user message
+        client.beta.threads.messages.create(
+            thread_id=thread_id,
+            role="user",
+            content=user_input
+        )
 
-    # Run assistant
-    run = client.beta.threads.runs.create(
-        thread_id=thread_id,
-        assistant_id=assistant_id,
-        instructions="Continue conversation smoothly as a merchant savings expert."
-    )
+        # Run assistant
+        run = client.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=assistant_id
+        )
 
-    # Poll for completion
-    while True:
-        status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
-        if status.status in ["completed", "failed", "cancelled"]:
-            break
+        # Wait for completion
+        while True:
+            run_status = client.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run.id
+            )
+            if run_status.status == 'completed':
+                break
+            time.sleep(1)
 
-    if status.status == "completed":
+        # Get latest assistant message
         messages = client.beta.threads.messages.list(thread_id=thread_id)
-        for msg in messages.data:
-            if msg.role == "assistant":
-                return jsonify({"response": msg.content[0].text.value})
+        for message in messages.data:
+            if message.role == 'assistant':
+                return jsonify({'response': message.content[0].text.value})
 
-    return jsonify({"error": "Failed to get assistant response"}), 500
+        return jsonify({'response': "I'm here to help!"})
 
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"status": "BlueJay server is alive", "timestamp": time.time()})
+    except Exception as e:
+        print(f"Error in /chat: {e}")
+        return jsonify({'error': str(e)}), 500
 
-if __name__ == "__main__":
-    app.secret_key = flask_secret_key
-    app.run(host="0.0.0.0", port=10000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
