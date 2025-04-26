@@ -1,159 +1,132 @@
-/* Base Styles */
 body {
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  background-color: #eef6fc;
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #ffffff);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
+/* Logo at Top */
 header {
-  background-color: #0074cc;
-  color: #ffffff;
-  text-align: center;
-  padding: 20px 10px;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
 }
 
-header h1 {
-  font-size: 28px;
-  margin: 0;
-}
-
-header p {
-  font-size: 16px;
-  margin: 5px 0 0;
+header img {
+    width: 150px;
+    max-width: 80%;
+    height: auto;
 }
 
 /* Chat Container */
-#chatContainer {
-  background-color: #ffffff;
-  border-radius: 8px;
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  height: 400px;
-  overflow-y: auto;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+#chat-container {
+    flex: 1;
+    width: 90%;
+    max-width: 600px;
+    background: #ffffff;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-/* Message Styles */
+/* Chat Messages Area */
+#chat {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Chat Bubbles */
+.user-message, .bot-message {
+    padding: 10px 15px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
 .user-message {
-  background-color: #d9fdd3;
-  color: #333;
-  padding: 10px;
-  border-radius: 12px;
-  margin: 10px 0;
-  text-align: right;
+    align-self: flex-end;
+    background-color: #DCF8C6;
+    color: #000;
 }
 
 .bot-message {
-  background-color: #f1f0f0;
-  color: #333;
-  padding: 10px;
-  border-radius: 12px;
-  margin: 10px 0;
-  text-align: left;
-}
-
-.error-message {
-  background-color: #ffc9c9;
-  color: #b00020;
-  padding: 10px;
-  border-radius: 12px;
-  margin: 10px 0;
-  text-align: center;
+    align-self: flex-start;
+    background-color: #f1f0f0;
+    color: #000;
 }
 
 /* Input Area */
-#inputContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
+#input-container {
+    display: flex;
+    padding: 10px;
+    background: #f8f8f8;
+    border-top: 1px solid #ddd;
 }
 
-#userInput {
-  width: 70%;
-  padding: 12px;
-  font-size: 16px;
-  border: 2px solid #0074cc;
-  border-radius: 8px 0 0 8px;
-  outline: none;
+#user-input {
+    flex: 1;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    outline: none;
 }
 
-#sendButton {
-  width: 20%;
-  background-color: #0074cc;
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 0 8px 8px 0;
-  padding: 12px;
-  cursor: pointer;
-  font-size: 16px;
+button {
+    margin-left: 10px;
+    padding: 12px 20px;
+    background-color: #2196F3;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-#sendButton:hover {
-  background-color: #005fa3;
+button:hover {
+    background-color: #1976D2;
 }
 
-/* Images / Banners */
-.banner-image {
-  width: 100%;
-  max-width: 1200px;
-  margin: 20px auto;
-  display: block;
-  border-radius: 10px;
+/* Bottom Icons */
+#bottom-icons {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    gap: 20px;
 }
 
-/* Footer */
-footer {
-  text-align: center;
-  margin: 20px 0;
-  color: #666;
-  font-size: 14px;
+#bottom-icons img {
+    width: 60px;
+    height: 60px;
 }
 
-/* Responsive Layout */
-@media (max-width: 768px) {
-  header h1 {
-    font-size: 24px;
-  }
-
-  header p {
-    font-size: 14px;
-  }
-
-  #chatContainer {
-    width: 90%;
-    height: 300px;
-    padding: 15px;
-  }
-
-  #userInput {
-    width: 65%;
-    font-size: 14px;
-  }
-
-  #sendButton {
-    width: 30%;
-    font-size: 14px;
-  }
-
-  .banner-image {
-    width: 90%;
-  }
-}
-
-@media (min-width: 769px) {
-  #chatContainer {
-    width: 60%;
-  }
-
-  #userInput {
-    width: 75%;
-  }
-
-  #sendButton {
-    width: 20%;
-  }
+/* Mobile Optimization */
+@media (max-width: 600px) {
+    #chat-container {
+        width: 95%;
+        margin-top: 20px;
+    }
+    #user-input {
+        font-size: 14px;
+    }
+    button {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    #bottom-icons img {
+        width: 50px;
+        height: 50px;
+    }
 }
