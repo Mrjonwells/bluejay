@@ -2,29 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Talk with BlueJay — Your Merchant Savings Bot</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="chat-container">
-    <img src="bluejay.png" alt="BlueJay Logo" style="width: 120px; height: auto; margin-bottom: 10px;">
+  <header>
+    <img src="bluejay.png" alt="BlueJay Logo" class="logo">
+    <h1>Talk with BlueJay</h1>
+    <p class="tagline">Your Merchant Savings Bot</p>
+  </header>
 
-    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
-      <img src="Insights.png" alt="Insights" style="width: 80px; height: auto;">
-      <img src="Boost.png" alt="Boost" style="width: 80px; height: auto;">
-      <img src="Lower.png" alt="Lower" style="width: 80px; height: auto;">
+  <main>
+    <div id="chat-container">
+      <div id="chat-messages" class="chat-messages"></div>
+      <form id="chat-form" class="chat-form">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Type your message..." autocomplete="off" required>
+        <button type="submit" class="send-button">Send</button>
+      </form>
     </div>
+  </main>
 
-    <h1 style="font-size: 1.8rem; color: #004080; margin-bottom: 20px;">Talk with <span style="color: #0080ff;">BlueJay</span> — Your Merchant Savings Bot</h1>
-
-    <div id="chat-box"></div>
-
-    <div class="input-container">
-      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
-      <button onclick="sendMessage()">Send</button>
+  <section id="features">
+    <div class="feature">
+      <img src="Insights.png" alt="Insights">
+      <h2>Smarter Insights</h2>
+      <p>Unlock powerful savings opportunities with every conversation.</p>
     </div>
-  </div>
+    <div class="feature">
+      <img src="Boost.png" alt="Boost">
+      <h2>Boost Profits</h2>
+      <p>BlueJay helps lower your processing costs to maximize profits.</p>
+    </div>
+    <div class="feature">
+      <img src="Lower.png" alt="Lower">
+      <h2>Lower Overhead</h2>
+      <p>Seamless cost-reduction strategies tailored for your business.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 Fortified Capital LLC. All rights reserved.</p>
+  </footer>
 
   <script src="chat.js"></script>
 </body>
