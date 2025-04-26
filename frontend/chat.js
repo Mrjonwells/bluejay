@@ -1,48 +1,48 @@
-const chatBox = document.getElementById("chat-box");
-const form = document.getElementById("chat-form");
-const input = document.getElementById("user-input");
-const thinkingIcon = document.getElementById("thinking-icon");
+const backendUrl = "https://pbj-server1.onrender.com";  // Adjust if your backend URL changes
 
-const userIdKey = "bluejay_user_id";
-if (!localStorage.getItem(userIdKey)) {
-  localStorage.setItem(userIdKey, crypto.randomUUID());
-}
-const userId = localStorage.getItem(userIdKey);
+const chatMessages = document.getElementById("chat-messages");
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
 
-const addMessage = (text, sender) => {
-  const msg = document.createElement("div");
-  msg.className = `message ${sender}`;
-  msg.textContent = text;
-  chatBox.appendChild(msg);
-  setTimeout(() => {
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }, 100);
-};
+async function sendMessage(message) {
+  const userMessageDiv = document.createElement("div");
+  userMessageDiv.textContent = "You: " + message;
+  userMessageDiv.className = "user-message";
+  chatMessages.appendChild(userMessageDiv);
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const userInput = input.value.trim();
-  if (!userInput) return;
-
-  addMessage(userInput, "user");
-  input.value = "";
-  input.disabled = true;
-  thinkingIcon.style.display = "inline-block";
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  chatInput.value = "";
 
   try {
-    const res = await fetch("https://pbj-server1.onrender.com/chat", {
+    const response = await fetch(`${backendUrl}/chat`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userInput, user_id: userId })
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
     });
 
-    const data = await res.json();
-    addMessage(data.reply || "No response", "bot");
-  } catch {
-    addMessage("Network error.", "bot");
-  } finally {
-    input.disabled = false;
-    input.focus();
-    thinkingIcon.style.display = "none";
+    const data = await response.json();
+
+    const botMessageDiv = document.createElement("div");
+    botMessageDiv.textContent = "BlueJay: " + data.response;
+    botMessageDiv.className = "bot-message";
+    chatMessages.appendChild(botMessageDiv);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  } catch (error) {
+    const errorDiv = document.createElement("div");
+    errorDiv.textContent = "Error contacting BlueJay. Please try again.";
+    errorDiv.className = "bot-message";
+    chatMessages.appendChild(errorDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+}
+
+chatForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const message = chatInput.value.trim();
+  if (message) {
+    sendMessage(message);
   }
 });
