@@ -1,56 +1,68 @@
-const backendUrl = "https://pbj-server1.onrender.com"; // Your Render backend URL
+@app.route("/chat", methods=["POST"])
+def chat():
+    try:
+        data = request.get_json(force=True)
+        print(f"Incoming data: {data}")  # DEBUG PRINT
 
-const chatForm = document.getElementById("chat-form");
-const chatInput = document.getElementById("chat-input");
-const chatMessages = document.getElementById("chat-messages");
+        user_input = data.get("user_input")
+        if not user_input:
+            return jsonify({"error": "Missing user input"}), 400
 
-// Function to generate or get UUID
-function getOrCreateUUID() {
-  let userId = localStorage.getItem("user_id");
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem("user_id", userId);
-  }
-  return userId;
-}
+        # Check for UUID in localStorage or generate new one
+        user_id = request.headers.get("X-User-Id")
+        if not user_id:
+            user_id = str(uuid.uuid4())
 
-// Handle form submit
-chatForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const userInput = chatInput.value.trim();
-  if (userInput === "") return;
+        # Get or create thread_id
+        thread_key = f"thread:{user_id}"
+        thread_id = r.get(thread_key)
 
-  appendMessage("You", userInput);
-  chatInput.value = "";
+        if not thread_id:
+            thread = client.beta.threads.create()
+            thread_id = thread.id
+            r.set(thread_key, thread_id, ex=1800)
+        else:
+            thread_id = thread_id.decode()
 
-  const userId = getOrCreateUUID();
+        # Send message
+        client.beta.threads.messages.create(
+            thread_id=thread_id,
+            role="user",
+            content=user_input
+        )
 
-  try {
-    const response = await fetch(`${backendUrl}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": userId, // Send UUID header
-      },
-      body: JSON.stringify({ user_input: userInput }),
-    });
+        # Run assistant
+        run = client.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=assistant_id,
+        )
 
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
+        # Wait for run to complete
+        import time
+        status = None
+        for _ in range(20):
+            run_status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+            status = run_status.status
+            if status == "completed":
+                break
+            time.sleep(1)
 
-    const data = await response.json();
-    appendMessage("BlueJay", data.assistant);
-  } catch (error) {
-    console.error("Error:", error);
-    appendMessage("BlueJay", "Sorry, something went wrong. Please try again later.");
-  }
-});
+        if status != "completed":
+            return jsonify({"error": "Assistant timed out"}), 500
 
-// Append chat message to window
-function appendMessage(sender, message) {
-  const messageElement = document.createElement("div");
-  messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
-  chatMessages.appendChild(messageElement);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+        # Get latest assistant message
+        messages = client.beta.threads.messages.list(thread_id=thread_id)
+        assistant_message = None
+        for message in reversed(messages.data):
+            if message.role == "assistant":
+                assistant_message = message.content[0].text.value
+                break
+
+        if not assistant_message:
+            return jsonify({"error": "No assistant response"}), 500
+
+        return jsonify({"assistant": assistant_message})
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
