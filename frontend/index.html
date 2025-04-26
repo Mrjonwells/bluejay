@@ -8,9 +8,18 @@
 </head>
 <body>
   <div class="chat-container">
-    <img src="bluejay.png" alt="BlueJay Logo" style="width: 100px; height: auto; margin-bottom: 10px;">
-    <h1>Talk with BlueJay — Your Merchant Savings Bot</h1>
+    <img src="bluejay.png" alt="BlueJay Logo" style="width: 120px; height: auto; margin-bottom: 10px;">
+
+    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+      <img src="Insights.png" alt="Insights" style="width: 80px; height: auto;">
+      <img src="Boost.png" alt="Boost" style="width: 80px; height: auto;">
+      <img src="Lower.png" alt="Lower" style="width: 80px; height: auto;">
+    </div>
+
+    <h1 style="font-size: 1.8rem; color: #004080; margin-bottom: 20px;">Talk with <span style="color: #0080ff;">BlueJay</span> — Your Merchant Savings Bot</h1>
+
     <div id="chat-box"></div>
+
     <div class="input-container">
       <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
       <button onclick="sendMessage()">Send</button>
