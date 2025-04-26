@@ -25,6 +25,19 @@ header {
 h1 {
   font-size: 1.8rem;
   color: #003366;
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.2rem;
+  color: #003366;
+  margin: 10px 0 5px;
+}
+
+.motto {
+  font-size: 1rem;
+  color: #0074cc;
+  margin: 5px 0 0;
 }
 
 main {
@@ -87,16 +100,4 @@ footer {
   width: 80px;
   margin: 0 10px;
   vertical-align: middle;
-}
-
-.user-message {
-  text-align: right;
-  margin: 5px;
-  font-weight: bold;
-}
-
-.bot-message {
-  text-align: left;
-  margin: 5px;
-  color: #0074cc;
 }
