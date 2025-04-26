@@ -1,41 +1,50 @@
-// chat.js
+const backendUrl = "https://pbj-server1.onrender.com"; // NEW SERVER 1 URL
 
-document.addEventListener('DOMContentLoaded', () => {
-  const chatForm = document.getElementById('chat-form');
-  const chatInput = document.getElementById('chat-input');
-  const chatMessages = document.getElementById('chat-messages');
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
+const chatMessages = document.getElementById("chat-messages");
 
-  chatForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const message = chatInput.value.trim();
-    if (!message) return;
+// Generate or reuse user ID
+let userId = localStorage.getItem("user_id");
+if (!userId) {
+  userId = crypto.randomUUID();
+  localStorage.setItem("user_id", userId);
+}
 
-    appendMessage('user', message);
-    chatInput.value = '';
-    chatInput.disabled = true;
+chatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const userInput = chatInput.value.trim();
+  if (userInput === "") return;
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
-      });
+  appendMessage("You", userInput);
+  chatInput.value = "";
 
-      const data = await response.json();
-      appendMessage('bot', data.reply);
-    } catch (error) {
-      appendMessage('bot', 'Sorry, something went wrong.');
-    } finally {
-      chatInput.disabled = false;
-      chatInput.focus();
+  try {
+    const response = await fetch(`${backendUrl}/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": userId,
+      },
+      body: JSON.stringify({ user_input: userInput }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
     }
-  });
 
-  function appendMessage(sender, text) {
-    const messageElem = document.createElement('div');
-    messageElem.className = `message ${sender}`;
-    messageElem.innerText = text;
-    chatMessages.appendChild(messageElem);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    const data = await response.json();
+    appendMessage("BlueJay", data.assistant);
+  } catch (error) {
+    console.error("Error:", error);
+    appendMessage("BlueJay", "Sorry, something went wrong. Please try again later.");
   }
 });
+
+function appendMessage(sender, message) {
+  const messageElement = document.createElement("div");
+  messageElement.classList.add("message");
+  messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+  chatMessages.appendChild(messageElement);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
