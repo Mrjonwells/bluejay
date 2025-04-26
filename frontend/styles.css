@@ -55,6 +55,8 @@ body {
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Input area */
@@ -79,12 +81,56 @@ body {
   border: none;
   border-radius: 25px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
   font-size: 1rem;
 }
 
 #send-button:hover {
   background: #005dc1;
+  transform: scale(1.05);
+}
+
+/* Loading dots */
+.loading-dots::after {
+  content: '';
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  background: white;
+  animation: dots 1.2s infinite steps(3);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+@keyframes dots {
+  0% { box-shadow: 1em 0 0 white, 2em 0 0 white; }
+  33% { box-shadow: 1em 0 0 #ccc, 2em 0 0 white; }
+  66% { box-shadow: 1em 0 0 white, 2em 0 0 #ccc; }
+  100% { box-shadow: 1em 0 0 white, 2em 0 0 white; }
+}
+
+/* Chat bubbles */
+.message {
+  max-width: 80%;
+  margin-bottom: 10px;
+  padding: 10px 15px;
+  border-radius: 20px;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+.user {
+  align-self: flex-end;
+  background-color: #0070f3;
+  color: white;
+  text-align: right;
+}
+
+.bot {
+  align-self: flex-start;
+  background-color: #e0e0e0;
+  color: #333;
 }
 
 /* Features Section */
