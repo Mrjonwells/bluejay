@@ -1,7 +1,7 @@
 import os
 import redis
 import uuid
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -18,10 +18,10 @@ assistant_id = os.getenv("ASSISTANT_ID")
 redis_url = os.getenv("REDIS_URL")
 flask_secret_key = os.getenv("FLASK_SECRET_KEY")
 
-# Setup Redis
+# Redis setup
 r = redis.from_url(redis_url)
 
-# Setup OpenAI client
+# OpenAI client setup
 client = OpenAI(api_key=openai_api_key)
 
 # Flask secret
@@ -36,23 +36,23 @@ def chat():
         if not user_input:
             return jsonify({"error": "Missing user input"}), 400
 
-        # Check for UUID in localStorage or generate new one
+        # Use or generate user ID
         user_id = request.headers.get("X-User-Id")
         if not user_id:
             user_id = str(uuid.uuid4())
 
-        # Get or create thread_id
+        # Redis thread tracking
         thread_key = f"thread:{user_id}"
         thread_id = r.get(thread_key)
 
         if not thread_id:
             thread = client.beta.threads.create()
             thread_id = thread.id
-            r.set(thread_key, thread_id, ex=1800)  # 30 minutes expiry
+            r.set(thread_key, thread_id, ex=1800)  # 30 mins
         else:
             thread_id = thread_id.decode()
 
-        # Send message
+        # Add user message
         client.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
@@ -96,11 +96,7 @@ def chat():
 
 @app.route("/", methods=["GET"])
 def home():
-    return "BlueJay backend is running."
-
-@app.route("/health", methods=["GET"])
-def health_check():
-    return "OK", 200
+    return Response("BlueJay backend is running.", status=200, mimetype='text/plain')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
