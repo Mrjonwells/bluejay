@@ -2,51 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Talk with BlueJay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <div class="header">
+  <header class="header">
     <img src="bluejay.png" alt="BlueJay Logo" class="logo">
     <h1 class="main-title">Talk with BlueJay</h1>
     <p class="tagline">Your Merchant Savings Bot</p>
-  </div>
+  </header>
 
-  <div class="chat-section">
-    <div class="chat-container" id="chat-container"></div>
+  <main class="chat-section">
+    <div id="chat-container" class="chat-container">
+      <!-- Messages will appear here -->
+    </div>
+
     <div class="input-area">
-      <input type="text" id="user-input" placeholder="Type your message...">
+      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
       <button id="send-button">Send</button>
     </div>
-  </div>
+  </main>
 
-  <div class="features-section">
-    <h2 class="features-title">Why Choose BlueJay?</h2>
+  <section class="features-section">
+    <h2 class="features-title">How BlueJay Helps You</h2>
     <div class="features-container">
       <div class="feature-card">
         <img src="Insights.png" alt="Insights Icon" class="feature-icon">
-        <h3>Smart Insights</h3>
-        <p>Get real-time merchant savings tailored to your business needs.</p>
+        <h3>Real-Time Insights</h3>
+        <p>Instant answers to all your merchant questions, whenever you need them.</p>
       </div>
       <div class="feature-card">
         <img src="Boost.png" alt="Boost Icon" class="feature-icon">
         <h3>Boost Profits</h3>
-        <p>Discover ways to lower fees and maximize your cash flow instantly.</p>
+        <p>Discover smarter payment solutions that put more money in your pocket.</p>
       </div>
       <div class="feature-card">
-        <img src="Lower.png" alt="Lower Fees Icon" class="feature-icon">
-        <h3>Lower Fees</h3>
-        <p>Transparent programs with the lowest cost guaranteed.</p>
+        <img src="Lower.png" alt="Lower Icon" class="feature-icon">
+        <h3>Lower Costs</h3>
+        <p>Learn how to cut your processing fees without losing a single sale.</p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="footer">
-    &copy; 2025 BlueJay by Fortified Capital LLC. All rights reserved.
-  </div>
+  <footer class="footer">
+    © 2025 Fortified Capital LLC — All rights reserved.
+  </footer>
 
   <script src="chat.js"></script>
+
 </body>
-</html
+</html>
