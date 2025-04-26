@@ -1,36 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlueJay — Your Merchant Savings Bot</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueJay — Your Merchant Savings Bot</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <header class="header">
-        <img src="bluejay.png" alt="BlueJay Logo" class="logo">
-        <h1 class="title">Talk with BlueJay</h1>
-        <p class="subtitle">Your Merchant Savings Bot</p>
-    </header>
+  <header class="header">
+    <img src="bluejay.png" alt="BlueJay Logo" class="logo" />
+    <h1 class="main-title">Talk with BlueJay</h1>
+    <p class="tagline">Your Trusted Merchant Savings Bot</p>
+  </header>
 
-    <main class="main-content">
-        <div id="chat" class="chat-container"></div>
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
-            <button id="send-button">Send</button>
-        </div>
+  <section class="chat-section">
+    <div id="chat-container" class="chat-container"></div>
+    <div class="input-area">
+      <input
+        type="text"
+        id="user-input"
+        placeholder="Type your message..."
+        autocomplete="off"
+      />
+      <button id="send-button">Send</button>
+    </div>
+  </section>
 
-        <div class="banner-section">
-            <img src="Insights.png" alt="Insights" class="banner-image">
-            <img src="Boost.png" alt="Boost" class="banner-image">
-            <img src="Lower.png" alt="Lower Costs" class="banner-image">
-        </div>
-    </main>
+  <section class="features-section">
+    <h2 class="features-title">Save More. Grow Faster.</h2>
+    <div class="features-container">
+      <div class="feature-card">
+        <img src="Insights.png" alt="Insights Icon" class="feature-icon" />
+        <h3>Real Insights</h3>
+        <p>Understand your savings potential instantly.</p>
+      </div>
+      <div class="feature-card">
+        <img src="Boost.png" alt="Boost Icon" class="feature-icon" />
+        <h3>Boost Profits</h3>
+        <p>Keep more of your hard-earned revenue.</p>
+      </div>
+      <div class="feature-card">
+        <img src="Lower.png" alt="Lower Icon" class="feature-icon" />
+        <h3>Lower Costs</h3>
+        <p>BlueJay finds ways to reduce your processing fees.</p>
+      </div>
+    </div>
+  </section>
 
-    <footer class="footer">
-        <p>© 2025 Fortified Capital LLC — All rights reserved.</p>
-    </footer>
+  <footer class="footer">
+    <p>© 2025 Fortified Capital LLC · Powered by BlueJay</p>
+  </footer>
 
-    <script src="chat.js"></script>
+  <script src="chat.js"></script>
 </body>
 </html>
