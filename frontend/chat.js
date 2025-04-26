@@ -1,33 +1,22 @@
-const backendUrl = "https://bluejay-1.onrender.com/chat";
+const backendUrl = "https://bluejay-production.up.railway.app";
 
-const chatContainer = document.getElementById("chat-container");
-const userInput = document.getElementById("user-input");
-const sendButton = document.getElementById("send-button");
+document.getElementById("send-button").addEventListener("click", sendMessage);
+document.getElementById("user-input").addEventListener("keypress", function (e) {
+  if (e.key === "Enter") {
+    sendMessage();
+  }
+});
 
-// Scroll to bottom
-function scrollToBottom() {
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-// Create a chat bubble
-function createMessageBubble(message, sender) {
-  const bubble = document.createElement("div");
-  bubble.classList.add("message-bubble", sender);
-  bubble.innerText = message;
-  chatContainer.appendChild(bubble);
-  scrollToBottom();
-}
-
-// Send message to backend
 async function sendMessage() {
-  const message = userInput.value.trim();
+  const inputField = document.getElementById("user-input");
+  const message = inputField.value.trim();
   if (!message) return;
 
-  createMessageBubble(message, "user");
-  userInput.value = "";
+  addMessage(message, "user");
+  inputField.value = "";
 
   try {
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -36,24 +25,22 @@ async function sendMessage() {
     });
 
     if (!response.ok) {
-      throw new Error("Server error. Please try again later.");
+      throw new Error("Network response was not ok");
     }
 
     const data = await response.json();
-    const reply = data.reply || "Sorry, something went wrong.";
-    createMessageBubble(reply, "assistant");
+    addMessage(data.response, "bot");
   } catch (error) {
-    console.error(error);
-    createMessageBubble("Error contacting server.", "assistant");
+    console.error("Error:", error);
+    addMessage("Error contacting server.", "bot");
   }
 }
 
-// Enter key sends message
-userInput.addEventListener("keydown", function (e) {
-  if (e.key === "Enter") {
-    sendMessage();
-  }
-});
-
-// Button click sends message
-sendButton.addEventListener("click", sendMessage);
+function addMessage(text, sender) {
+  const chatContainer = document.getElementById("chat-container");
+  const messageDiv = document.createElement("div");
+  messageDiv.classList.add("message", sender);
+  messageDiv.textContent = text;
+  chatContainer.appendChild(messageDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
