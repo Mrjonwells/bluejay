@@ -1,102 +1,89 @@
 import os
+import time
 import redis
+import requests
+import re
 import uuid
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from openai import OpenAI
 from dotenv import load_dotenv
-import time
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# Environment variables
+# Redis setup
+redis_url = os.getenv("REDIS_URL")
+r = redis.Redis.from_url(redis_url)
+
+# Flask secret key
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")
+
+# OpenAI setup
 openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
-redis_url = os.getenv("REDIS_URL")
-flask_secret_key = os.getenv("FLASK_SECRET_KEY")
-
-# Redis setup
-r = redis.from_url(redis_url)
-
-# OpenAI client setup
 client = OpenAI(api_key=openai_api_key)
 
-# Flask secret
-app.secret_key = flask_secret_key or "supersecret"
+# Health check route for Render
+@app.route("/health")
+def health():
+    return "OK", 200
 
+# Static frontend (optional if needed)
+@app.route("/<path:path>")
+def static_file(path):
+    return send_from_directory('frontend', path)
+
+# Main chat route
 @app.route("/chat", methods=["POST"])
 def chat():
-    try:
-        data = request.get_json(force=True)
-        user_input = data.get("user_input")
+    data = request.get_json()
 
-        if not user_input:
-            return jsonify({"error": "Missing user input"}), 400
+    if not data or "message" not in data or "user_id" not in data:
+        return jsonify({"error": "Missing message or user_id"}), 400
 
-        # Use or generate user ID
-        user_id = request.headers.get("X-User-Id")
-        if not user_id:
-            user_id = str(uuid.uuid4())
+    user_message = data["message"]
+    user_id = data["user_id"]
 
-        # Redis thread tracking
-        thread_key = f"thread:{user_id}"
-        thread_id = r.get(thread_key)
+    # Get or create a thread ID for this user
+    thread_key = f"thread:{user_id}"
+    thread_id = r.get(thread_key)
 
-        if not thread_id:
-            thread = client.beta.threads.create()
-            thread_id = thread.id
-            r.set(thread_key, thread_id, ex=1800)  # 30 mins
-        else:
-            thread_id = thread_id.decode()
+    if not thread_id:
+        thread = client.beta.threads.create()
+        thread_id = thread.id
+        r.set(thread_key, thread_id)
 
-        # Add user message
-        client.beta.threads.messages.create(
+    # Add the message to the thread
+    client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=user_message
+    )
+
+    # Run the Assistant
+    run = client.beta.threads.runs.create(
+        thread_id=thread_id,
+        assistant_id=assistant_id
+    )
+
+    # Poll until completion
+    while run.status not in ["completed", "failed"]:
+        time.sleep(1)
+        run = client.beta.threads.runs.retrieve(
             thread_id=thread_id,
-            role="user",
-            content=user_input
+            run_id=run.id
         )
 
-        # Run assistant
-        run = client.beta.threads.runs.create(
-            thread_id=thread_id,
-            assistant_id=assistant_id,
-        )
-
-        # Wait for run to complete
-        status = None
-        for _ in range(20):
-            run_status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
-            status = run_status.status
-            if status == "completed":
-                break
-            time.sleep(1)
-
-        if status != "completed":
-            return jsonify({"error": "Assistant timed out"}), 500
-
-        # Get latest assistant message
+    if run.status == "completed":
         messages = client.beta.threads.messages.list(thread_id=thread_id)
-        assistant_message = None
-        for message in reversed(messages.data):
-            if message.role == "assistant":
-                assistant_message = message.content[0].text.value
-                break
-
-        if not assistant_message:
-            return jsonify({"error": "No assistant response"}), 500
-
-        return jsonify({"assistant": assistant_message})
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/", methods=["GET"])
-def home():
-    return Response("BlueJay backend is running.", status=200, mimetype='text/plain')
+        last_message = messages.data[0]
+        response = last_message.content[0].text.value
+        return jsonify({"response": response})
+    else:
+        return jsonify({"error": "Assistant failed to generate a response."}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
