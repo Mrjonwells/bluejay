@@ -1,59 +1,46 @@
-const backendUrl = "https://bluejay-1.onrender.com";
+const backendUrl = "https://bluejay-1.onrender.com"; // Updated backend address
 
-// Generate or retrieve persistent user_id
-let user_id = localStorage.getItem('user_id');
-if (!user_id) {
-  user_id = self.crypto.randomUUID();
-  localStorage.setItem('user_id', user_id);
+document.getElementById('sendButton').addEventListener('click', sendMessage);
+document.getElementById('userInput').addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') {
+    sendMessage();
+  }
+});
+
+function addMessage(message, className) {
+  const chatContainer = document.getElementById('chatContainer');
+  const messageElement = document.createElement('div');
+  messageElement.className = className;
+  messageElement.textContent = message;
+  chatContainer.appendChild(messageElement);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-const chatForm = document.getElementById("chat-form");
-const chatInput = document.getElementById("chat-input");
-const chatMessages = document.getElementById("chat-messages");
+async function sendMessage() {
+  const userInput = document.getElementById('userInput');
+  const message = userInput.value.trim();
+  if (message === '') return;
 
-chatForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const userInput = chatInput.value.trim();
-  if (userInput === "") return;
-
-  // Show user message immediately
-  const userMessage = document.createElement("div");
-  userMessage.textContent = userInput;
-  userMessage.className = "fade-in";
-  chatMessages.appendChild(userMessage);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-
-  chatInput.value = "";
+  addMessage(message, 'user-message');
+  userInput.value = '';
 
   try {
     const response = await fetch(`${backendUrl}/chat`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": user_id
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user_input: userInput })
+      body: JSON.stringify({ message: message }),
     });
 
-    const data = await response.json();
-    if (data.assistant) {
-      const assistantMessage = document.createElement("div");
-      assistantMessage.textContent = data.assistant;
-      assistantMessage.className = "fade-in";
-      chatMessages.appendChild(assistantMessage);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    } else {
-      const errorMessage = document.createElement("div");
-      errorMessage.textContent = "Error: No response from server.";
-      errorMessage.className = "fade-in";
-      chatMessages.appendChild(errorMessage);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (!response.ok) {
+      throw new Error('Server error');
     }
+
+    const data = await response.json();
+    addMessage(data.response, 'bot-message');
   } catch (error) {
-    const errorMessage = document.createElement("div");
-    errorMessage.textContent = "Error connecting to server.";
-    errorMessage.className = "fade-in";
-    chatMessages.appendChild(errorMessage);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    console.error('Error sending message:', error);
+    addMessage('Error connecting to server.', 'error-message');
   }
-});
+}
