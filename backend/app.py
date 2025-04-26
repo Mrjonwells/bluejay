@@ -1,10 +1,9 @@
 import os
-import uuid
 import redis
-import openai
-import time
+import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,70 +11,68 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# Environment Variables
+openai_api_key = os.getenv("OPENAI_API_KEY")
+assistant_id = os.getenv("ASSISTANT_ID")
+redis_url = os.getenv("REDIS_URL")
+flask_secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")
+
 # Redis setup
-redis_url = os.getenv('REDIS_URL')
-r = redis.Redis.from_url(redis_url)
+r = redis.from_url(redis_url)
 
 # OpenAI setup
-openai.api_key = os.getenv("OPENAI_API_KEY")
-assistant_id = os.getenv("ASSISTANT_ID")
+client = OpenAI(api_key=openai_api_key)
 
-@app.route('/chat', methods=['POST'])
+@app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_message = data.get('message')
-    user_id = data.get('user_id')
+    user_message = data.get("message", "").strip()
+    user_id = data.get("user_id")
 
     if not user_message or not user_id:
-        return jsonify({'error': 'Missing message or user_id'}), 400
+        return jsonify({"error": "Invalid request"}), 400
 
+    # Manage user session
     thread_key = f"thread:{user_id}"
-
-    # Get or create a thread ID
     thread_id = r.get(thread_key)
-    if thread_id is None:
-        thread = openai.beta.threads.create()
+
+    if not thread_id:
+        thread = client.beta.threads.create()
         thread_id = thread.id
         r.set(thread_key, thread_id)
-    else:
-        thread_id = thread_id.decode()
 
-    # Send the user message
-    openai.beta.threads.messages.create(
+    # Send user message
+    client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
         content=user_message
     )
 
-    # Run the assistant
-    run = openai.beta.threads.runs.create(
+    # Run assistant
+    run = client.beta.threads.runs.create(
         thread_id=thread_id,
-        assistant_id=assistant_id
+        assistant_id=assistant_id,
+        instructions="Continue conversation smoothly as a merchant savings expert."
     )
 
-    # Polling until run completes
+    # Poll for completion
     while True:
-        run_status = openai.beta.threads.runs.retrieve(
-            thread_id=thread_id,
-            run_id=run.id
-        )
-        if run_status.status == 'completed':
+        status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+        if status.status in ["completed", "failed", "cancelled"]:
             break
-        elif run_status.status == 'failed':
-            return jsonify({'error': 'Assistant run failed'}), 500
-        time.sleep(1)
 
-    # Get the assistant's reply
-    messages = openai.beta.threads.messages.list(thread_id=thread_id)
-    last_message = messages.data[0]
+    if status.status == "completed":
+        messages = client.beta.threads.messages.list(thread_id=thread_id)
+        for msg in messages.data:
+            if msg.role == "assistant":
+                return jsonify({"response": msg.content[0].text.value})
 
-    assistant_reply = last_message.content[0].text.value
+    return jsonify({"error": "Failed to get assistant response"}), 500
 
-    return jsonify({'assistant': assistant_reply})
-
-@app.route('/', methods=['GET'])
+@app.route("/", methods=["GET"])
 def home():
-    return "BlueJay backend is live."
+    return "BlueJay server is running!"
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+if __name__ == "__main__":
+    app.secret_key = flask_secret_key
+    app.run(host="0.0.0.0", port=10000)
