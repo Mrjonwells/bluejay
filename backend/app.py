@@ -1,6 +1,7 @@
 import os
 import redis
 import uuid
+import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -71,7 +72,7 @@ def chat():
 
 @app.route("/", methods=["GET"])
 def home():
-    return "BlueJay server is running!"
+    return jsonify({"status": "BlueJay server is alive", "timestamp": time.time()})
 
 if __name__ == "__main__":
     app.secret_key = flask_secret_key
