@@ -1,16 +1,15 @@
-const backendUrl = "https://pbj-server1.onrender.com";  // Adjust if your backend URL changes
+const backendUrl = "https://pbj-server1.onrender.com";
 
-const chatMessages = document.getElementById("chat-messages");
 const chatForm = document.getElementById("chat-form");
 const chatInput = document.getElementById("chat-input");
+const chatMessages = document.getElementById("chat-messages");
 
-async function sendMessage(message) {
-  const userMessageDiv = document.createElement("div");
-  userMessageDiv.textContent = "You: " + message;
-  userMessageDiv.className = "user-message";
-  chatMessages.appendChild(userMessageDiv);
+chatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const userInput = chatInput.value.trim();
+  if (userInput === "") return;
 
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  appendMessage("You", userInput);
   chatInput.value = "";
 
   try {
@@ -19,30 +18,24 @@ async function sendMessage(message) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ user_input: userInput }),
     });
 
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
     const data = await response.json();
-
-    const botMessageDiv = document.createElement("div");
-    botMessageDiv.textContent = "BlueJay: " + data.response;
-    botMessageDiv.className = "bot-message";
-    chatMessages.appendChild(botMessageDiv);
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    appendMessage("BlueJay", data.assistant);
   } catch (error) {
-    const errorDiv = document.createElement("div");
-    errorDiv.textContent = "Error contacting BlueJay. Please try again.";
-    errorDiv.className = "bot-message";
-    chatMessages.appendChild(errorDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-}
-
-chatForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const message = chatInput.value.trim();
-  if (message) {
-    sendMessage(message);
+    console.error("Error:", error);
+    appendMessage("BlueJay", "Sorry, something went wrong. Please try again later.");
   }
 });
+
+function appendMessage(sender, message) {
+  const messageElement = document.createElement("div");
+  messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+  chatMessages.appendChild(messageElement);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
