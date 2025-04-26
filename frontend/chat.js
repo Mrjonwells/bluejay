@@ -1,46 +1,46 @@
-const backendUrl = "https://bluejay-1.onrender.com"; // Updated backend address
+const backendUrl = "https://bluejay-1.onrender.com"; // Updated to new server
 
-document.getElementById('sendButton').addEventListener('click', sendMessage);
-document.getElementById('userInput').addEventListener('keypress', function (e) {
-  if (e.key === 'Enter') {
-    sendMessage();
-  }
-});
+document.addEventListener("DOMContentLoaded", function() {
+    const chatContainer = document.getElementById("chat");
+    const userInput = document.getElementById("user-input");
+    const sendButton = document.getElementById("send-button");
 
-function addMessage(message, className) {
-  const chatContainer = document.getElementById('chatContainer');
-  const messageElement = document.createElement('div');
-  messageElement.className = className;
-  messageElement.textContent = message;
-  chatContainer.appendChild(messageElement);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-async function sendMessage() {
-  const userInput = document.getElementById('userInput');
-  const message = userInput.value.trim();
-  if (message === '') return;
-
-  addMessage(message, 'user-message');
-  userInput.value = '';
-
-  try {
-    const response = await fetch(`${backendUrl}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message: message }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Server error');
+    function appendMessage(text, className) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = className;
+        messageDiv.textContent = text;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    const data = await response.json();
-    addMessage(data.response, 'bot-message');
-  } catch (error) {
-    console.error('Error sending message:', error);
-    addMessage('Error connecting to server.', 'error-message');
-  }
-}
+    sendButton.addEventListener("click", async function() {
+        const message = userInput.value.trim();
+        if (message === "") return;
+
+        appendMessage(message, "user-message");
+        userInput.value = "";
+
+        try {
+            const response = await fetch(`${backendUrl}/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                appendMessage(data.response, "bot-message");
+            } else {
+                appendMessage("Error: Failed to get a response.", "bot-message");
+            }
+        } catch (error) {
+            appendMessage("Error: Server unreachable.", "bot-message");
+        }
+    });
+
+    userInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            sendButton.click();
+        }
+    });
+});
