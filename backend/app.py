@@ -1,11 +1,11 @@
 import os
 import redis
 import uuid
-import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -31,18 +31,17 @@ app.secret_key = flask_secret_key or "supersecret"
 def chat():
     try:
         data = request.get_json(force=True)
-        print("DEBUG received data:", data)  # <=== NEW debugging line
         user_input = data.get("user_input")
 
         if not user_input:
             return jsonify({"error": "Missing user input"}), 400
 
-        # Check for UUID in headers (frontend will eventually support sending it)
+        # Check for UUID in localStorage or generate new one
         user_id = request.headers.get("X-User-Id")
         if not user_id:
             user_id = str(uuid.uuid4())
 
-        # Get or create thread ID
+        # Get or create thread_id
         thread_key = f"thread:{user_id}"
         thread_id = r.get(thread_key)
 
@@ -53,7 +52,7 @@ def chat():
         else:
             thread_id = thread_id.decode()
 
-        # Send user input
+        # Send message
         client.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
@@ -66,7 +65,7 @@ def chat():
             assistant_id=assistant_id,
         )
 
-        # Poll until the assistant run completes
+        # Wait for run to complete
         status = None
         for _ in range(20):
             run_status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
@@ -78,7 +77,7 @@ def chat():
         if status != "completed":
             return jsonify({"error": "Assistant timed out"}), 500
 
-        # Get the latest assistant response
+        # Get latest assistant message
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         assistant_message = None
         for message in reversed(messages.data):
@@ -98,6 +97,10 @@ def chat():
 @app.route("/", methods=["GET"])
 def home():
     return "BlueJay backend is running."
+
+@app.route("/health", methods=["GET"])
+def health_check():
+    return "OK", 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
