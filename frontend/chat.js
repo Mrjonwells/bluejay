@@ -1,4 +1,4 @@
-const backendUrl = "https://pbj-server1.onrender.com";
+const backendUrl = "https://bluejay-1.onrender.com";
 
 // Generate or retrieve persistent user_id
 let user_id = localStorage.getItem('user_id');
