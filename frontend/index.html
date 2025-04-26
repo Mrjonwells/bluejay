@@ -1,35 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Talk with BlueJay — Your Merchant Savings Bot</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <img src="background.png" alt="BlueJay Logo" style="height: 80px;">
-        <h1>Talk with BlueJay — Your Merchant Savings Bot</h1>
-    </header>
+  <div class="chat-container">
+    <img src="bluejay.png" alt="BlueJay Logo" style="width: 100px; height: auto; margin-bottom: 10px;">
+    <h1>Talk with BlueJay — Your Merchant Savings Bot</h1>
+    <div id="chat-box"></div>
+    <div class="input-container">
+      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
 
-    <main>
-        <div id="chat-container">
-            <div id="chat-messages"></div>
-            <form id="chat-form">
-                <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off" required>
-                <button type="submit">Send</button>
-            </form>
-        </div>
-    </main>
-
-    <footer>
-        <div id="footer-icons">
-            <img src="Insights.png" alt="Insights Icon" style="height: 50px;">
-            <img src="Boost.png" alt="Boost Icon" style="height: 50px;">
-            <img src="Lower.png" alt="Lower Icon" style="height: 50px;">
-        </div>
-    </footer>
-
-    <script src="chat.js"></script>
+  <script src="chat.js"></script>
 </body>
 </html>
