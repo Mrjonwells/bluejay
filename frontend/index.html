@@ -2,47 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlueJay — Your Merchant Savings Bot</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
   <header>
-    <img src="bluejay.png" alt="BlueJay Logo" class="logo">
-    <h1>Talk with BlueJay</h1>
-    <p class="tagline">Your Merchant Savings Bot</p>
+    <h1>BlueJay.</h1>
+    <p>Talk with BlueJay — Your Merchant Savings Bot</p>
   </header>
 
-  <main>
-    <div id="chat-container">
-      <div id="chat-messages" class="chat-messages"></div>
-      <form id="chat-form" class="chat-form">
-        <input type="text" id="chat-input" class="chat-input" placeholder="Type your message..." autocomplete="off" required>
-        <button type="submit" class="send-button">Send</button>
-      </form>
-    </div>
-  </main>
+  <img src="Boost.png" alt="Business Growth" class="banner-image">
 
-  <section id="features">
-    <div class="feature">
-      <img src="Insights.png" alt="Insights">
-      <h2>Smarter Insights</h2>
-      <p>Unlock powerful savings opportunities with every conversation.</p>
-    </div>
-    <div class="feature">
-      <img src="Boost.png" alt="Boost">
-      <h2>Boost Profits</h2>
-      <p>BlueJay helps lower your processing costs to maximize profits.</p>
-    </div>
-    <div class="feature">
-      <img src="Lower.png" alt="Lower">
-      <h2>Lower Overhead</h2>
-      <p>Seamless cost-reduction strategies tailored for your business.</p>
+  <section id="chatSection">
+    <div id="chatContainer"></div>
+    <div id="inputContainer">
+      <input type="text" id="userInput" placeholder="Type your message...">
+      <button id="sendButton">Send</button>
     </div>
   </section>
 
+  <img src="Insights.png" alt="Business Insights" class="banner-image">
+  <img src="Lower.png" alt="Lower Costs" class="banner-image">
+
   <footer>
-    <p>© 2025 Fortified Capital LLC. All rights reserved.</p>
+    &copy; 2025 BlueJay — Powered by Fortified Capital LLC
   </footer>
 
   <script src="chat.js"></script>
