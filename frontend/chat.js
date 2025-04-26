@@ -1,22 +1,28 @@
-const backendUrl = "https://pbj-server1.onrender.com"; // NEW SERVER 1 URL
+const backendUrl = "https://pbj-server1.onrender.com";
+
+// Generate or retrieve persistent user_id
+let user_id = localStorage.getItem('user_id');
+if (!user_id) {
+  user_id = self.crypto.randomUUID();
+  localStorage.setItem('user_id', user_id);
+}
 
 const chatForm = document.getElementById("chat-form");
 const chatInput = document.getElementById("chat-input");
 const chatMessages = document.getElementById("chat-messages");
-
-// Generate or reuse user ID
-let userId = localStorage.getItem("user_id");
-if (!userId) {
-  userId = crypto.randomUUID();
-  localStorage.setItem("user_id", userId);
-}
 
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const userInput = chatInput.value.trim();
   if (userInput === "") return;
 
-  appendMessage("You", userInput);
+  // Show user message immediately
+  const userMessage = document.createElement("div");
+  userMessage.textContent = userInput;
+  userMessage.className = "fade-in";
+  chatMessages.appendChild(userMessage);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
   chatInput.value = "";
 
   try {
@@ -24,27 +30,30 @@ chatForm.addEventListener("submit", async (e) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-User-Id": userId,
+        "X-User-Id": user_id
       },
-      body: JSON.stringify({ user_input: userInput }),
+      body: JSON.stringify({ user_input: userInput })
     });
 
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-
     const data = await response.json();
-    appendMessage("BlueJay", data.assistant);
+    if (data.assistant) {
+      const assistantMessage = document.createElement("div");
+      assistantMessage.textContent = data.assistant;
+      assistantMessage.className = "fade-in";
+      chatMessages.appendChild(assistantMessage);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    } else {
+      const errorMessage = document.createElement("div");
+      errorMessage.textContent = "Error: No response from server.";
+      errorMessage.className = "fade-in";
+      chatMessages.appendChild(errorMessage);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
   } catch (error) {
-    console.error("Error:", error);
-    appendMessage("BlueJay", "Sorry, something went wrong. Please try again later.");
+    const errorMessage = document.createElement("div");
+    errorMessage.textContent = "Error connecting to server.";
+    errorMessage.className = "fade-in";
+    chatMessages.appendChild(errorMessage);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 });
-
-function appendMessage(sender, message) {
-  const messageElement = document.createElement("div");
-  messageElement.classList.add("message");
-  messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
-  chatMessages.appendChild(messageElement);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
