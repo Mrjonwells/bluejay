@@ -1,6 +1,7 @@
 import os
 import redis
 import uuid
+import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -9,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["https://rococo-gecko-93903b.netlify.app"])  # <-- CORS fixed here
+CORS(app)
 
 # Environment variables
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -25,3 +26,78 @@ client = OpenAI(api_key=openai_api_key)
 
 # Flask secret
 app.secret_key = flask_secret_key or "supersecret"
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    try:
+        data = request.get_json(force=True)
+        print("DEBUG received data:", data)  # <=== NEW debugging line
+        user_input = data.get("user_input")
+
+        if not user_input:
+            return jsonify({"error": "Missing user input"}), 400
+
+        # Check for UUID in headers (frontend will eventually support sending it)
+        user_id = request.headers.get("X-User-Id")
+        if not user_id:
+            user_id = str(uuid.uuid4())
+
+        # Get or create thread ID
+        thread_key = f"thread:{user_id}"
+        thread_id = r.get(thread_key)
+
+        if not thread_id:
+            thread = client.beta.threads.create()
+            thread_id = thread.id
+            r.set(thread_key, thread_id, ex=1800)  # 30 minutes expiry
+        else:
+            thread_id = thread_id.decode()
+
+        # Send user input
+        client.beta.threads.messages.create(
+            thread_id=thread_id,
+            role="user",
+            content=user_input
+        )
+
+        # Run assistant
+        run = client.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=assistant_id,
+        )
+
+        # Poll until the assistant run completes
+        status = None
+        for _ in range(20):
+            run_status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+            status = run_status.status
+            if status == "completed":
+                break
+            time.sleep(1)
+
+        if status != "completed":
+            return jsonify({"error": "Assistant timed out"}), 500
+
+        # Get the latest assistant response
+        messages = client.beta.threads.messages.list(thread_id=thread_id)
+        assistant_message = None
+        for message in reversed(messages.data):
+            if message.role == "assistant":
+                assistant_message = message.content[0].text.value
+                break
+
+        if not assistant_message:
+            return jsonify({"error": "No assistant response"}), 500
+
+        return jsonify({"assistant": assistant_message})
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/", methods=["GET"])
+def home():
+    return "BlueJay backend is running."
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
