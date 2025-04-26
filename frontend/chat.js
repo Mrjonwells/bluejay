@@ -1,41 +1,41 @@
-const chatBox = document.getElementById('chat-box');
-const userInput = document.getElementById('user-input');
+// chat.js
 
-// Backend server URL
-const SERVER_URL = 'https://pbj-server1.onrender.com/chat';
+document.addEventListener('DOMContentLoaded', () => {
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+  const chatMessages = document.getElementById('chat-messages');
 
-function appendMessage(content, sender) {
-  const message = document.createElement('div');
-  message.className = sender === 'user' ? 'user-message' : 'bot-message';
-  message.innerText = content;
-  chatBox.appendChild(message);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const message = chatInput.value.trim();
+    if (!message) return;
 
-async function sendMessage() {
-  const input = userInput.value.trim();
-  if (!input) return;
+    appendMessage('user', message);
+    chatInput.value = '';
+    chatInput.disabled = true;
 
-  appendMessage(input, 'user');
-  userInput.value = '';
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
 
-  try {
-    const response = await fetch(SERVER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ message: input })
-    });
-
-    if (!response.ok) {
-      appendMessage('Error: Unable to connect to BlueJay.', 'bot');
-      return;
+      const data = await response.json();
+      appendMessage('bot', data.reply);
+    } catch (error) {
+      appendMessage('bot', 'Sorry, something went wrong.');
+    } finally {
+      chatInput.disabled = false;
+      chatInput.focus();
     }
+  });
 
-    const data = await response.json();
-    appendMessage(data.reply || 'No response from BlueJay.', 'bot');
-  } catch (error) {
-    appendMessage('Error: Connection failed.', 'bot');
+  function appendMessage(sender, text) {
+    const messageElem = document.createElement('div');
+    messageElem.className = `message ${sender}`;
+    messageElem.innerText = text;
+    chatMessages.appendChild(messageElem);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   }
-}
+});
