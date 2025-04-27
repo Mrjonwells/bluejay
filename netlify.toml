@@ -1,18 +1,15 @@
-# Netlify configuration file
-
 [build]
-  base = "/"  # Root directory where the netlify.toml file is located
-  command = "npm run build"  # Adjust this if you have another build command (e.g., for React)
-  publish = "frontend"  # Points to the frontend folder where build artifacts should be published
+  base = "frontend"
+  command = "npm run build"
+  publish = "frontend/build"
+  functions = "frontend/netlify/functions"  # If your functions are in the correct directory
 
-[[redirects]]
+[build.environment]
+  VITE_BACKEND_URL = "your-backend-url"
+  NODE_VERSION = "16"
+
+[redirects]
   from = "/index.html"
   to = "/"
   status = 200
   force = true
-
-[[plugins]]
-  package = "@netlify/plugin-functions-installation"  # Ensure this is installed if needed
-
-[functions]
-  directory = "frontend/netlify/functions"  # Function directory, if you're using serverless functions
