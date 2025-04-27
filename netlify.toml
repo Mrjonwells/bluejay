@@ -1,10 +1,9 @@
-[build]
-  base = "frontend"
-  command = "echo 'No build command required'"  # No build step needed
-  publish = "/opt/build/repo/frontend"  # Path to frontend directory
+# Netlify configuration file
 
-[functions]
-  directory = "backend/netlify/functions"  # Path to backend functions (if applicable)
+[build]
+  base = "/"  # Root directory where the netlify.toml file is located
+  command = "npm run build"  # Adjust this if you have another build command (e.g., for React)
+  publish = "frontend"  # Points to the frontend folder where build artifacts should be published
 
 [[redirects]]
   from = "/index.html"
@@ -12,5 +11,8 @@
   status = 200
   force = true
 
-[env]
-  VITE_BACKEND_URL = "your-backend-url"  # If you're using any environment variables
+[[plugins]]
+  package = "@netlify/plugin-functions-installation"  # Ensure this is installed if needed
+
+[functions]
+  directory = "frontend/netlify/functions"  # Function directory, if you're using serverless functions
