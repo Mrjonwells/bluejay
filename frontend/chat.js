@@ -1,4 +1,4 @@
-const backendUrl = "https://bluejay-production.up.railway.app/chat";
+const backendUrl = "https://bluejay-production.up.railway.app";
 
 document.getElementById("send-button").addEventListener("click", sendMessage);
 document.getElementById("user-input").addEventListener("keypress", function (e) {
