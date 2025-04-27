@@ -1,8 +1,4 @@
-import sys
-sys.path.append('.')
-
 import os
-import time
 import redis
 import requests
 import re
@@ -22,60 +18,61 @@ redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
 # OpenAI setup
-openai_api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 assistant_id = os.getenv("ASSISTANT_ID")
-client = OpenAI(api_key=openai_api_key)
+
+def get_thread_id(user_id):
+    thread_key = f"thread:{user_id}"
+    thread_id = r.get(thread_key)
+    if thread_id:
+        return thread_id.decode("utf-8")
+    else:
+        return None
+
+def save_thread_id(user_id, thread_id):
+    thread_key = f"thread:{user_id}"
+    r.set(thread_key, thread_id)
 
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
-    user_input = data.get("message")
+    message = data.get("message", "").strip()
+    if not message:
+        return jsonify({"error": "Empty message"}), 400
+
     user_id = data.get("user_id", str(uuid.uuid4()))
+    thread_id = get_thread_id(user_id)
 
-    # Redis key
-    thread_key = f"thread:{user_id}"
-
-    # Try to get existing thread ID
-    thread_id = r.get(thread_key)
-    if thread_id is None:
-        # No thread, create new
+    if not thread_id:
         thread = client.beta.threads.create()
         thread_id = thread.id
-        r.set(thread_key, thread_id)
+        save_thread_id(user_id, thread_id)
 
-    # Send user message
     client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
-        content=user_input,
+        content=message,
     )
 
-    # Run assistant
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id,
     )
 
-    # Wait for run to complete
     while True:
-        run_status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
-        if run_status.status == "completed":
+        run_check = client.beta.threads.runs.retrieve(
+            thread_id=thread_id,
+            run_id=run.id,
+        )
+        if run_check.status == "completed":
             break
-        time.sleep(1)
 
-    # Get assistant response
     messages = client.beta.threads.messages.list(thread_id=thread_id)
-    assistant_reply = ""
-    for msg in messages.data:
-        if msg.role == "assistant":
-            assistant_reply = msg.content[0].text.value
-            break
+    latest_message = messages.data[0].content[0].text.value
 
-    return jsonify({"reply": assistant_reply})
+    return jsonify({"response": latest_message})
 
-@app.route("/", methods=["GET"])
-def home():
-    return "BlueJay Backend Running!"
-
+# --- VERY IMPORTANT --- dynamic PORT binding for Railway:
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
