@@ -1,56 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueJay Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-  <header class="header">
-    <img src="bluejay.png" alt="BlueJay Logo" class="logo">
-    <h1 class="main-title">Talk with BlueJay</h1>
-    <p class="tagline">Your Merchant Savings Bot</p>
-  </header>
-
-  <main class="chat-section">
-    <div id="chat-container" class="chat-container">
-      <!-- Messages will appear here -->
+    <div class="header">
+        <img src="bluejay-logo.png" alt="BlueJay Logo" class="logo">
+        <h1 class="main-title">BlueJay Chatbot</h1>
+        <p class="tagline">Your merchant processing assistant</p>
     </div>
 
-    <div class="input-area">
-      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
-      <button id="send-button">Send</button>
+    <div class="chat-section">
+        <div id="chat-container" class="chat-container"></div>
+
+        <div class="input-area">
+            <input id="user-input" type="text" placeholder="Type your message..." />
+            <button id="send-button">Send</button>
+        </div>
     </div>
-  </main>
 
-  <section class="features-section">
-    <h2 class="features-title">How BlueJay Helps You</h2>
-    <div class="features-container">
-      <div class="feature-card">
-        <img src="Insights.png" alt="Insights Icon" class="feature-icon">
-        <h3>Real-Time Insights</h3>
-        <p>Instant answers to all your merchant questions, whenever you need them.</p>
-      </div>
-      <div class="feature-card">
-        <img src="Boost.png" alt="Boost Icon" class="feature-icon">
-        <h3>Boost Profits</h3>
-        <p>Discover smarter payment solutions that put more money in your pocket.</p>
-      </div>
-      <div class="feature-card">
-        <img src="Lower.png" alt="Lower Icon" class="feature-icon">
-        <h3>Lower Costs</h3>
-        <p>Learn how to cut your processing fees without losing a single sale.</p>
-      </div>
+    <div class="features-section">
+        <h2 class="features-title">Features</h2>
+        <div class="features-container">
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <p>Instant merchant processing solutions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <p>Secure payment gateway integration</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <p>Real-time transaction tracking</p>
+            </div>
+        </div>
     </div>
-  </section>
 
-  <footer class="footer">
-    © 2025 Fortified Capital LLC — All rights reserved.
-  </footer>
+    <div class="footer">
+        <p>&copy; 2025 BlueJay - All Rights Reserved</p>
+    </div>
 
-  <script src="chat.js"></script>
-
+    <script src="chat.js"></script>
 </body>
 </html>
