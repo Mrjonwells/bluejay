@@ -1,7 +1,5 @@
 import os
 import redis
-import requests
-import re
 import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -32,10 +30,6 @@ def get_thread_id(user_id):
 def save_thread_id(user_id, thread_id):
     thread_key = f"thread:{user_id}"
     r.set(thread_key, thread_id)
-
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"message": "BlueJay API running."}), 200
 
 @app.route("/chat", methods=["POST"])
 def chat():
