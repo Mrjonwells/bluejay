@@ -1,9 +1,9 @@
 [build]
-  base = ""
   publish = "frontend"
   command = ""
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/chat"
+  to = "https://bluejay-production.up.railway.app/chat"
   status = 200
+  force = true
