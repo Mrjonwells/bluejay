@@ -1,46 +1,45 @@
-const backendUrl = "https://bluejay-production.up.railway.app"; // Updated backend URL
+document.addEventListener('DOMContentLoaded', function() {
+    const inputField = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const chatContainer = document.getElementById('chat-container');
+    const thinkingIcon = document.getElementById('thinking-icon');
 
-document.getElementById("send-button").addEventListener("click", sendMessage);
-document.getElementById("user-input").addEventListener("keypress", function (e) {
-  if (e.key === "Enter") {
-    sendMessage();
-  }
-});
-
-async function sendMessage() {
-  const inputField = document.getElementById("user-input");
-  const message = inputField.value.trim();
-  if (!message) return;
-
-  addMessage(message, "user");
-  inputField.value = "";
-
-  try {
-    const response = await fetch(`${backendUrl}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
+    function appendMessage(message, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender);
+        messageDiv.innerText = message;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    const data = await response.json();
-    addMessage(data.response, "bot");
-  } catch (error) {
-    console.error("Error:", error);
-    addMessage("Error contacting server.", "bot");
-  }
-}
+    async function sendMessage() {
+        const userInput = inputField.value.trim();
+        if (!userInput) return;
 
-function addMessage(text, sender) {
-  const chatContainer = document.getElementById("chat-container");
-  const messageDiv = document.createElement("div");
-  messageDiv.classList.add("message", sender);
-  messageDiv.textContent = text;
-  chatContainer.appendChild(messageDiv);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
+        appendMessage(userInput, 'user');
+        inputField.value = '';
+
+        thinkingIcon.style.display = 'inline-block';
+
+        try {
+            const response = await fetch('https://bluejay-3999.onrender.com/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userInput })
+            });
+            const data = await response.json();
+            if (data && data.response) {
+                appendMessage(data.response, 'bot');
+            }
+        } catch (error) {
+            appendMessage('Oops! Something went wrong.', 'bot');
+        } finally {
+            thinkingIcon.style.display = 'none';
+        }
+    }
+
+    sendButton.addEventListener('click', sendMessage);
+    inputField.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+});
