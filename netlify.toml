@@ -1,29 +1,11 @@
-# Netlify Configuration for Continuous Deployment
-
 [build]
-  # Set the base directory for building (frontend folder)
-  base = "frontend"
-  
-  # Publish directory after build
-  publish = "frontend/build"  # Adjust based on your build output directory
+base = "frontend"  # Path to your frontend folder
+command = "echo 'No build command required'"  # No need to build if not using npm or yarn
+publish = "frontend/build"  # Where your built front-end assets are
+functions = "netlify/functions"  # Specify function directory if applicable (even if it's empty)
 
-  # Build command (use your specific framework's build command here)
-  command = "npm run build"  # Or if using Yarn: `yarn build`
-
-[build.environment]
-  # Optional environment variables you want for the build process
-  NODE_VERSION = "16"  # Specify the required Node.js version (or use latest)
-
-[[plugins]]
-  package = "@netlify/plugin-functions-installation"  # Useful if you are using serverless functions
-
-# Redirect or rewrites if needed (for routing, SPA handling)
 [[redirects]]
-  from = "/index.html"
-  to = "/"
-  status = 200
-  force = true
-
-# Optional: configure cache for faster builds (add more directories if necessary)
-[cache]
-  directories = ["frontend/node_modules"]
+from = "/index.html"
+to = "/"
+status = 200
+force = true
