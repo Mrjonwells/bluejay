@@ -1,163 +1,153 @@
 /* Reset basics */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f8f9fa;
-  color: #333;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Header */
 .header {
-  background: #004aad;
-  color: white;
-  text-align: center;
-  padding: 30px 20px 20px 20px;
+    background: #004aad;
+    color: white;
+    text-align: center;
+    padding: 30px 20px 20px 20px;
 }
 
 .logo {
-  width: 70px;
-  height: auto;
-  margin-bottom: 10px;
+    width: 80px;
+    height: auto;
+    margin-bottom: 10px;
 }
 
 .main-title {
-  font-size: 2.2rem;
-  margin-bottom: 5px;
+    font-size: 2rem;
+    margin-bottom: 5px;
 }
 
 .tagline {
-  font-size: 1.2rem;
-  font-weight: 300;
+    font-size: 1rem;
+    font-weight: 300;
 }
 
 /* Chat Section */
 .chat-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 20px;
-  max-width: 900px;
-  width: 100%;
-  margin: 0 auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
 }
 
 .chat-container {
-  flex: 1;
-  overflow-y: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  margin-bottom: 15px;
-  min-height: 400px;
+    flex: 1;
+    overflow-y: auto;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
 }
 
 /* Input area */
 .input-area {
-  display: flex;
-  gap: 10px;
+    display: flex;
+    gap: 10px;
 }
 
 #user-input {
-  flex: 1;
-  padding: 14px;
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  font-size: 1rem;
-  outline: none;
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    font-size: 1rem;
+    outline: none;
 }
 
 #send-button {
-  background: #0070f3;
-  color: white;
-  padding: 14px 22px;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  font-size: 1rem;
+    background: #0070f3;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-size: 1rem;
 }
 
 #send-button:hover {
-  background: #005dc1;
+    background: #005dc1;
 }
 
 /* Features Section */
 .features-section {
-  background: #e9f2ff;
-  padding: 50px 20px;
-  text-align: center;
+    background: #e9f2ff;
+    padding: 40px 20px;
+    text-align: center;
 }
 
 .features-title {
-  font-size: 2rem;
-  margin-bottom: 40px;
-  font-weight: 600;
+    font-size: 1.8rem;
+    margin-bottom: 30px;
 }
 
 .features-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
 }
 
 .feature-card {
-  background: white;
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  width: 280px;
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 280px;
+    text-align: center;
+    transition: transform 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-5px);
 }
 
 .feature-icon {
-  width: 70px;
-  height: 70px;
-  margin-bottom: 20px;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
 }
 
 /* Footer */
 .footer {
-  background: #004aad;
-  color: white;
-  text-align: center;
-  padding: 18px;
-  font-size: 0.9rem;
+    background: #004aad;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-size: 0.9rem;
 }
 
 /* Mobile responsive */
 @media (max-width: 600px) {
-  .features-container {
-    flex-direction: column;
-    align-items: center;
-  }
+    .features-container {
+        flex-direction: column;
+        align-items: center;
+    }
 
-  .feature-card {
-    width: 90%;
-    max-width: 320px;
-  }
+    .feature-card {
+        width: 100%;
+        max-width: 320px;
+    }
 
-  .chat-section {
-    padding: 15px;
-  }
-
-  .chat-container {
-    min-height: 300px;
-  }
+    .chat-container {
+        min-height: 250px;
+    }
 }
