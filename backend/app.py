@@ -33,6 +33,10 @@ def save_thread_id(user_id, thread_id):
     thread_key = f"thread:{user_id}"
     r.set(thread_key, thread_id)
 
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "BlueJay API running."}), 200
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
@@ -72,7 +76,6 @@ def chat():
 
     return jsonify({"response": latest_message})
 
-# --- VERY IMPORTANT --- dynamic PORT binding for Railway:
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
