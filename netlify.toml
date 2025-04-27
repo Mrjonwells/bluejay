@@ -1,22 +1,16 @@
 [build]
-  # Set the base directory for the build to 'frontend' (the folder that contains the front-end code)
   base = "frontend"
-  # No build command since we're serving static files directly
-  command = "echo 'No build command required'"
-  # Specify the folder to publish; this is where the static files for the front-end should be located
-  publish = "frontend"  # Adjust this to the correct folder where your static assets reside
+  command = "echo 'No build command required'"  # No build step needed
+  publish = "/opt/build/repo/frontend"  # Path to frontend directory
 
 [functions]
-  # Define the backend functions (if applicable). This assumes the backend functions are in 'backend' folder
-  directory = "backend/netlify/functions"  # Change this if your backend functions are elsewhere
+  directory = "backend/netlify/functions"  # Path to backend functions (if applicable)
 
 [[redirects]]
-  # Handle redirects if necessary
   from = "/index.html"
   to = "/"
   status = 200
   force = true
 
-# This block defines environment variables (if needed)
 [env]
-  VITE_BACKEND_URL = "your-backend-url"
+  VITE_BACKEND_URL = "your-backend-url"  # If you're using any environment variables
