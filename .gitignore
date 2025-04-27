@@ -1,28 +1,20 @@
+# Node.js
+node_modules/
+dist/
+npm-debug.log
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.env
-.env.*
-.venv/
-venv/
+*.db
 *.sqlite3
+*.env
 
-# Flask / Gunicorn
-instance/
-*.log
+# Netlify-specific files
+/.netlify/
+/netlify.toml
 
-# Redis (optional)
-dump.rdb
-
-# Netlify
-.netlify/
-dist/
-node_modules/  # just in case
-
-# OS / Editor
-.DS_Store
-Thumbs.db
-.vscode/
-*.swp
+# Other potentially sensitive or unnecessary files
+*.env
