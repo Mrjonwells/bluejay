@@ -1,50 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlueJay Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlueJay Chatbot</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="header">
-        <img src="bluejay-logo.png" alt="BlueJay Logo" class="logo">
-        <h1 class="main-title">BlueJay Chatbot</h1>
-        <p class="tagline">Your merchant processing assistant</p>
+
+  <header class="header">
+    <img src="bluejay-logo.png" alt="BlueJay" class="logo">
+    <h1 class="main-title">BlueJay Chatbot</h1>
+    <p class="tagline">Your trusted assistant</p>
+  </header>
+
+  <div class="chat-section">
+    <div id="chat-container" class="chat-container"></div>
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+      <button id="send-button">Send</button>
     </div>
+  </div>
 
-    <div class="chat-section">
-        <div id="chat-container" class="chat-container"></div>
+  <footer class="footer">
+    &copy; 2025 BlueJay Inc.
+  </footer>
 
-        <div class="input-area">
-            <input id="user-input" type="text" placeholder="Type your message..." />
-            <button id="send-button">Send</button>
-        </div>
-    </div>
+  <script src="chat.js"></script>
 
-    <div class="features-section">
-        <h2 class="features-title">Features</h2>
-        <div class="features-container">
-            <div class="feature-card">
-                <div class="feature-icon">💬</div>
-                <p>Instant merchant processing solutions</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔒</div>
-                <p>Secure payment gateway integration</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <p>Real-time transaction tracking</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        <p>&copy; 2025 BlueJay - All Rights Reserved</p>
-    </div>
-
-    <script src="chat.js"></script>
 </body>
 </html>
