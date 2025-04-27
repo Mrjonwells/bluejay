@@ -1,4 +1,4 @@
-const backendUrl = "https://bluejay-production.up.railway.app";
+const backendUrl = "https://www.googleapis.com/books/v1/volumes?q=javascript";
 
 document.getElementById("send-button").addEventListener("click", sendMessage);
 document.getElementById("user-input").addEventListener("keypress", function (e) {
@@ -16,12 +16,8 @@ async function sendMessage() {
   inputField.value = "";
 
   try {
-    const response = await fetch(`${backendUrl}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message }),
+    const response = await fetch(backendUrl, {
+      method: "GET", // Changed to GET for public API test
     });
 
     if (!response.ok) {
@@ -29,7 +25,7 @@ async function sendMessage() {
     }
 
     const data = await response.json();
-    addMessage(data.response, "bot");
+    addMessage("API Response: " + JSON.stringify(data.items[0].volumeInfo.title), "bot");
   } catch (error) {
     console.error("Error:", error);
     addMessage("Error contacting server.", "bot");
