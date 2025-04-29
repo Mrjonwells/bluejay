@@ -22,6 +22,9 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")
 openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 
+# Your real OpenAI Assistant ID
+assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
+
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
@@ -31,38 +34,56 @@ def chat():
     if not user_input:
         return jsonify({'response': "I didn't catch that. Try again."})
 
-    # Redis thread ID (optional tracking)
+    # Redis thread ID tracking
+    thread_id = None
     if r:
-        thread_id = r.get(f"thread:{user_id}")
-        if not thread_id:
-            thread_id = f"thread_{str(uuid.uuid4())}"
-            r.set(f"thread:{user_id}", thread_id)
+        try:
+            thread_id = r.get(f"thread:{user_id}")
+            if thread_id:
+                thread_id = thread_id.decode()
+        except Exception as e:
+            print(f"Redis get error: {e}")
+
+    if not thread_id:
+        try:
+            thread = client.beta.threads.create()
+            thread_id = thread.id
+            if r:
+                r.set(f"thread:{user_id}", thread_id)
+        except Exception as e:
+            print(f"Thread creation error: {e}")
+            return jsonify({'response': "Sorry, I'm having trouble starting the conversation."})
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are **BlueJay**, the #1 merchant savings expert. "
-                        "You specialize in showing business owners how to save money on payment processing, "
-                        "switch to cash discount programs, and lower their fees by using smarter systems like Clover. "
-                        "Always be professional, knowledgeable, and persuasive — but never pushy. "
-                        "Focus on delivering quick value: show potential savings, suggest modern POS options, "
-                        "and highlight how switching could boost their profits immediately. "
-                        "Answer in clear, confident sentences, like a seasoned consultant."
-                    )
-                },
-                {"role": "user", "content": user_input}
-            ],
-            temperature=0.3,
-            max_tokens=500
+        # Send the message into the thread and run the Assistant
+        run = client.beta.threads.messages.create(
+            thread_id=thread_id,
+            role="user",
+            content=user_input
         )
-        assistant_reply = response.choices[0].message.content.strip()
+
+        # Run the assistant
+        run_response = client.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=assistant_id
+        )
+
+        # Poll until completion
+        while True:
+            status = client.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run_response.id
+            )
+            if status.status == "completed":
+                break
+
+        # Retrieve the latest messages
+        messages = client.beta.threads.messages.list(thread_id=thread_id)
+        assistant_reply = messages.data[0].content[0].text.value.strip()
+
     except Exception as e:
         print(f"OpenAI API Error: {e}")
-        assistant_reply = "Sorry, something went wrong."
+        assistant_reply = "Sorry, something went wrong connecting to the Assistant."
 
     return jsonify({'response': assistant_reply})
 
