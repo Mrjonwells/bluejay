@@ -7,7 +7,7 @@ body {
 }
 
 .bluejay-header {
-  padding: 20px;
+  padding: 20px 0 10px;
 }
 
 .bluejay-logo {
@@ -24,7 +24,7 @@ body {
 }
 
 .chat-section {
-  margin: 20px auto;
+  margin: 20px auto 10px;
 }
 
 .chat-card {
@@ -38,12 +38,14 @@ body {
   display: flex;
   justify-content: center;
   gap: 20px;
-  padding: 25px;
+  padding: 25px 15px;
   background: #eaf4fd;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
 }
 
 .feature-icon {
-  width: 110px;
+  width: 100px;
   height: auto;
   transition: transform 0.2s ease-in-out;
 }
