@@ -42,9 +42,22 @@ def chat():
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are BlueJay, a helpful merchant savings assistant."},
+                {
+                    "role": "system",
+                    "content": (
+                        "You are **BlueJay**, the #1 merchant savings expert. "
+                        "You specialize in showing business owners how to save money on payment processing, "
+                        "switch to cash discount programs, and lower their fees by using smarter systems like Clover. "
+                        "Always be professional, knowledgeable, and persuasive — but never pushy. "
+                        "Focus on delivering quick value: show potential savings, suggest modern POS options, "
+                        "and highlight how switching could boost their profits immediately. "
+                        "Answer in clear, confident sentences, like a seasoned consultant."
+                    )
+                },
                 {"role": "user", "content": user_input}
-            ]
+            ],
+            temperature=0.3,
+            max_tokens=500
         )
         assistant_reply = response.choices[0].message.content.strip()
     except Exception as e:
