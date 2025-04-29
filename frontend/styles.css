@@ -4,38 +4,81 @@ body {
   background: linear-gradient(to bottom right, #d8eefe, #bcd8f7);
   color: #003b6f;
   text-align: center;
-  overflow-x: hidden;
 }
 
-/* Chat Card Section */
-.chat-section {
-  margin: 30px auto 10px;
+.bluejay-header {
+  padding: 20px 0 10px;
 }
 
-.chat-card {
-  width: 95%;
+.bluejay-logo {
+  width: 140px;
+  margin-bottom: 10px;
+}
+
+.bluejay-motto {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chat-wrapper {
   max-width: 420px;
+  margin: 20px auto;
+  background: #f5fbff;
   border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* Features Footer */
-.bluejay-features {
+.chat-box {
+  max-height: 360px;
+  overflow-y: auto;
+  padding-bottom: 10px;
+  text-align: left;
+}
+
+.message {
+  background-color: #e0f0ff;
+  padding: 10px 15px;
+  border-radius: 12px;
+  margin: 8px 0;
+  max-width: 85%;
+  line-height: 1.4;
+}
+
+.message.user {
+  background-color: #cde9ff;
+  align-self: flex-end;
+  text-align: right;
+}
+
+.message.bot {
+  background-color: #d6f4e8;
+}
+
+.input-container {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 25px 15px;
-  background: #eaf4fd;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
 }
 
-.feature-icon {
-  width: 100px;
-  height: auto;
-  transition: transform 0.2s ease-in-out;
+#user-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
-.feature-icon:hover {
-  transform: scale(1.05);
+#send-button {
+  padding: 10px 16px;
+  border: none;
+  background-color: #0077cc;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#thinking-icon {
+  font-size: 18px;
 }
