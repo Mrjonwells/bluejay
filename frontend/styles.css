@@ -1,8 +1,7 @@
-/* Global Reset */
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to bottom right, #e7f0fb, #d0e6f8);
+  background: linear-gradient(to bottom right, #e8f0f8, #d3e6ff);
   color: #003b6f;
   display: flex;
   flex-direction: column;
@@ -13,13 +12,12 @@ body {
 .header {
   text-align: center;
   background: #ffffff;
-  padding: 20px 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  padding: 20px 0 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .logo {
-  width: 140px;
-  height: auto;
+  width: 130px;
   margin-bottom: 10px;
 }
 
@@ -27,10 +25,20 @@ body {
   font-size: 1.2rem;
   font-weight: 600;
   color: #003b6f;
-  text-shadow: 0px 0px 5px rgba(0, 128, 255, 0.2);
+  text-shadow: 0 0 4px rgba(0, 128, 255, 0.2);
+  margin-bottom: 10px;
 }
 
-/* Chat Container */
+.hero-banner {
+  width: 95%;
+  max-width: 1000px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  margin: 0 auto 20px;
+}
+
+/* Chat Styling */
 .chat-container {
   flex-grow: 1;
   padding: 20px;
