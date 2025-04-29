@@ -1,153 +1,127 @@
-/* Reset basics */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Global Reset */
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f8f9fa;
-  color: #333;
-  min-height: 100vh;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to bottom right, #e7f0fb, #d0e6f8);
+  color: #003b6f;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Header */
 .header {
-  background: #004aad;
-  color: white;
   text-align: center;
-  padding: 30px 20px 20px 20px;
+  background: #ffffff;
+  padding: 20px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .logo {
-  width: 80px;
+  width: 140px;
   height: auto;
   margin-bottom: 10px;
 }
 
-.main-title {
-  font-size: 2rem;
-  margin-bottom: 5px;
+.motto {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #003b6f;
+  text-shadow: 0px 0px 5px rgba(0, 128, 255, 0.2);
 }
 
-.tagline {
-  font-size: 1rem;
-  font-weight: 300;
-}
-
-/* Chat Section */
-.chat-section {
-  flex: 1;
+/* Chat Container */
+.chat-container {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 15px;
+  gap: 12px;
+  background: #f7faff;
 }
 
-.chat-container {
-  flex: 1;
-  overflow-y: auto;
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 15px;
+/* Chat Bubbles */
+.message {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
-/* Input area */
+.user {
+  align-self: flex-end;
+  background: #005ea6;
+  color: white;
+  border-top-right-radius: 0;
+}
+
+.bot {
+  align-self: flex-start;
+  background: #d4ebff;
+  color: #003b6f;
+  border-top-left-radius: 0;
+}
+
+/* Input Section */
 .input-area {
   display: flex;
+  align-items: center;
   gap: 10px;
+  padding: 16px;
+  background: #ffffff;
+  border-top: 1px solid #cfdce6;
+  box-shadow: 0 -1px 3px rgba(0,0,0,0.05);
 }
 
 #user-input {
-  flex: 1;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 25px;
+  flex-grow: 1;
+  padding: 10px;
+  border: 2px solid #005ea6;
+  border-radius: 8px;
   font-size: 1rem;
   outline: none;
 }
 
 #send-button {
-  background: #0070f3;
+  background: #0077cc;
   color: white;
-  padding: 12px 20px;
   border: none;
-  border-radius: 25px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s ease;
-  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 #send-button:hover {
-  background: #005dc1;
+  background: #005ea6;
 }
 
-/* Features Section */
-.features-section {
-  background: #e9f2ff;
-  padding: 40px 20px;
-  text-align: center;
+#thinking-icon {
+  width: 28px;
+  height: 28px;
 }
 
-.features-title {
-  font-size: 1.8rem;
-  margin-bottom: 30px;
-}
-
-.features-container {
+/* Footer Icons */
+.footer-icons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
   justify-content: center;
-}
-
-.feature-card {
-  background: white;
+  align-items: center;
+  gap: 30px;
   padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  width: 280px;
-  text-align: center;
-  transition: transform 0.3s ease;
+  background: #f0f6fc;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
+.footer-icon {
+  width: 90px;
+  height: auto;
+  transition: transform 0.2s ease;
 }
 
-.feature-icon {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 15px;
-}
-
-/* Footer */
-.footer {
-  background: #004aad;
-  color: white;
-  text-align: center;
-  padding: 15px;
-  font-size: 0.9rem;
-}
-
-/* Mobile responsive */
-@media (max-width: 600px) {
-  .features-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .feature-card {
-    width: 100%;
-    max-width: 320px;
-  }
-
-  .chat-container {
-    min-height: 250px;
-  }
+.footer-icon:hover {
+  transform: scale(1.05);
 }
