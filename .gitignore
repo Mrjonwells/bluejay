@@ -12,9 +12,23 @@ __pycache__/
 *.sqlite3
 *.env
 
-# Netlify-specific files
+# Netlify
 /.netlify/
-/netlify.toml
+# DO NOT ignore netlify.toml
 
-# Other potentially sensitive or unnecessary files
-*.env
+# IDE/editor files
+*.swp
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Mac system files
+.AppleDouble
+.LSOverride
+
+# Backup files
+*.bak
+*.tmp
