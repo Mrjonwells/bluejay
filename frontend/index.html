@@ -2,31 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BlueJay Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Talk with BlueJay — Your Merchant Savings Bot</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-  <header class="header">
-    <img src="bluejay-logo.png" alt="BlueJay" class="logo">
-    <h1 class="main-title">BlueJay Chatbot</h1>
-    <p class="tagline">Your trusted assistant</p>
+  <header>
+    <img src="background.png" alt="BlueJay Logo" class="logo">
+    <h1>Talk with BlueJay — Your Merchant Savings Bot</h1>
   </header>
+  
+  <main id="chat-container"></main>
 
-  <div class="chat-section">
-    <div id="chat-container" class="chat-container"></div>
-    <div class="input-area">
-      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
-      <button id="send-button">Send</button>
-    </div>
+  <div id="input-container">
+    <img src="thinking.gif" alt="Thinking..." id="thinking-icon" style="display: none;">
+    <input type="text" id="user-input" placeholder="Type your message...">
+    <button id="send-button">Send</button>
   </div>
 
-  <footer class="footer">
-    &copy; 2025 BlueJay Inc.
-  </footer>
-
   <script src="chat.js"></script>
-
 </body>
 </html>
