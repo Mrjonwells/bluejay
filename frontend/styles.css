@@ -2,10 +2,12 @@ body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
   background: linear-gradient(to bottom right, #d8eefe, #bcd8f7);
-  text-align: center;
   color: #003b6f;
+  text-align: center;
+  overflow-x: hidden;
 }
 
+/* Header */
 .bluejay-header {
   padding: 20px 0 10px;
 }
@@ -23,8 +25,9 @@ body {
   text-shadow: 0px 0px 3px rgba(0,0,0,0.1);
 }
 
+/* Chat Card Section */
 .chat-section {
-  margin: 20px auto 10px;
+  margin: 15px auto 10px;
 }
 
 .chat-card {
@@ -34,6 +37,7 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+/* Features Footer */
 .bluejay-features {
   display: flex;
   justify-content: center;
