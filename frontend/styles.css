@@ -8,32 +8,29 @@ body {
 }
 
 .chat-wrapper {
-  max-width: 480px;
-  height: 100vh;
+  max-width: 420px;
   margin: 0 auto;
   background: url('chat_card.png') no-repeat center top;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-color: #d8eefe; /* fallback fill on desktop */
+  background-size: cover;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 120px 15px 25px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-top: 18vh; /* just below motto */
-  padding-left: 10px;
-  padding-right: 10px;
 }
 
 .chat-box {
-  height: 50vh;
+  height: 260px;
   overflow-y: auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   scroll-behavior: smooth;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  backdrop-filter: blur(5px);
-  padding: 10px;
   margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
 }
 
 .message {
