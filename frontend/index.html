@@ -3,40 +3,151 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AskBlueJay.ai</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Talk with BlueJay — Your Merchant Savings Bot">
+  <title>BlueJay — Your Merchant Savings Bot</title>
+  <link rel="icon" type="image/png" href="bluejay.jpeg">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #e5f3ff url('background.png') no-repeat center center fixed;
+      background-size: cover;
+    }
 
-  <!-- Favicon and browser tab icons -->
-  <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="shortcut icon" href="favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <meta name="apple-mobile-web-app-title" content="AskBlueJay.ai" />
-  <link rel="manifest" href="site.webmanifest" />
+    header {
+      text-align: center;
+      padding: 20px 10px 5px;
+    }
+
+    header img {
+      width: 120px;
+    }
+
+    .motto {
+      text-align: center;
+      font-size: 1.3em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .chat_card {
+      width: calc(100% - 2px);
+      max-width: 600px;
+      margin: -24px auto 20px;
+      padding: 15px;
+      background-color: #ffffffcc;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      backdrop-filter: blur(5px);
+    }
+
+    .chat_box {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px 14px;
+      border-radius: 8px;
+      line-height: 1.4;
+      max-width: 80%;
+    }
+
+    .user {
+      background-color: #d0ebff;
+      align-self: flex-end;
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .bot {
+      background-color: #e8f5e9;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    .input_area {
+      display: flex;
+      align-items: center;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+
+    .input_area input {
+      flex-grow: 1;
+      padding: 10px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .input_area button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .thinking-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .icons-section {
+      text-align: center;
+      margin: 30px 0;
+    }
+
+    .icons-section img {
+      width: 80px;
+      margin: 0 20px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.8em;
+      color: #555;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <main class="chat-wrapper">
-      <div class="chat-box" id="chat-container">
-        <!-- Dynamic messages will populate here -->
-      </div>
-      <div class="input-container">
-        <span id="thinking-icon" class="typing-bubble" style="display:none;">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </span>
-        <input type="text" id="user-input" placeholder="Type a message..." />
-        <button id="send-button">➤</button>
-      </div>
-    </main>
+  <header>
+    <img src="bluejay.jpeg" alt="BlueJay Logo" />
+  </header>
+  <div class="motto">Save smart. Scale faster. Do more!</div>
 
-    <footer class="footer">
-      <div class="legal">
-        © 2025 Fortified Capital LLC. All rights reserved. AskBlueJay.ai is a registered service of Fortified Capital LLC.
-      </div>
-    </footer>
+  <div class="chat_card">
+    <div class="chat_box" id="chat_box"></div>
+    <div class="input_area">
+      <img src="https://em-content.zobj.net/thumbs/240/apple/354/money-with-wings_1f4b8.png" alt="Thinking Icon" class="thinking-icon" id="thinking_icon" style="display:none;" />
+      <input type="text" id="user_input" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
+
+  <div class="icons-section">
+    <img src="Boost.png" alt="Boost your profits" />
+    <img src="Insights.png" alt="AI-powered insights" />
+    <img src="Lower.png" alt="Lower processing costs" />
+  </div>
+
+  <footer>
+    &copy; 2025 Fortified Capital LLC. All rights reserved.
+  </footer>
 
   <script src="chat.js"></script>
 </body>
