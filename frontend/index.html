@@ -2,41 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AskBlueJay.AI</title>
-
-  <!-- Favicon and app icon -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="shortcut icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
-  <meta name="apple-mobile-web-app-title" content="AskBlueJay.AI" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AskBlueJay.ai</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="page-wrapper">
-    <header>
-      <img src="bluejay.png" alt="BlueJay Logo" class="logo" />
-      <h1 class="site-title">BlueJay</h1>
-      <h2 class="motto">Save smart. Scale faster. Do more!</h2>
+  <div class="container">
+    <header class="header">
+      <img src="bluejay.jpeg" alt="BlueJay Logo" class="logo" />
+      <h1 class="title">BlueJay</h1>
+      <p class="motto">Save smart. Scale faster. Do more!</p>
     </header>
 
     <main class="chat-wrapper">
-      <div class="chat-box" id="chat-container">
-        <!-- Messages dynamically inserted here -->
-      </div>
+      <div class="chat-box" id="chat-container"></div>
       <div class="input-container">
-        <span id="thinking-icon" class="thinking-indicator" style="display:none;">...</span>
+        <span id="thinking-icon" class="typing-indicator">...</span>
         <input type="text" id="user-input" placeholder="Type a message..." />
         <button id="send-button">➤</button>
       </div>
     </main>
 
-    <footer>
-      <p>&copy; 2025 Fortified Capital LLC. All rights reserved.</p>
+    <footer class="footer">
+      <div class="icons">
+        <img src="Boost.png" alt="Boost your profits" />
+        <img src="Insights.png" alt="AI-powered insights" />
+        <img src="Lower.png" alt="Lower processing costs" />
+      </div>
+      <p class="legal">© 2025 Fortified Capital LLC. All rights reserved.</p>
     </footer>
   </div>
-
   <script src="chat.js"></script>
 </body>
 </html>
