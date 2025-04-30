@@ -1,44 +1,37 @@
 body {
   margin: 0;
-  padding: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  background: #0077cc;
-  overflow: hidden;
-}
-
-.background {
-  background: url('chat_card.png') no-repeat center top;
-  background-size: cover;
-  position: fixed;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
+  background: linear-gradient(to bottom right, #d8eefe, #bcd8f7);
+  color: #003b6f;
+  text-align: center;
+  overflow-x: hidden;
 }
 
 .chat-wrapper {
-  position: absolute;
-  top: 28vh; /* Push below logo and motto */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
   max-width: 420px;
-  padding: 0 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  margin: 0 auto;
+  background: url('chat_card.png') no-repeat center top;
+  background-size: cover;
+  height: 100vh;
+  position: relative;
 }
 
 .chat-box {
-  height: 260px;
+  position: absolute;
+  top: 190px;           /* aligns with top of black box */
+  left: 0;
+  right: 0;
+  height: 280px;        /* height of black box */
   overflow-y: auto;
+  margin: 0 auto;
+  width: 90%;
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   scroll-behavior: smooth;
-  margin-bottom: 12px;
-  padding: 10px;
-  border-radius: 12px;
-  background-color: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(6px);
 }
 
 .message {
@@ -64,10 +57,13 @@ body {
 }
 
 .input-container {
+  position: absolute;
+  bottom: 15px;
+  width: 90%;
+  left: 5%;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 5px;
 }
 
 #user-input {
