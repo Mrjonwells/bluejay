@@ -1,73 +1,71 @@
 body {
   margin: 0;
-  padding: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  overflow: hidden;
-  background: #e5f3fc;
-}
-
-.background-wrapper {
-  width: 100vw;
-  height: 100vh;
-  background: url('chat_card.png') no-repeat center center;
+  background: #e8f4fb;
+  background-image: url('chat_card.png');
   background-size: contain;
+  background-position: center top;
   background-repeat: no-repeat;
+  background-attachment: fixed;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .chat-wrapper {
+  position: absolute;
+  top: 36vh;
   width: 100%;
   max-width: 420px;
-  padding-top: 32vh; /* positions below the motto */
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
 }
 
 .chat-box {
-  width: 90%;
-  height: 260px;
+  height: 220px;
   overflow-y: auto;
-  background-color: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(8px);
-  border-radius: 15px;
-  padding: 12px;
   display: flex;
   flex-direction: column;
   scroll-behavior: smooth;
-  margin-bottom: 10px;
+  width: 100%;
+  margin-bottom: 12px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  backdrop-filter: blur(6px);
+  padding: 10px;
 }
 
 .message {
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: #ffffffcc;
   padding: 10px 14px;
   border-radius: 12px;
-  margin: 6px 12px;
+  margin: 6px 10px;
   max-width: 80%;
   line-height: 1.4;
   word-wrap: break-word;
 }
 
 .message.user {
-  background-color: rgba(210, 235, 255, 0.85);
+  background-color: #a7d8f5;
   align-self: flex-end;
   text-align: right;
 }
 
 .message.bot {
-  background-color: rgba(210, 255, 230, 0.85);
+  background-color: #003b6f;
+  color: white;
   align-self: flex-start;
 }
 
 .input-container {
-  width: 90%;
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 
 #user-input {
@@ -94,15 +92,4 @@ body {
 
 #thinking-icon {
   font-size: 18px;
-}
-
-.legal-footer {
-  font-size: 0.8rem;
-  color: #555;
-  padding: 12px 8px;
-  text-align: center;
-  width: 100%;
-  background: #f2faff;
-  position: absolute;
-  bottom: 0;
 }
