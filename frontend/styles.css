@@ -2,34 +2,35 @@ body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
   background: linear-gradient(to bottom right, #d8eefe, #bcd8f7);
+  color: #003b6f;
   text-align: center;
   overflow-x: hidden;
 }
 
 .chat-wrapper {
-  max-width: 430px;
+  max-width: 420px;
   margin: 0 auto;
-  background: url('A_2D_digital_graphic_design_interface_for_BlueJay,.png') no-repeat center top;
-  background-size: contain;
+  background: url('chat_card.png') no-repeat center top;
+  background-size: cover;
   background-attachment: fixed;
   min-height: 100vh;
-  padding: 130px 15px 25px;
+  padding: 120px 15px 25px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
 
 .chat-box {
-  height: 230px;
+  height: 260px;
   overflow-y: auto;
   display: flex;
   flex-direction: column-reverse;
   scroll-behavior: smooth;
-  padding: 10px;
   margin-bottom: 12px;
-  background-color: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(6px);
+  padding: 10px;
   border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
 }
 
 .message {
@@ -38,6 +39,7 @@ body {
   border-radius: 12px;
   margin: 6px 12px;
   max-width: 80%;
+  line-height: 1.4;
   text-align: left;
   word-wrap: break-word;
 }
