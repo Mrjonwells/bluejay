@@ -2,13 +2,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const inputField = document.getElementById('user-input');
   const sendButton = document.getElementById('send-button');
   const chatContainer = document.getElementById('chat-container');
-  const thinkingIcon = document.getElementById('thinking-icon');
+  const typingIndicator = document.getElementById('typing-indicator');
 
   function appendMessage(message, sender) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', sender);
     messageDiv.innerText = message;
-    chatContainer.appendChild(messageDiv);
+    chatContainer.insertBefore(messageDiv, typingIndicator);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     appendMessage(userInput, 'user');
     inputField.value = '';
-    thinkingIcon.style.display = 'inline-block';
+    typingIndicator.style.display = 'flex';
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
     try {
       const response = await fetch('https://bluejay-3999.onrender.com/chat', {
@@ -36,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (error) {
       appendMessage('Oops! Something went wrong.', 'bot');
     } finally {
-      thinkingIcon.style.display = 'none';
+      typingIndicator.style.display = 'none';
     }
   }
 
