@@ -2,10 +2,16 @@ body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
   background: #e8f3fc url('chat_card.png') no-repeat center top;
-  background-size: 95% auto; /* slightly shrink image */
+  background-size: cover;
   background-position: top center;
   overflow: hidden;
   font-size: 90%;
+}
+
+@media (min-width: 768px) {
+  body {
+    background-size: 105% auto;
+  }
 }
 
 .container {
@@ -24,7 +30,7 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  margin-top: 27vh; /* pinned below logo/motto */
+  margin-top: 27vh;
 }
 
 .chat-box {
