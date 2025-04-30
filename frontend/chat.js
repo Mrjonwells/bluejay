@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const inputField = document.getElementById('user-input');
   const sendButton = document.getElementById('send-button');
   const chatContainer = document.getElementById('chat-container');
@@ -31,17 +31,17 @@ document.addEventListener('DOMContentLoaded', function() {
       if (data && data.response) {
         appendMessage(data.response, 'bot');
       } else {
-        appendMessage('No response from server.', 'bot');
+        appendMessage('Sorry, no response received.', 'bot');
       }
     } catch (error) {
-      appendMessage('Error contacting server.', 'bot');
+      appendMessage('Oops! Something went wrong.', 'bot');
     } finally {
       thinkingIcon.style.display = 'none';
     }
   }
 
   sendButton.addEventListener('click', sendMessage);
-  inputField.addEventListener('keypress', function(e) {
+  inputField.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') sendMessage();
   });
 });
