@@ -2,47 +2,48 @@ document.addEventListener("DOMContentLoaded", function () {
   const sendButton = document.getElementById("send-button");
   const userInput = document.getElementById("user-input");
   const chatContainer = document.getElementById("chat-container");
-  const thinkingIcon = document.getElementById("thinking-icon");
+  const typingIndicator = document.getElementById("typing-indicator");
 
   function appendMessage(content, sender) {
-    const message = document.createElement("div");
-    message.className = `message ${sender}`;
-    message.textContent = content;
-    chatContainer.appendChild(message);
+    const msg = document.createElement("div");
+    msg.className = `message ${sender}`;
+    msg.innerText = content;
+    chatContainer.appendChild(msg);
     chatContainer.scrollTop = chatContainer.scrollHeight;
-    return message;
+  }
+
+  function showTyping(show) {
+    typingIndicator.style.display = show ? "flex" : "none";
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
   async function sendMessage() {
-    const text = userInput.value.trim();
-    if (!text) return;
+    const message = userInput.value.trim();
+    if (!message) return;
 
-    appendMessage(text, "user");
+    appendMessage(message, "user");
     userInput.value = "";
 
-    thinkingIcon.style.display = "inline";
-    const typing = appendMessage("BlueJay is typing...", "bot");
-    typing.classList.add("typing");
+    showTyping(true);
 
     try {
       const response = await fetch("https://bluejay-3999.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: message })
       });
 
       const data = await response.json();
+      showTyping(false);
 
       if (data && data.response) {
-        typing.remove(); // Remove 'typing' placeholder
         appendMessage(data.response, "bot");
       } else {
-        typing.textContent = "Sorry, I didn’t get a reply.";
+        appendMessage("Hmm... no reply received.", "bot");
       }
     } catch (error) {
-      typing.textContent = "Oops! Something went wrong.";
-    } finally {
-      thinkingIcon.style.display = "none";
+      showTyping(false);
+      appendMessage("Oops! Something went wrong.", "bot");
     }
   }
 
