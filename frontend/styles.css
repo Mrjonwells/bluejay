@@ -1,150 +1,53 @@
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-  background-color: #e8f4fb;
-  background-image: url('chat_card.png');
-  background-repeat: no-repeat;
-  background-position: top center; /* center horizontally */
-  background-size: cover;
-  background-attachment: fixed;
-  height: 100vh;
-  overflow: hidden;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AskBlueJay.ai</title>
 
-.container {
-  width: 100%;
-  max-width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 80px 0 130px;
-  box-sizing: border-box;
-  position: relative;
-}
+  <!-- Favicon -->
+  <link rel="icon" href="bluejay.png" type="image/png" sizes="96x96" />
+  <link rel="apple-touch-icon" href="bluejay.png" />
+  <meta name="apple-mobile-web-app-title" content="AskBlueJay.ai" />
+  <link rel="manifest" href="site.webmanifest" />
 
-.motto {
-  font-size: 1.5rem;
-  text-align: center;
-  margin: 0;
-  color: #003b6f;
-  font-weight: 600;
-}
+  <!-- Apple App Behavior -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
-.chat-wrapper {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="AskBlueJay.ai – Save Smart on Merchant Services" />
+  <meta property="og:description" content="Talk with BlueJay, your AI savings expert for payment processing." />
+  <meta property="og:image" content="https://askbluejay.ai/bluejay.png" />
+  <meta property="og:url" content="https://askbluejay.ai" />
+  <meta name="twitter:card" content="summary_large_image" />
 
-.chat-box {
-  width: 100%;
-  height: 25vh;
-  overflow-y: auto;
-  padding: 12px;
-  border-radius: 14px;
-  backdrop-filter: blur(8px);
-  background-color: rgba(255, 255, 255, 0.2);
-  display: flex;
-  flex-direction: column;
-  scroll-behavior: smooth;
-}
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="motto">
+      <img src="bluejay.png" class="logo-flyin" alt="BlueJay Icon" />
+      AskBlueJay.ai
+    </h1>
 
-.message {
-  background-color: #ffffffcc;
-  padding: 10px 14px;
-  border-radius: 12px;
-  margin: 6px 10px;
-  max-width: 80%;
-  line-height: 1.4;
-  word-wrap: break-word;
-}
+    <main class="chat-wrapper">
+      <div class="chat-box" id="chat-container">
+        <div id="typing-indicator" class="message bot typing-bubble" style="display: none;">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+      </div>
+      <div class="input-container">
+        <input type="text" id="user-input" placeholder="Type a message..." />
+        <button id="send-button">➤</button>
+      </div>
+    </main>
 
-.message.user {
-  background-color: #cae8ff;
-  align-self: flex-end;
-  text-align: right;
-}
-
-.message.bot {
-  background-color: #003b6f;
-  color: white;
-  align-self: flex-start;
-  text-align: left;
-}
-
-.input-container {
-  width: 100%;
-  display: flex;
-  gap: 10px;
-}
-
-#user-input {
-  flex-grow: 1;
-  padding: 10px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-#send-button {
-  padding: 10px 16px;
-  background-color: #0077cc;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-#send-button:hover {
-  background-color: #005fa3;
-}
-
-.legal-footer {
-  position: absolute;
-  bottom: 18px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 0.75rem;
-  color: #222;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(3px);
-  padding: 6px 0;
-  z-index: 10;
-}
-
-/* Typing bubble animation */
-.typing-bubble {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.typing-bubble .dot {
-  width: 8px;
-  height: 8px;
-  background-color: white;
-  border-radius: 50%;
-  animation: blink 1.4s infinite both;
-}
-
-.typing-bubble .dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-bubble .dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes blink {
-  0% { opacity: 0.2; transform: scale(1); }
-  20% { opacity: 1; transform: scale(1.3); }
-  100% { opacity: 0.2; transform: scale(1); }
-}
+    <footer class="legal-footer">
+      © <script>document.write(new Date().getFullYear())</script> Fortified Capital LLC. All rights reserved.
+    </footer>
+  </div>
+  <script src="chat.js"></script>
+</body>
+</html>
