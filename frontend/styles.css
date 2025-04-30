@@ -2,16 +2,10 @@ body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
   background: #e8f3fc url('chat_card.png') no-repeat center top;
-  background-size: cover;
+  background-size: 97% auto;
   background-position: top center;
   overflow: hidden;
   font-size: 90%;
-}
-
-@media (min-width: 768px) {
-  body {
-    background-size: 105% auto;
-  }
 }
 
 .container {
