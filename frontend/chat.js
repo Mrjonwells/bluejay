@@ -2,14 +2,27 @@ document.addEventListener('DOMContentLoaded', function () {
   const inputField = document.getElementById('user-input');
   const sendButton = document.getElementById('send-button');
   const chatContainer = document.getElementById('chat-container');
-  const typingIndicator = document.getElementById('typing-indicator');
 
   function appendMessage(message, sender) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', sender);
     messageDiv.innerText = message;
-    chatContainer.insertBefore(messageDiv, typingIndicator);
+    chatContainer.appendChild(messageDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function showThinkingDots() {
+    const dots = document.createElement('div');
+    dots.classList.add('message', 'bot', 'thinking-indicator');
+    dots.innerText = 'BlueJay is typing...';
+    dots.id = 'thinking-dots';
+    chatContainer.appendChild(dots);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function removeThinkingDots() {
+    const dots = document.getElementById('thinking-dots');
+    if (dots) dots.remove();
   }
 
   async function sendMessage() {
@@ -18,8 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     appendMessage(userInput, 'user');
     inputField.value = '';
-    typingIndicator.style.display = 'flex';
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    showThinkingDots();
 
     try {
       const response = await fetch('https://bluejay-3999.onrender.com/chat', {
@@ -29,19 +41,21 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       const data = await response.json();
+      removeThinkingDots();
+
       if (data && data.response) {
         appendMessage(data.response, 'bot');
       } else {
-        appendMessage('Sorry, no response received.', 'bot');
+        appendMessage('Oops! No response received.', 'bot');
       }
     } catch (error) {
+      removeThinkingDots();
       appendMessage('Oops! Something went wrong.', 'bot');
-    } finally {
-      typingIndicator.style.display = 'none';
     }
   }
 
   sendButton.addEventListener('click', sendMessage);
+
   inputField.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') sendMessage();
   });
