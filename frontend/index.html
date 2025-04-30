@@ -1,23 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BlueJay — Save on Merchant Services</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <main class="chat-wrapper">
-    <div class="chat-box" id="chat-container">
-      <div class="message bot">Hi there! I'm BlueJay. How can I help you save today?</div>
-    </div>
-    <div class="input-container">
-      <span id="thinking-icon" style="display:none;">💬</span>
-      <input type="text" id="user-input" placeholder="Type a message..." />
-      <button id="send-button">➤</button>
-    </div>
-  </main>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(to bottom right, #d8eefe, #bcd8f7);
+  color: #003b6f;
+  text-align: center;
+  overflow-x: hidden;
+}
 
-  <script src="chat.js"></script>
-</body>
-</html>
+.chat-wrapper {
+  max-width: 420px;
+  margin: 60px auto;
+  background: url('chat_card.png') no-repeat center;
+  background-size: cover;
+  border-radius: 20px;
+  padding: 60px 15px 25px; /* Adjusted padding-top to move chat box up */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 500px;
+  box-shadow: none;
+  position: relative;
+}
+
+.chat-box {
+  height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
+  padding-right: 5px;
+  margin-bottom: 12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+}
+
+.message {
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin: 6px 12px;
+  max-width: 80%;
+  line-height: 1.4;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.message.user {
+  background-color: rgba(210, 235, 255, 0.85);
+  align-self: flex-end;
+  text-align: right;
+}
+
+.message.bot {
+  background-color: rgba(210, 255, 230, 0.85);
+  align-self: flex-start;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 5px;
+}
+
+#user-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+#send-button {
+  padding: 10px 16px;
+  border: none;
+  background-color: #0077cc;
+  color: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#send-button:hover {
+  background-color: #005fa3;
+}
+
+#thinking-icon {
+  font-size: 18px;
+}
