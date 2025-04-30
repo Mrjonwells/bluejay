@@ -1,38 +1,45 @@
 body {
   margin: 0;
+  padding: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  background-color: #e5f1fb;
-  color: #003b6f;
-  text-align: center;
-  overflow-x: hidden;
+  overflow: hidden;
+  background: #e5f3fc;
 }
 
-.chat-wrapper {
-  width: 100%;
+.background-wrapper {
+  width: 100vw;
   height: 100vh;
-  background: url('chat_card.png') no-repeat center top;
+  background: url('chat_card.png') no-repeat center center;
   background-size: contain;
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding-top: 240px; /* pushes chat box below motto */
+  justify-content: space-between;
+  position: relative;
+}
+
+.chat-wrapper {
+  width: 100%;
+  max-width: 420px;
+  padding-top: 32vh; /* positions below the motto */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .chat-box {
-  width: 85%;
-  max-width: 450px;
+  width: 90%;
   height: 260px;
   overflow-y: auto;
+  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  border-radius: 15px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   scroll-behavior: smooth;
-  padding: 12px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
-  backdrop-filter: blur(6px);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .message {
@@ -48,6 +55,7 @@ body {
 .message.user {
   background-color: rgba(210, 235, 255, 0.85);
   align-self: flex-end;
+  text-align: right;
 }
 
 .message.bot {
@@ -56,12 +64,10 @@ body {
 }
 
 .input-container {
-  width: 85%;
-  max-width: 450px;
+  width: 90%;
   display: flex;
   gap: 10px;
   align-items: center;
-  margin-bottom: 30px;
 }
 
 #user-input {
@@ -88,4 +94,15 @@ body {
 
 #thinking-icon {
   font-size: 18px;
+}
+
+.legal-footer {
+  font-size: 0.8rem;
+  color: #555;
+  padding: 12px 8px;
+  text-align: center;
+  width: 100%;
+  background: #f2faff;
+  position: absolute;
+  bottom: 0;
 }
