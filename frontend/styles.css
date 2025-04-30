@@ -116,7 +116,7 @@ body {
 }
 
 .footer {
-  margin-bottom: 10px;
+  margin-bottom: -2px; /* moved up 12px from default 10px */
   text-align: center;
   width: 100%;
 }
