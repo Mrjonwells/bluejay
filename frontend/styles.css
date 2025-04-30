@@ -20,6 +20,16 @@ body {
   align-items: center;
 }
 
+/* Motto just above the chat box */
+.motto {
+  font-size: 1.5rem; /* one size down */
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 10px;
+  color: #003b6f;
+  font-weight: 600;
+}
+
 .chat-wrapper {
   max-width: 420px;
   width: 100%;
@@ -28,7 +38,7 @@ body {
   flex-direction: column;
   align-items: center;
   position: absolute;
-  top: 27vh; /* Start below the motto */
+  top: calc(27vh - 52px); /* moved up by input box height */
 }
 
 .chat-box {
