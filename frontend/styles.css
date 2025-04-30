@@ -1,9 +1,9 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  background: #e8f3fc url('chat_card.png') no-repeat center top;
-  background-size: 97% calc(100% + 24px);
-  background-position: top center;
+  background: #e8f3fc url('chat_card.png') no-repeat center calc(-10px);
+  background-size: calc(97% + 2px) calc(100% + 24px);
+  background-position-x: center;
   overflow: hidden;
   font-size: 90%;
 }
@@ -116,7 +116,7 @@ body {
 }
 
 .footer {
-  margin-bottom: -2px; /* moved up 12px from default 10px */
+  margin-bottom: -2px;
   text-align: center;
   width: 100%;
 }
