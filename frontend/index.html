@@ -4,21 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AskBlueJay.ai</title>
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <header class="header">
-      <img src="bluejay.jpeg" alt="BlueJay Logo" class="logo" />
-      <h1 class="title">BlueJay</h1>
-      <p class="motto">Save smart. Scale faster. Do more!</p>
-    </header>
 
     <main class="chat-wrapper">
-      <div class="chat-box" id="chat-container"></div>
+      <div class="chat-box" id="chat-container">
+        <!-- Messages appear here -->
+        <div id="typing-indicator" class="message bot typing-bubble" style="display: none;">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+      </div>
+
       <div class="input-container">
-        <span id="thinking-icon" class="typing-indicator">...</span>
         <input type="text" id="user-input" placeholder="Type a message..." />
         <button id="send-button">➤</button>
       </div>
@@ -28,10 +28,11 @@
       <div class="icons">
         <img src="Boost.png" alt="Boost your profits" />
         <img src="Insights.png" alt="AI-powered insights" />
-        <img src="Lower.png" alt="Lower processing costs" />
+        <img src="Lower.png" alt="Lower processing fees" />
       </div>
       <p class="legal">© 2025 Fortified Capital LLC. All rights reserved.</p>
     </footer>
+
   </div>
   <script src="chat.js"></script>
 </body>
