@@ -6,30 +6,45 @@
   <title>AskBlueJay.ai</title>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
+  <link rel="icon" href="bluejay.png" type="image/png" sizes="96x96" />
+  <link rel="apple-touch-icon" href="bluejay.png" />
   <meta name="apple-mobile-web-app-title" content="AskBlueJay.ai" />
-  <meta name="application-name" content="AskBlueJay.ai" />
-  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="manifest" href="site.webmanifest" />
 
+  <!-- Apple App Behavior -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="AskBlueJay.ai – Save Smart on Merchant Services" />
+  <meta property="og:description" content="Talk with BlueJay, your AI savings expert for payment processing." />
+  <meta property="og:image" content="https://askbluejay.ai/bluejay.png" />
+  <meta property="og:url" content="https://askbluejay.ai" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Styles -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="chat-wrapper">
-    <div class="chat-box" id="chat-container">
-      <!-- Dynamic chat bubbles will populate here -->
-    </div>
-    <div class="input-container">
-      <span id="thinking-icon" style="display:none;">...</span>
-      <input type="text" id="user-input" placeholder="Type a message..." />
-      <button id="send-button">➤</button>
-    </div>
-  </main>
+  <div class="container">
+    <h1 class="motto">Save smart. Scale faster. Do more!</h1>
 
-  <footer>
-    <p>© 2025 Fortified Capital LLC. All rights reserved.</p>
-  </footer>
+    <main class="chat-wrapper">
+      <div class="chat-box" id="chat-container">
+        <div id="typing-indicator" class="message bot typing-bubble" style="display: none;">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+      </div>
+      <div class="input-container">
+        <input type="text" id="user-input" placeholder="Type a message..." />
+        <button id="send-button">➤</button>
+      </div>
+    </main>
 
+    <footer class="legal-footer">
+      © <script>document.write(new Date().getFullYear())</script> Fortified Capital LLC. All rights reserved.
+    </footer>
+  </div>
   <script src="chat.js"></script>
 </body>
 </html>
