@@ -9,22 +9,22 @@ body {
 
 .chat-wrapper {
   max-width: 420px;
-  margin: 60px auto;
-  background: url('chat_card.png') no-repeat center;
+  margin: 0 auto;
+  background: url('chat_card.png') no-repeat center top;
   background-size: cover;
   background-attachment: fixed;
   border-radius: 20px;
-  padding: 37px 15px 25px; /* Reduced padding-top by 163px (1.70 inches) */
+  padding: 20px 15px 25px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  min-height: 500px;
+  justify-content: flex-start;
+  min-height: 100vh;
   box-shadow: none;
   position: relative;
 }
 
 .chat-box {
-  height: 220px;
+  height: 50vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
