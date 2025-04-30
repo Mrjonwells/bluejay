@@ -2,7 +2,7 @@ body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, sans-serif;
   background: #e8f3fc url('chat_card.png') no-repeat center top;
-  background-size: 97% auto;
+  background-size: 97% calc(100% + 96px);
   background-position: top center;
   overflow: hidden;
   font-size: 90%;
