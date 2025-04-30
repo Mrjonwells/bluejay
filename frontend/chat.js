@@ -1,95 +1,47 @@
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-  background: linear-gradient(to bottom right, #d8eefe, #bcd8f7);
-  color: #003b6f;
-  text-align: center;
-  overflow-x: hidden;
-}
+document.addEventListener('DOMContentLoaded', function() {
+  const inputField = document.getElementById('user-input');
+  const sendButton = document.getElementById('send-button');
+  const chatContainer = document.getElementById('chat-container');
+  const thinkingIcon = document.getElementById('thinking-icon');
 
-.chat-wrapper {
-  max-width: 420px;
-  margin: 0 auto;
-  background: url('chat_card.png') no-repeat center top;
-  background-size: cover;
-  height: 100vh;
-  position: relative;
-}
+  function appendMessage(message, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', sender);
+    messageDiv.innerText = message;
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
 
-.chat-box {
-  position: absolute;
-  top: 190px;
-  left: 0;
-  right: 0;
-  width: 90%;
-  height: 280px;
-  margin: 0 auto;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  scroll-behavior: smooth;
-  background-color: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
-  border-radius: 14px;
-  padding: 12px;
-}
+  async function sendMessage() {
+    const userInput = inputField.value.trim();
+    if (!userInput) return;
 
-.input-container {
-  position: absolute;
-  top: 480px; /* Directly below .chat-box (190 + 280 + 10 padding buffer) */
-  left: 0;
-  right: 0;
-  width: 90%;
-  margin: 0 auto;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
+    appendMessage(userInput, 'user');
+    inputField.value = '';
+    thinkingIcon.style.display = 'inline-block';
 
-#user-input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-}
+    try {
+      const response = await fetch('https://bluejay-3999.onrender.com/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userInput })
+      });
 
-#send-button {
-  padding: 10px 16px;
-  border: none;
-  background-color: #0077cc;
-  color: white;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-}
+      const data = await response.json();
+      if (data && data.response) {
+        appendMessage(data.response, 'bot');
+      } else {
+        appendMessage('No response from server.', 'bot');
+      }
+    } catch (error) {
+      appendMessage('Error contacting server.', 'bot');
+    } finally {
+      thinkingIcon.style.display = 'none';
+    }
+  }
 
-#send-button:hover {
-  background-color: #005fa3;
-}
-
-.message {
-  background-color: rgba(255, 255, 255, 0.85);
-  padding: 10px 14px;
-  border-radius: 12px;
-  margin: 6px 12px;
-  max-width: 80%;
-  line-height: 1.4;
-  text-align: left;
-  word-wrap: break-word;
-}
-
-.message.user {
-  background-color: rgba(210, 235, 255, 0.85);
-  align-self: flex-end;
-  text-align: right;
-}
-
-.message.bot {
-  background-color: rgba(210, 255, 230, 0.85);
-  align-self: flex-start;
-}
-
-#thinking-icon {
-  font-size: 18px;
-}
+  sendButton.addEventListener('click', sendMessage);
+  inputField.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+});
