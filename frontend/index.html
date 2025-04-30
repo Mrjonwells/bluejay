@@ -16,13 +16,12 @@
   <div class="container">
     <main class="chat-wrapper">
       <div class="chat-box" id="chat-container">
-        <!-- Messages go here -->
-        <div id="typing-indicator" class="message bot" style="display: none;">
-          BlueJay is typing<span class="dots"></span>
+        <!-- Chat messages -->
+        <div id="typing-indicator" class="message bot typing-bubble" style="display: none;">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
         </div>
       </div>
       <div class="input-container">
-        <span id="thinking-icon" style="display:none;">💬</span>
         <input type="text" id="user-input" placeholder="Type a message..." />
         <button id="send-button">➤</button>
       </div>
