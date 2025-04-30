@@ -3,24 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BlueJay — Save on Merchant Services</title>
-
-  <!-- Styles -->
+  <title>AskBlueJay.ai — Save on Merchant Services</title>
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Favicons -->
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <meta name="apple-mobile-web-app-title" content="AskBlueJay.ai" />
-  <meta name="theme-color" content="#0077cc" />
+  <link rel="icon" href="/favicon.ico" />
 </head>
 <body>
+  <div class="background"></div>
+
   <main class="chat-wrapper">
     <div class="chat-box" id="chat-container">
-      <!-- Dynamic messages populate here -->
+      <!-- Messages populate here -->
     </div>
     <div class="input-container">
       <span id="thinking-icon" style="display:none;">💬</span>
@@ -28,6 +20,7 @@
       <button id="send-button">➤</button>
     </div>
   </main>
+
   <script src="chat.js"></script>
 </body>
 </html>
