@@ -1,53 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AskBlueJay.ai</title>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background-color: #e6f1fc;
+  color: #003b6f;
+  overflow-x: hidden;
+}
 
-  <!-- Favicon -->
-  <link rel="icon" href="bluejay.png" type="image/png" sizes="96x96" />
-  <link rel="apple-touch-icon" href="bluejay.png" />
-  <meta name="apple-mobile-web-app-title" content="AskBlueJay.ai" />
-  <link rel="manifest" href="site.webmanifest" />
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: url('chat_card.png') no-repeat center top;
+  background-size: cover;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
 
-  <!-- Apple App Behavior -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+header {
+  text-align: center;
+  padding-top: 20px;
+}
 
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:title" content="AskBlueJay.ai – Save Smart on Merchant Services" />
-  <meta property="og:description" content="Talk with BlueJay, your AI savings expert for payment processing." />
-  <meta property="og:image" content="https://askbluejay.ai/bluejay.png" />
-  <meta property="og:url" content="https://askbluejay.ai" />
-  <meta name="twitter:card" content="summary_large_image" />
+.logo {
+  width: 70px;
+  height: auto;
+  margin-bottom: 5px;
+}
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div class="container">
-    <h1 class="motto">
-      <img src="bluejay.png" class="logo-flyin" alt="BlueJay Icon" />
-      AskBlueJay.ai
-    </h1>
+.site-title {
+  margin: 0;
+  font-size: 2.4rem;
+  color: #003b6f;
+}
 
-    <main class="chat-wrapper">
-      <div class="chat-box" id="chat-container">
-        <div id="typing-indicator" class="message bot typing-bubble" style="display: none;">
-          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        </div>
-      </div>
-      <div class="input-container">
-        <input type="text" id="user-input" placeholder="Type a message..." />
-        <button id="send-button">➤</button>
-      </div>
-    </main>
+.motto {
+  margin: 5px 0 10px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #003b6f;
+}
 
-    <footer class="legal-footer">
-      © <script>document.write(new Date().getFullYear())</script> Fortified Capital LLC. All rights reserved.
-    </footer>
-  </div>
-  <script src="chat.js"></script>
-</body>
-</html>
+.chat-wrapper {
+  width: 90%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+  margin-top: 1rem;
+}
+
+.chat-box {
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
+  padding: 10px;
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  max-height: 240px;
+}
+
+.message {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin: 6px 12px;
+  max-width: 80%;
+  line-height: 1.4;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+.message.user {
+  background-color: #b8dfff;
+  align-self: flex-end;
+  text-align: right;
+}
+
+.message.bot {
+  background-color: #c3f0e6;
+  align-self: flex-start;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+#user-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+#send-button {
+  padding: 10px 16px;
+  border: none;
+  background-color: #0077cc;
+  color: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#send-button:hover {
+  background-color: #005fa3;
+}
+
+.thinking-indicator {
+  font-size: 20px;
+  color: #444;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #003b6f;
+  padding: 10px 0;
+  background-color: #e6f1fc;
+  width: 100%;
+}
