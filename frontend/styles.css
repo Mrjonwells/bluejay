@@ -19,9 +19,9 @@ body, html {
 
 .chat-overlay {
   position: absolute;
-  top: 38%;
+  top: 49%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: 90%;
   max-width: 400px;
   display: flex;
