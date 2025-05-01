@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AskBlueJay.ai</title>
+  <title>BlueJay Chat</title>
   <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
-  <div class="container">
-    <main class="chat-wrapper">
-      <div class="chat-box" id="chat-container">
-        <div class="message bot">Hi, I'm BlueJay — your OAE-powered savings expert. How can I help you today?</div>
+  <div class="bg-wrapper">
+    <img src="5FC94B3F-A999-4A76-AAAF-832223F77FEA.png" class="bg-image" alt="BlueJay Background"/>
+    <div class="chat-overlay">
+      <div id="chat-container" class="chat-container"></div>
+      <div class="input-area">
+        <input type="text" id="user-input" placeholder="Type a message..."/>
+        <button id="send-button">Send</button>
       </div>
-      <div class="input-container">
-        <input type="text" id="user-input" placeholder="Type a message..." />
-        <button id="send-button">➤</button>
-      </div>
-    </main>
+      <div id="thinking-icon" class="thinking">...</div>
+    </div>
   </div>
+  <footer class="footer">
+    <p>BlueJay is a property of Fortified Capital LLC. All rights reserved.</p>
+  </footer>
   <script src="chat.js"></script>
 </body>
 </html>
