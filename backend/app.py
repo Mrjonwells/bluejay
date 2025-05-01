@@ -1,7 +1,9 @@
+
 import os
 import re
 import uuid
 import redis
+import json
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -13,16 +15,20 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/chat": {"origins": "https://askbluejay.ai"}})
 
-# Redis setup
+# Redis
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url) if redis_url else None
 
-# OpenAI setup
+# OpenAI
 openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
-# HubSpot info
+# Load assistant config
+with open("bluejay/bluejay_config.json") as f:
+    config = json.load(f)
+
+# HubSpot
 HUBSPOT_PORTAL_ID = "45853776"
 HUBSPOT_FORM_GUID = "3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 HUBSPOT_ENDPOINT = f"https://api.hsforms.com/submissions/v3/integration/submit/{HUBSPOT_PORTAL_ID}/{HUBSPOT_FORM_GUID}"
@@ -36,7 +42,7 @@ def chat():
     if not user_input:
         return jsonify({'reply': "I didn't catch that. Try again."})
 
-    # Redis thread ID tracking
+    # Thread tracking
     thread_id = None
     if r:
         try:
@@ -44,7 +50,7 @@ def chat():
             if thread_id:
                 thread_id = thread_id.decode()
         except Exception as e:
-            print(f"Redis get error: {e}")
+            print(f"Redis error: {e}")
 
     if not thread_id:
         try:
@@ -57,20 +63,17 @@ def chat():
             return jsonify({'reply': "Sorry, I'm having trouble starting the conversation."})
 
     try:
-        # Send user message
         client.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
             content=user_input
         )
 
-        # Run assistant
         run_response = client.beta.threads.runs.create(
             thread_id=thread_id,
             assistant_id=assistant_id
         )
 
-        # Poll until complete
         while True:
             status = client.beta.threads.runs.retrieve(
                 thread_id=thread_id,
@@ -79,40 +82,37 @@ def chat():
             if status.status == "completed":
                 break
 
-        # Get latest assistant message
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         assistant_reply = messages.data[0].content[0].text.value.strip()
 
-        # Detect submission trigger
-        if re.search(r"\b(submit|done|that's all)\b", user_input.lower()):
+        # Trigger HubSpot lead if user uses trigger phrase
+        if any(phrase in user_input.lower() for phrase in config["trigger_phrases"]):
             try:
-                full_thread = "\n".join(
-                    m.content[0].text.value for m in messages.data[:5]
-                )
-                name_match = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", full_thread)
-                email_match = re.search(r"[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}", full_thread)
-                phone_match = re.search(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", full_thread)
-                company_match = re.search(r"(?i)business name[:\s]*(.+)", full_thread)
+                thread_text = "\n".join(m.content[0].text.value for m in messages.data[:5])
+                name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", thread_text)
+                email = re.search(r"[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}", thread_text)
+                phone = re.search(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", thread_text)
+                company = re.search(r"(?i)business name[:\s]*(.+)", thread_text)
 
                 fields = []
-                if name_match:
-                    fields.append({"name": "firstname", "value": name_match.group(1).split()[0]})
-                    if len(name_match.group(1).split()) > 1:
-                        fields.append({"name": "lastname", "value": name_match.group(1).split()[1]})
-                if email_match:
-                    fields.append({"name": "email", "value": email_match.group(0)})
-                if phone_match:
-                    fields.append({"name": "phone", "value": phone_match.group(0)})
-                if company_match:
-                    fields.append({"name": "company", "value": company_match.group(1).strip()})
+                if name:
+                    split = name.group(1).split()
+                    fields.append({"name": "firstname", "value": split[0]})
+                    if len(split) > 1:
+                        fields.append({"name": "lastname", "value": split[1]})
+                if email:
+                    fields.append({"name": "email", "value": email.group(0)})
+                if phone:
+                    fields.append({"name": "phone", "value": phone.group(0)})
+                if company:
+                    fields.append({"name": "company", "value": company.group(1).strip()})
 
                 if fields:
-                    hubspot_response = requests.post(
-                        HUBSPOT_ENDPOINT,
+                    res = requests.post(HUBSPOT_ENDPOINT,
                         headers={"Content-Type": "application/json"},
                         json={"fields": fields}
                     )
-                    print("HubSpot submission response:", hubspot_response.status_code, hubspot_response.text)
+                    print("HubSpot response:", res.status_code, res.text)
             except Exception as e:
                 print("HubSpot error:", e)
 
