@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/chat": {"origins": "https://askbluejay.ai"}})
 
 # Redis setup
 redis_url = os.getenv("REDIS_URL")
