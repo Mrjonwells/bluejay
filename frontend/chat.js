@@ -1,45 +1,34 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const inputField = document.getElementById('user-input');
-  const sendButton = document.getElementById('send-button');
-  const chatContainer = document.getElementById('chat-container');
-  const thinkingIcon = document.getElementById('thinking-icon');
+// chat.js
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const chatBox = document.getElementById('chatBox');
+  const message = input.value.trim();
+  if (!message) return;
 
-  function appendMessage(text, sender) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', sender);
-    messageDiv.innerText = text;
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  // Append user message
+  const userMsg = document.createElement('div');
+  userMsg.textContent = message;
+  userMsg.style.textAlign = 'right';
+  chatBox.appendChild(userMsg);
+  input.value = '';
+
+  // Send to backend
+  try {
+    const response = await fetch('https://pbj-server1.onrender.com/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, user_id: 'bluejay-user' })
+    });
+
+    const data = await response.json();
+    const botMsg = document.createElement('div');
+    botMsg.textContent = data.reply || 'Sorry, something went wrong.';
+    chatBox.appendChild(botMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  } catch (error) {
+    const errorMsg = document.createElement('div');
+    errorMsg.textContent = 'Error: Unable to connect to the server.';
+    chatBox.appendChild(errorMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
-
-  async function sendMessage() {
-    const userInput = inputField.value.trim();
-    if (!userInput) return;
-
-    appendMessage(userInput, 'user');
-    inputField.value = '';
-    thinkingIcon.style.display = 'block';
-
-    try {
-      const response = await fetch('https://bluejay-3999.onrender.com/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userInput })
-      });
-
-      const data = await response.json();
-      if (data && data.response) {
-        appendMessage(data.response, 'bot');
-      }
-    } catch (error) {
-      appendMessage('Oops! Something went wrong.', 'bot');
-    } finally {
-      thinkingIcon.style.display = 'none';
-    }
-  }
-
-  sendButton.addEventListener('click', sendMessage);
-  inputField.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') sendMessage();
-  });
-});
+}
