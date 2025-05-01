@@ -1,38 +1,45 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const chatContainer = document.getElementById("chat-container");
-  const userInput = document.getElementById("user-input");
-  const sendButton = document.getElementById("send-button");
+document.addEventListener('DOMContentLoaded', function () {
+  const inputField = document.getElementById('user-input');
+  const sendButton = document.getElementById('send-button');
+  const chatContainer = document.getElementById('chat-container');
+  const thinkingIcon = document.getElementById('thinking-icon');
 
   function appendMessage(text, sender) {
-    const msg = document.createElement("div");
-    msg.classList.add("message", sender);
-    msg.textContent = text;
-    chatContainer.appendChild(msg);
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', sender);
+    messageDiv.innerText = text;
+    chatContainer.appendChild(messageDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
   async function sendMessage() {
-    const message = userInput.value.trim();
-    if (!message) return;
-    appendMessage(message, "user");
-    userInput.value = "";
+    const userInput = inputField.value.trim();
+    if (!userInput) return;
+
+    appendMessage(userInput, 'user');
+    inputField.value = '';
+    thinkingIcon.style.display = 'block';
 
     try {
-      const response = await fetch("https://bluejay-3999.onrender.com/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
+      const response = await fetch('https://bluejay-3999.onrender.com/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userInput })
       });
 
       const data = await response.json();
-      appendMessage(data.response, "bot");
-    } catch (err) {
-      appendMessage("Something went wrong. Please try again later.", "bot");
+      if (data && data.response) {
+        appendMessage(data.response, 'bot');
+      }
+    } catch (error) {
+      appendMessage('Oops! Something went wrong.', 'bot');
+    } finally {
+      thinkingIcon.style.display = 'none';
     }
   }
 
-  sendButton.addEventListener("click", sendMessage);
-  userInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") sendMessage();
+  sendButton.addEventListener('click', sendMessage);
+  inputField.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') sendMessage();
   });
 });
