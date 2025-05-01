@@ -14,7 +14,7 @@ async function sendMessage() {
 
   // Send to backend
   try {
-    const response = await fetch('https://pbj-server1.onrender.com/chat', {
+    const response = await fetch('https://bluejay-3999.onrender.com', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, user_id: 'bluejay-user' })
