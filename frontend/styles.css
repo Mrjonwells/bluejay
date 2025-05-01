@@ -23,7 +23,7 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  margin-top: 28vh; /* fine-tune this number to vertically align the box */
+  margin-top: 28vh;
 }
 
 .chat-box {
