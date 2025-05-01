@@ -32,7 +32,7 @@ def chat():
     user_id = data.get('user_id', str(uuid.uuid4()))
 
     if not user_input:
-        return jsonify({'response': "I didn't catch that. Try again."})
+        return jsonify({'reply': "I didn't catch that. Try again."})
 
     # Redis thread ID tracking
     thread_id = None
@@ -52,17 +52,16 @@ def chat():
                 r.set(f"thread:{user_id}", thread_id)
         except Exception as e:
             print(f"Thread creation error: {e}")
-            return jsonify({'response': "Sorry, I'm having trouble starting the conversation."})
+            return jsonify({'reply': "Sorry, I'm having trouble starting the conversation."})
 
     try:
         # Send the message into the thread and run the Assistant
-        run = client.beta.threads.messages.create(
+        client.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
             content=user_input
         )
 
-        # Run the assistant
         run_response = client.beta.threads.runs.create(
             thread_id=thread_id,
             assistant_id=assistant_id
@@ -85,7 +84,7 @@ def chat():
         print(f"OpenAI API Error: {e}")
         assistant_reply = "Sorry, something went wrong connecting to the Assistant."
 
-    return jsonify({'response': assistant_reply})
+    return jsonify({'reply': assistant_reply})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
