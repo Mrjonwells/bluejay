@@ -55,6 +55,19 @@
       color: white;
       cursor: pointer;
     }
+
+    .legal {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px 12px;
+      border-radius: 5px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -66,6 +79,10 @@
       <input type="text" id="userInput" placeholder="Type a message..." />
       <button onclick="sendMessage()">Send</button>
     </div>
+  </div>
+
+  <div class="legal">
+    BlueJay and AskBlueJay.ai are the exclusive property of Fortified Capital LLC. All rights reserved. © 2025
   </div>
 
   <script src="chat.js"></script>
