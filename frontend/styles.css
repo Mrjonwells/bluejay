@@ -19,7 +19,7 @@ body, html {
 
 .chat-overlay {
   position: absolute;
-  top: 49%;
+  top: 44%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
@@ -30,10 +30,11 @@ body, html {
 }
 
 .chat-container {
-  background: #ffffffd0;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
   border-radius: 10px;
   padding: 10px;
-  height: 240px;
+  height: 200px;
   width: 100%;
   overflow-y: auto;
   margin-bottom: 10px;
