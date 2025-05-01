@@ -1,29 +1,25 @@
 body, html {
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', sans-serif;
   height: 100%;
-  width: 100%;
-  overflow-x: hidden;
-  background: #ffffff;
-}
-
-.bg-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff;
+  overflow: hidden;
 }
 
 .bg-image {
-  width: 100%;
-  height: auto;
-  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
 }
 
 .chat-overlay {
   position: absolute;
-  top: 35%;
+  top: 38%;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
@@ -37,12 +33,12 @@ body, html {
   background: #ffffffd0;
   border-radius: 10px;
   padding: 10px;
-  height: 260px;
+  height: 240px;
   width: 100%;
   overflow-y: auto;
   margin-bottom: 10px;
-  font-size: 0.9rem;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  font-size: 0.95rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
 }
 
 .input-area {
@@ -70,14 +66,16 @@ body, html {
 
 #thinking-icon {
   display: none;
-  margin-top: 5px;
+  margin-top: 6px;
   font-size: 0.8rem;
   color: #888;
 }
 
 .footer {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
   text-align: center;
   font-size: 0.75rem;
   color: #666;
-  padding: 10px;
 }
