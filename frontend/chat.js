@@ -10,13 +10,11 @@ async function sendMessage() {
   chatBox.appendChild(userMsg);
   input.value = '';
 
-  // Show "thinking" animation
-  const thinkingMsg = document.createElement('div');
-  thinkingMsg.textContent = 'BlueJay is thinking...';
-  thinkingMsg.id = 'thinking';
-  thinkingMsg.style.fontStyle = 'italic';
-  thinkingMsg.style.opacity = 0.6;
-  chatBox.appendChild(thinkingMsg);
+  const typing = document.createElement('div');
+  typing.className = 'typing-indicator';
+  typing.id = 'typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  chatBox.appendChild(typing);
   chatBox.scrollTop = chatBox.scrollHeight;
 
   try {
@@ -27,18 +25,14 @@ async function sendMessage() {
     });
 
     const data = await response.json();
-
-    // Remove thinking message
-    const t = document.getElementById('thinking');
-    if (t) t.remove();
+    typing.remove();
 
     const botMsg = document.createElement('div');
     botMsg.textContent = data.reply || 'Sorry, something went wrong.';
     chatBox.appendChild(botMsg);
     chatBox.scrollTop = chatBox.scrollHeight;
   } catch (error) {
-    const t = document.getElementById('thinking');
-    if (t) t.remove();
+    typing.remove();
 
     const errorMsg = document.createElement('div');
     errorMsg.textContent = 'Error: Unable to connect to the server.';
@@ -47,7 +41,6 @@ async function sendMessage() {
   }
 }
 
-// Listen for "Enter" key
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('userInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') sendMessage();
