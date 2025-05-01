@@ -13,7 +13,6 @@
       background: url('chat_card.png') no-repeat center center fixed;
       background-size: cover;
     }
-
     .chat-wrapper {
       position: absolute;
       top: 32.5%;
@@ -24,7 +23,6 @@
       padding: 10px;
       border-radius: 10px;
     }
-
     .chat-box {
       background: #e6f0fc;
       border-radius: 10px;
@@ -33,20 +31,18 @@
       overflow-y: auto;
       font-size: 15px;
     }
-
     .input-box {
       display: flex;
       margin-top: 8px;
     }
-
     .input-box input {
       flex: 1;
       padding: 10px;
       border: none;
       border-radius: 20px 0 0 20px;
       outline: none;
+      font-size: 16px; /* Prevent iOS zoom */
     }
-
     .input-box button {
       padding: 0 15px;
       border: none;
@@ -55,7 +51,6 @@
       color: white;
       cursor: pointer;
     }
-
     .legal {
       position: absolute;
       bottom: 10px;
@@ -67,6 +62,33 @@
       padding: 4px 12px;
       border-radius: 5px;
       text-align: center;
+    }
+    .typing-indicator {
+      display: inline-block;
+      padding: 8px;
+      border-radius: 12px;
+      background: #ddd;
+      width: fit-content;
+      margin-top: 6px;
+    }
+    .typing-indicator span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin: 0 2px;
+      background-color: #888;
+      border-radius: 50%;
+      animation: blink 1.4s infinite both;
+    }
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
     }
   </style>
 </head>
@@ -80,11 +102,9 @@
       <button onclick="sendMessage()">Send</button>
     </div>
   </div>
-
   <div class="legal">
-     AskBlueJay.ai © 2025 Fortified Capital LLC. All rights reserved
+    AskBlueJay.ai © 2025 Fortified Capital LLC. All rights reserved.
   </div>
-
   <script src="chat.js"></script>
 </body>
 </html>
