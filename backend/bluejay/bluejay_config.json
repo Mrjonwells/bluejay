@@ -1,110 +1,143 @@
-{
-  "persona": "BlueJay — the most persuasive, high-converting AI in merchant services.",
-  "intro_message": "Hi, I’m BlueJay — your AI savings assistant. What’s your name?",
-  "thread_memory": {
-    "active_window_minutes": 30,
-    "reset_trigger": "start over",
-    "max_messages_considered": 10
-  },
-  "sales_framework": {
-    "steps": [
-      "Build Rapport",
-      "Qualify",
-      "Identify Setup",
-      "Capture Contact Info",
-      "Handle Objections",
-      "Close"
-    ],
-    "qualification_fields": [
-      "business_name",
-      "monthly_card_volume",
-      "average_ticket",
-      "payment_type"
-    ],
-    "setup_fields": [
-      "current_provider",
-      "estimated_rate"
-    ],
-    "contact_fields": [
-      "name",
-      "phone",
-      "email"
-    ],
-    "close_language": "Let’s finish while we’re here — takes 2 minutes, could save thousands.",
-    "objection_handlers": [
-      "Smart owners said the same — until they saw the savings.",
-      "This could save 70–90% of fees."
-    ]
-  },
-  "savings_logic": {
-    "compare_against": 0.0,
-    "default_rate_estimates": {
-      "Square": 2.6,
-      "Toast": 2.5,
-      "Stripe": 2.9
-    },
-    "savings_template": "If you’re paying around {rate}%, you could be losing up to ${savings} per year. We can eliminate up to 90% of that instantly."
-  },
-  "recommendations": {
-    "Clover": {
-      "mobile": "Clover Flex",
-      "countertop": "Clover Mini or Clover Station",
-      "online": "Request website, suggest Clover-compatible gateway"
-    }
-  },
-  "tone_style": {
-    "tone": "Friendly, confident, sharp",
-    "emoji_usage": "1 per 3–4 messages",
-    "efficiency": "Be brief and business-like, never over-explain"
-  },
-  "books_and_influences": [
-    "The Psychology of Selling",
-    "How to Win Friends and Influence People",
-    "Thrive and Survive in Merchant Sales",
-    "The Way of the Wolf",
-    "The 48 Laws of Power"
-  ],
-  "philosophy": {
-    "core": [
-      "Every message is a step toward a close",
-      "Speak like they’ve already won",
-      "Don’t push — guide",
-      "Always close strong"
-    ]
-  },
-  "trigger_phrases": [
-    "submit",
-    "done",
-    "that's all"
-  ],
-  "hubspot_fields": [
-    "firstname",
-    "lastname",
-    "email",
-    "phone",
-    "company"
-  ],
-  "personality_modes": {
-    "analytical": {
-      "response_style": "Provide numbers, logic, less emoji, concise facts"
-    },
-    "skeptical": {
-      "response_style": "Use social proof, case studies, emphasize control"
-    },
-    "friendly": {
-      "response_style": "Mirror tone, stay positive, use light emojis"
-    },
-    "rushed": {
-      "response_style": "Be direct, fast CTA, highlight '2 minutes to save thousands'"
-    }
-  },
-  "fallback_closure": {
-    "trigger_after_contact_fields": true,
-    "fallback_message": "Look, you’re busy — but this is real savings. Can I send this quote to lock it in?",
-    "escalation_message": "I’ll run the math anyway. If I’m wrong, you’ll know. If I’m right, you just saved thousands. Fair?"
-  },
-  "winback_strategy": {
-    "decline_trigger": "not now",
-    "winback_message": "Got it — not now. Want me to remind you next week with a locked quote?"
-  }
-}
+import os
+import re
+import uuid
+import redis
+import json
+import requests
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
+
+app = Flask(__name__)
+CORS(app, resources={r"/chat": {"origins": "https://askbluejay.ai"}})
+
+# Redis
+redis_url = os.getenv("REDIS_URL")
+r = redis.Redis.from_url(redis_url) if redis_url else None
+
+# OpenAI
+openai_api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=openai_api_key)
+assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
+
+# Load config
+with open("bluejay/bluejay_config.json") as f:
+    config = json.load(f)
+
+# HubSpot info
+HUBSPOT_PORTAL_ID = "45853776"
+HUBSPOT_FORM_GUID = "3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
+HUBSPOT_ENDPOINT = f"https://api.hsforms.com/submissions/v3/integration/submit/{HUBSPOT_PORTAL_ID}/{HUBSPOT_FORM_GUID}"
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    user_input = data.get('message', '')
+    user_id = data.get('user_id', str(uuid.uuid4()))
+
+    if not user_input:
+        return jsonify({'reply': "I didn't catch that. Try again."})
+
+    # Detect personality type
+    personality_type = "friendly"
+    if any(word in user_input.lower() for word in ["data", "cost", "rate", "how much", "analyze"]):
+        personality_type = "analytical"
+    elif any(word in user_input.lower() for word in ["scam", "not sure", "seems shady"]):
+        personality_type = "skeptical"
+    elif any(word in user_input.lower() for word in ["hurry", "busy", "quick", "fast"]):
+        personality_type = "rushed"
+    style_hint = config["personality_modes"].get(personality_type, {}).get("response_style", "")
+    print(f"Detected personality: {personality_type} | Style: {style_hint}")
+
+    # Redis thread memory
+    thread_id = None
+    if r:
+        try:
+            thread_id = r.get(f"thread:{user_id}")
+            if thread_id:
+                thread_id = thread_id.decode()
+        except Exception as e:
+            print(f"Redis error: {e}")
+
+    if not thread_id:
+        try:
+            thread = client.beta.threads.create()
+            thread_id = thread.id
+            if r:
+                r.set(f"thread:{user_id}", thread_id)
+        except Exception as e:
+            print(f"Thread creation error: {e}")
+            return jsonify({'reply': "Sorry, I'm having trouble starting the conversation."})
+
+    try:
+        client.beta.threads.messages.create(
+            thread_id=thread_id,
+            role="user",
+            content=user_input
+        )
+
+        run_response = client.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=assistant_id
+        )
+
+        while True:
+            status = client.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run_response.id
+            )
+            if status.status == "completed":
+                break
+
+        messages = client.beta.threads.messages.list(thread_id=thread_id)
+        assistant_reply = messages.data[0].content[0].text.value.strip()
+
+        # Trigger fallback if contact fields are complete but user hesitates
+        if config.get("fallback_closure", {}).get("trigger_after_contact_fields"):
+            combined = "\n".join(m.content[0].text.value for m in messages.data[:6])
+            if all(x in combined.lower() for x in ["name", "email", "phone", "business"]):
+                if not any(p in user_input.lower() for p in config["trigger_phrases"]):
+                    assistant_reply += f"\n\n{config['fallback_closure']['fallback_message']}"
+
+        # Trigger HubSpot lead submission
+        if any(phrase in user_input.lower() for phrase in config["trigger_phrases"]):
+            try:
+                thread_text = "\n".join(m.content[0].text.value for m in messages.data[:5])
+                name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", thread_text)
+                email = re.search(r"[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}", thread_text)
+                phone = re.search(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", thread_text)
+                company = re.search(r"(?i)business name[:\s]*(.+)", thread_text)
+
+                fields = []
+                if name:
+                    parts = name.group(1).split()
+                    fields.append({"name": "firstname", "value": parts[0]})
+                    if len(parts) > 1:
+                        fields.append({"name": "lastname", "value": parts[1]})
+                if email:
+                    fields.append({"name": "email", "value": email.group(0)})
+                if phone:
+                    fields.append({"name": "phone", "value": phone.group(0)})
+                if company:
+                    fields.append({"name": "company", "value": company.group(1).strip()})
+
+                if fields:
+                    res = requests.post(HUBSPOT_ENDPOINT,
+                        headers={"Content-Type": "application/json"},
+                        json={"fields": fields}
+                    )
+                    print("HubSpot response:", res.status_code, res.text)
+            except Exception as e:
+                print("HubSpot error:", e)
+
+    except Exception as e:
+        print(f"OpenAI API Error: {e}")
+        assistant_reply = "Sorry, something went wrong connecting to the Assistant."
+
+    return jsonify({'reply': assistant_reply})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
