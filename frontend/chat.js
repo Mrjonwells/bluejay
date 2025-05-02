@@ -16,7 +16,7 @@ function appendMessage(sender, text) {
   chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-function sendMessage() {
+async function sendMessage() {
   const message = chatInput.value.trim();
   if (!message) return;
 
@@ -29,35 +29,39 @@ function sendMessage() {
   chatLog.appendChild(botBubble);
   chatLog.scrollTop = chatLog.scrollHeight;
 
-  const eventSource = new EventSourcePolyfill("/chat", {
+  const response = await fetch("/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    payload: JSON.stringify({ message, user_id: userId })
+    body: JSON.stringify({ message, user_id: userId })
   });
 
-  let responseText = "";
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let result = "";
 
-  eventSource.onmessage = function (event) {
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value);
     try {
-      const data = JSON.parse(event.data);
-      if (data.partial) {
-        responseText += data.partial;
-        botBubble.textContent = responseText;
-      } else if (data.error) {
-        botBubble.textContent = "Something went wrong.";
-        eventSource.close();
+      const lines = chunk.trim().split("\n");
+      for (const line of lines) {
+        const data = JSON.parse(line);
+        if (data.partial) {
+          result += data.partial;
+          botBubble.textContent = result;
+        } else if (data.error) {
+          botBubble.textContent = "Something went wrong.";
+        }
       }
-    } catch {
-      eventSource.close();
+    } catch (err) {
+      console.error("Parse error:", err);
+      break;
     }
-  };
-
-  eventSource.onerror = function () {
-    eventSource.close();
-  };
+  }
 }
-
 sendButton.addEventListener("click", sendMessage);
-chatInput.addEventListener("keydown", function (e) {
+chatInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") sendMessage();
 });
