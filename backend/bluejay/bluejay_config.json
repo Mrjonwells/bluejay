@@ -54,5 +54,11 @@
       "confident": ["✅", "🚀"],
       "urgency": ["⏳", "⚡", "🔥"]
     }
+  },
+  "annual_savings_formula": {
+    "description": "Estimate how much the merchant can save yearly by switching to a cash discount program.",
+    "inputs": ["monthly_card_volume", "estimated_rate"],
+    "calculation": "monthly_card_volume * (estimated_rate - 0.0) * 12",
+    "response_template": "If you're paying around {rate}%, you could be losing up to ${savings} per year. We can eliminate most of that instantly."
   }
 }
