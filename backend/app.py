@@ -81,6 +81,11 @@ def chat():
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         assistant_reply = messages.data[0].content[0].text.value.strip()
+
+        # Truncate long assistant replies
+        if assistant_reply.count(".") > 2 or len(assistant_reply.split()) > 50:
+            assistant_reply = assistant_reply.split(".")[0] + "..."
+
         user_text_lower = user_input.lower()
 
         if len(messages.data) < 3:
@@ -123,13 +128,13 @@ def chat():
             line = config["annual_savings_formula"]["response_template"]
             assistant_reply += "\n\n" + line.replace("{rate}", str(rate)).replace("{savings}", str(annual))
 
-        # Clover product recommendations
+        # Product recommendation
         for product_key, product in config.get("product_recommendations", {}).items():
             if any(k in user_text_lower for k in product["keywords"]):
                 assistant_reply += "\n\n" + product["reply"]
                 break
 
-        # HubSpot lead push
+        # HubSpot form push
         recent_text = "\n".join(m.content[0].text.value.lower() for m in messages.data[:6])
         if all(x in recent_text for x in ["name", "email", "phone", "business"]):
             name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", recent_text)
