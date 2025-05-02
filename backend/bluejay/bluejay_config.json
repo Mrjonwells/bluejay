@@ -1,74 +1,99 @@
 {
   "forward_prompts": [
-    "What’s your business name?",
-    "How long have you been in business?",
-    "What’s your monthly card volume?",
-    "What kind of clients do you mostly serve?",
-    "You mostly take payments in-person or online?",
-    "You using Square, Stripe, or someone else?",
-    "Do you know your current rate or fee structure?",
-    "You mind if I do a quick savings estimate?",
-    "Want to see how much you're overpaying right now?",
-    "Would lower fees actually help your margins this year?"
+    "What’s the name of your business?",
+    "And what do you guys do best?",
+    "How long have you been open?",
+    "Mind sharing your average monthly card volume?",
+    "You mostly take payments in-person, online, or both?",
+    "Who’s your current provider — Square, Stripe, someone else?",
+    "Do you know if you're on a flat rate or tiered?",
+    "Want me to run your numbers real fast?"
   ],
   "objections": {
-    "already have a system": "That’s totally fair — many clients felt the same until they saw how much they could keep.",
-    "not interested": "Understood — would you be open to a quick comparison just to validate?",
-    "too busy": "Of course — happy to keep it tight. Can I ask just one quick question?",
-    "too expensive": "Actually, this model cuts cost. Want to see the difference in real numbers?",
-    "need to think": "Absolutely. Want a simple report to look over?"
+    "already have a system": "Smart — most we help felt the same until they saw the savings.",
+    "not interested": "Got it. Open to a quick comparison though?",
+    "too busy": "No stress — can I ask just one thing now?",
+    "too expensive": "This model actually cuts 93% of your fees. Want proof?",
+    "need to think": "Fair — want a quick summary to review later?"
   },
   "urgency_triggers": [
-    "Want to move forward while you’re top of mind?",
-    "Ready to look at savings or still have questions?",
-    "Would it help if I emailed a quick breakdown?",
-    "You good if I send a signup link for review?"
+    "Want to see your savings while we’re here?",
+    "Should I prep a signup link?",
+    "You good with moving forward if it makes sense?",
+    "Want me to fast-track the estimate?"
   ],
   "deal_stage_tone": {
     "curious": {
-      "style": "Warm, interested, exploratory",
-      "example": "You’ve clearly built something solid — mind if I ask about your payment setup?"
+      "style": "Casual, upbeat, impressed",
+      "example": "You’ve clearly got something solid — want to see how much you’re overpaying?"
     },
     "qualified": {
-      "style": "Professional and focused",
-      "example": "Looks like there’s a real opportunity here — want to finish the comparison?"
+      "style": "Crisp, confident",
+      "example": "You're dialed in — want to compare numbers and see the win?"
     },
     "stalling": {
-      "style": "Respectful push",
-      "example": "Totally up to you — just want to make sure you’re not leaving money on the table."
+      "style": "Sharp nudge, respectful",
+      "example": "Want to push this forward or hit pause for now?"
     },
     "closing": {
-      "style": "Supportive and clear",
-      "example": "Let’s wrap this up — 2 minutes and it could save you thousands."
+      "style": "Fast, clear, supportive",
+      "example": "Let’s wrap this up and cut your fees — fair?"
     }
   },
   "follow_up_styles": {
-    "soft": "Want to revisit this when you’ve got a minute?",
-    "assertive": "Let’s finish this while we’re here — fair?",
-    "friendly": "Still curious? Want help wrapping it up?"
+    "soft": "Want to revisit this later today?",
+    "assertive": "Let’s close this — it’s quick and you’ll save a lot.",
+    "friendly": "Want help finishing it up right now?"
   },
   "emoji_logic": {
     "frequency": "1 per 3 messages max",
     "tones": {
-      "friendly": ["🙂", "👍"],
+      "friendly": ["🙂", "👍", "💬"],
       "confident": ["✅", "🚀"],
       "urgency": ["⏳", "⚡"]
     }
   },
   "annual_savings_formula": {
-    "description": "Compare the user's rate vs. a near-zero cash discount model. Assume 93% reduction.",
+    "description": "Assume 93% savings vs current rate using cash discount.",
     "inputs": ["monthly_card_volume", "estimated_rate"],
     "calculation": "monthly_card_volume * estimated_rate * 0.93 * 12 / 100",
-    "response_template": "Based on that, you could be saving about ${savings}/yr. Want to make that real?"
+    "response_template": "That’s about ${savings}/yr back in your pocket. Want to lock that in?"
   },
   "product_recommendations": {
     "mobile": {
-      "keywords": ["mobile", "on the go", "truck", "flexible"],
-      "reply": "Sounds mobile — Clover Flex might be the perfect fit."
+      "keywords": ["mobile", "truck", "on the go"],
+      "reply": "Sounds mobile — Clover Flex might be perfect. Want the link?"
     },
     "countertop": {
-      "keywords": ["counter", "retail", "POS", "storefront"],
-      "reply": "Retail-based? Clover Mini or Station would make sense. Want a quick compare?"
+      "keywords": ["counter", "POS", "retail"],
+      "reply": "Countertop? Clover Mini or Station could be ideal. Want options?"
     },
     "online": {
-      "keywords": ["website", "ecommerce", "online store", "shop]()
+      "keywords": ["online", "ecommerce", "shopify", "website"],
+      "reply": "Online setup? We can integrate a 0% fee gateway easily."
+    }
+  },
+  "reply_style": {
+    "guidance": "Fast. Smart. Human. One sentence max. Match their vibe — if casual, match it. If serious, go pro. Ask short questions, make clear moves, close cleanly.",
+    "examples": [
+      "That’s awesome — what’s your average ticket?",
+      "Do you mostly swipe cards or take them online?",
+      "Want me to show the savings real quick?",
+      "Cool if I drop the signup link?",
+      "Your rate sounds high — want to beat it?"
+    ]
+  },
+  "fallbacks": [
+    "Still with me? Want to keep going?",
+    "Should I pause or move ahead?",
+    "Want to knock this out now or circle back?",
+    "Need anything before we close this?"
+  ],
+  "deal_stage_scoring": {
+    "curious": ["business", "how", "what", "interested", "learn", "setup", "volume", "ticket"],
+    "qualified": ["volume", "rate", "fees", "square", "stripe", "tiered", "flat"],
+    "stalling": ["later", "not now", "busy", "circle back", "another time"],
+    "closing": ["signup", "send", "lock", "start", "move forward", "finish", "email"]
+  },
+  "memory_behavior": {
+    "active_minutes_
