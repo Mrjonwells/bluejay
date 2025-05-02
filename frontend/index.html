@@ -20,7 +20,6 @@
       left: 50%;
       transform: translate(-50%, -50%);
       width: 320px;
-      background-color: rgba(255, 255, 255, 0);
       padding: 10px;
       border-radius: 10px;
     }
@@ -36,6 +35,28 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .message {
+      display: inline-block;
+      clear: both;
+      padding: 8px 12px;
+      border-radius: 16px;
+      margin: 4px 0;
+      max-width: 80%;
+      line-height: 1.4;
+    }
+
+    .message.user {
+      background-color: #f1f1f1;
+      float: right;
+      color: #333;
+    }
+
+    .message.bot {
+      background-color: #007bff;
+      color: white;
+      float: left;
     }
 
     .input-box {
@@ -111,16 +132,13 @@
         top: 40%;
         width: 90%;
       }
-
       .chat-box {
         height: 160px;
         font-size: 14px;
       }
-
       .input-box input {
         font-size: 14px;
       }
-
       .legal {
         font-size: 10px;
       }
@@ -130,7 +148,7 @@
 <body>
   <div class="chat-wrapper">
     <div class="chat-box" id="chatBox">
-      <div>Hello! How can I help you save on merchant services?</div>
+      <div class="message bot">Hello! How can I help you save on merchant services?</div>
     </div>
     <div class="input-box">
       <input type="text" id="userInput" placeholder="Type a message..." />
