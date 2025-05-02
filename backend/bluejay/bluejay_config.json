@@ -60,5 +60,29 @@
     "inputs": ["monthly_card_volume", "estimated_rate"],
     "calculation": "monthly_card_volume * (estimated_rate - 0.0) * 12",
     "response_template": "If you're paying around {rate}%, you could be losing up to ${savings} per year. We can eliminate most of that instantly."
+  },
+  "product_recommendations": {
+    "mobile": {
+      "keywords": ["mobile", "on the go", "truck", "flexible"],
+      "reply": "Clover Flex is perfect for that — handheld, tap-to-pay, and super reliable."
+    },
+    "countertop": {
+      "keywords": ["counter", "retail", "POS", "storefront"],
+      "reply": "Sounds like Clover Mini or Station would be ideal — sleek and full-featured."
+    },
+    "online": {
+      "keywords": ["website", "ecommerce", "online store", "shopify"],
+      "reply": "We can set up a gateway that works with your site — fast, secure, and no added fees."
+    }
+  },
+  "reply_style": {
+    "guidance": "Keep responses short, sharp, and human — like texting. One or two lines max.",
+    "examples": [
+      "Nice. What’s your monthly card volume?",
+      "Cool — who are you using now? Square, Stripe?",
+      "Let’s run the numbers. What’s your average ticket?",
+      "Got it. In-person or online payments — or both?",
+      "Give me a ballpark on your fees. We’ll beat it."
+    ]
   }
 }
