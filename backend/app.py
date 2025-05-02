@@ -103,7 +103,7 @@ def chat():
             emoji = random.choice(config["emoji_logic"]["tones"].get(tone, []))
             assistant_reply += f" {emoji}"
 
-        # Annual savings
+        # Annual savings calc
         monthly = None
         rate = None
         for m in reversed(messages.data):
@@ -123,13 +123,13 @@ def chat():
             line = config["annual_savings_formula"]["response_template"]
             assistant_reply += "\n\n" + line.replace("{rate}", str(rate)).replace("{savings}", str(annual))
 
-        # Clover product recommendation
+        # Clover product recommendations
         for product_key, product in config.get("product_recommendations", {}).items():
             if any(k in user_text_lower for k in product["keywords"]):
                 assistant_reply += "\n\n" + product["reply"]
                 break
 
-        # HubSpot auto-push
+        # HubSpot lead push
         recent_text = "\n".join(m.content[0].text.value.lower() for m in messages.data[:6])
         if all(x in recent_text for x in ["name", "email", "phone", "business"]):
             name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", recent_text)
@@ -154,7 +154,33 @@ def chat():
                     headers={"Content-Type": "application/json"},
                     json={"fields": fields}
                 )
-                print("HubSpot response:", res.status_code, res.text)
+                print("HubSpot form response:", res.status_code)
+
+        # Push chat to HubSpot as note
+        if r:
+            try:
+                chat_log_key = f"log:{user_id}"
+                r.rpush(chat_log_key, user_input)
+                r.expire(chat_log_key, 3600)
+
+                history = [x.decode() for x in r.lrange(chat_log_key, 0, -1)]
+                if len(history) > 3:
+                    note = {
+                        "engagement": {"active": True, "type": "NOTE"},
+                        "associations": {"contactIds": []},
+                        "metadata": {"body": "BlueJay Chat History:\n" + "\n".join(history)}
+                    }
+                    note_res = requests.post(
+                        "https://api.hubapi.com/engagements/v1/engagements",
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": f"Bearer {os.getenv('HUBSPOT_API_KEY')}"
+                        },
+                        json=note
+                    )
+                    print("Note pushed:", note_res.status_code)
+            except Exception as e:
+                print("HubSpot note error:", e)
 
     except Exception as e:
         print("OpenAI API error:", e)
