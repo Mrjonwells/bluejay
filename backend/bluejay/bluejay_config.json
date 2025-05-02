@@ -123,5 +123,17 @@
   "winback_strategy": {
     "decline_trigger": "not now",
     "winback_message": "No problem. Want me to follow up next week with a locked quote?"
+  },
+  "adaptive_closers": {
+    "low_interest": "Let me ask — if this really does save thousands a year, would that be worth 2 minutes?",
+    "stall": "Totally understand. Just curious, what’s holding you back?",
+    "info_only": "I can send a quick overview with real savings data. Want that?"
+  },
+  "industry_tone_map": {
+    "retail": "Focus on ticket size, foot traffic, and saving margin.",
+    "food truck": "Emphasize mobile, fast transactions, and simplicity.",
+    "salon": "Highlight tipping, card volume, and schedule-based flexibility.",
+    "auto repair": "Use trust, reliability, and profit margins on repairs.",
+    "ecommerce": "Mention gateways, Shopify/Stripe fees, and online growth."
   }
 }
