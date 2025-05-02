@@ -48,14 +48,14 @@
     }
 
     .message.user {
-      background-color: #f1f1f1;
+      background-color: #d4e8ff;
       float: right;
-      color: #333;
+      color: #1b1b1b;
     }
 
     .message.bot {
-      background-color: #007bff;
-      color: white;
+      background-color: #cfe5ff;
+      color: #0e2b4a;
       float: left;
     }
 
@@ -97,19 +97,20 @@
 
     .typing-indicator {
       display: inline-block;
-      padding: 8px;
-      border-radius: 12px;
-      background: #ddd;
-      width: fit-content;
-      margin-top: 6px;
+      background-color: #cfe5ff;
+      border-radius: 16px;
+      padding: 6px 10px;
+      margin: 4px 0;
+      max-width: 60px;
+      float: left;
     }
 
     .typing-indicator span {
       display: inline-block;
-      width: 6px;
-      height: 6px;
-      margin: 0 2px;
-      background-color: #888;
+      width: 5px;
+      height: 5px;
+      margin: 0 1.5px;
+      background-color: #49657a;
       border-radius: 50%;
       animation: blink 1.4s infinite both;
     }
@@ -132,13 +133,16 @@
         top: 40%;
         width: 90%;
       }
+
       .chat-box {
         height: 160px;
         font-size: 14px;
       }
+
       .input-box input {
         font-size: 14px;
       }
+
       .legal {
         font-size: 10px;
       }
