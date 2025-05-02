@@ -1,62 +1,63 @@
-const chatBox = document.getElementById('chatBox');
-const userInput = document.getElementById('userInput');
+const chatLog = document.getElementById("chat-log");
+const chatInput = document.getElementById("chat-input");
+const sendButton = document.getElementById("send-button");
 
-function appendMessage(text, sender) {
-  const msg = document.createElement('div');
-  msg.className = `message ${sender}`;
-  msg.innerText = text;
-  chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight;
+let userId = localStorage.getItem("user_id");
+if (!userId) {
+  userId = crypto.randomUUID();
+  localStorage.setItem("user_id", userId);
+}
+
+function appendMessage(sender, text) {
+  const bubble = document.createElement("div");
+  bubble.className = sender === "user" ? "user-bubble" : "bot-bubble";
+  bubble.textContent = text;
+  chatLog.appendChild(bubble);
+  chatLog.scrollTop = chatLog.scrollHeight;
 }
 
 function sendMessage() {
-  const message = userInput.value.trim();
+  const message = chatInput.value.trim();
   if (!message) return;
 
-  appendMessage(message, 'user');
-  userInput.value = '';
+  appendMessage("user", message);
+  chatInput.value = "";
 
-  appendMessageTyping();
+  const botBubble = document.createElement("div");
+  botBubble.className = "bot-bubble";
+  botBubble.textContent = "…";
+  chatLog.appendChild(botBubble);
+  chatLog.scrollTop = chatLog.scrollHeight;
 
-  fetch('https://bluejay-3999.onrender.com/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, user_id: getUserID() })
-  })
-    .then(res => res.json())
-    .then(data => {
-      removeTyping();
-      appendMessage(data.reply, 'bot');
-    })
-    .catch(() => {
-      removeTyping();
-      appendMessage("Sorry, I couldn’t reach BlueJay right now.", 'bot');
-    });
+  const eventSource = new EventSourcePolyfill("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    payload: JSON.stringify({ message, user_id: userId })
+  });
+
+  let responseText = "";
+
+  eventSource.onmessage = function (event) {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.partial) {
+        responseText += data.partial;
+        botBubble.textContent = responseText;
+      } else if (data.error) {
+        botBubble.textContent = "Something went wrong.";
+        eventSource.close();
+      }
+    } catch {
+      eventSource.close();
+    }
+  };
+
+  eventSource.onerror = function () {
+    eventSource.close();
+  };
 }
 
-function appendMessageTyping() {
-  const typing = document.createElement('div');
-  typing.className = 'message bot typing-indicator';
-  typing.id = 'typing';
-  typing.innerHTML = '<span></span><span></span><span></span>';
-  chatBox.appendChild(typing);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function removeTyping() {
-  const typing = document.getElementById('typing');
-  if (typing) typing.remove();
-}
-
-function getUserID() {
-  let uid = localStorage.getItem('bluejay_uid');
-  if (!uid) {
-    uid = crypto.randomUUID();
-    localStorage.setItem('bluejay_uid', uid);
-  }
-  return uid;
-}
-
-userInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendMessage();
+sendButton.addEventListener("click", sendMessage);
+chatInput.addEventListener("keydown", function (e) {
+  if (e.key === "Enter") sendMessage();
 });
