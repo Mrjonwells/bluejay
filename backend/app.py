@@ -38,7 +38,6 @@ def chat():
     if not user_input:
         return jsonify({"reply": "Can you repeat that?"})
 
-    # Redis thread tracking
     thread_id = None
     if r:
         try:
@@ -83,15 +82,37 @@ def chat():
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         assistant_reply = messages.data[0].content[0].text.value.strip()
 
-        # OEA-controlled submission logic
+        # Industry tone logic
+        industry_clues = {
+            "retail": ["store", "retail", "shop", "boutique"],
+            "food truck": ["truck", "vendor", "mobile"],
+            "salon": ["salon", "spa", "stylist", "hair"],
+            "auto repair": ["auto", "garage", "mechanic"],
+            "ecommerce": ["shopify", "website", "ecommerce", "online"]
+        }
+        user_text_lower = user_input.lower()
+        for industry, keywords in industry_clues.items():
+            if any(k in user_text_lower for k in keywords):
+                tone_note = config["industry_tone_map"].get(industry, "")
+                if tone_note:
+                    assistant_reply += f"\n\n[Note: {tone_note}]"
+                break
+
+        # Adaptive closers
+        if any(x in user_text_lower for x in ["not interested", "no thanks"]):
+            assistant_reply += "\n\n" + config["adaptive_closers"]["low_interest"]
+        elif any(x in user_text_lower for x in ["later", "maybe", "not now"]):
+            assistant_reply += "\n\n" + config["adaptive_closers"]["stall"]
+        elif any(x in user_text_lower for x in ["just info", "just looking", "overview"]):
+            assistant_reply += "\n\n" + config["adaptive_closers"]["info_only"]
+
+        # HubSpot auto submission
         recent_text = "\n".join(m.content[0].text.value.lower() for m in messages.data[:6])
         if all(x in recent_text for x in ["name", "email", "phone", "business"]):
-            print("OEA logic triggered: attempting natural HubSpot submission.")
             name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", recent_text)
             email = re.search(r"[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}", recent_text)
             phone = re.search(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", recent_text)
             company = re.search(r"(?i)business name[:\s]*(.+)", recent_text)
-
             fields = []
             if name:
                 parts = name.group(1).split()
@@ -104,7 +125,6 @@ def chat():
                 fields.append({"name": "phone", "value": phone.group(0)})
             if company:
                 fields.append({"name": "company", "value": company.group(1).strip()})
-
             if fields:
                 res = requests.post(
                     HUBSPOT_ENDPOINT,
@@ -113,7 +133,7 @@ def chat():
                 )
                 print("HubSpot response:", res.status_code, res.text)
 
-        # Smart rotating intro message
+        # Smart intro message
         if is_new_thread and assistant_reply.lower().startswith(("hi", "hello")):
             assistant_reply = random.choice(config.get("smart_intro_messages", [assistant_reply]))
 
