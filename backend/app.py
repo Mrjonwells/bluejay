@@ -3,6 +3,7 @@ import re
 import uuid
 import redis
 import json
+import random
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -14,20 +15,16 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/chat": {"origins": "https://askbluejay.ai"}})
 
-# Redis
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url) if redis_url else None
 
-# OpenAI
 openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
-# Load config
 with open("bluejay/bluejay_config.json") as f:
     config = json.load(f)
 
-# HubSpot info
 HUBSPOT_PORTAL_ID = "45853776"
 HUBSPOT_FORM_GUID = "3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 HUBSPOT_ENDPOINT = f"https://api.hsforms.com/submissions/v3/integration/submit/{HUBSPOT_PORTAL_ID}/{HUBSPOT_FORM_GUID}"
@@ -35,23 +32,13 @@ HUBSPOT_ENDPOINT = f"https://api.hsforms.com/submissions/v3/integration/submit/{
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
-    user_input = data.get('message', '')
-    user_id = data.get('user_id', str(uuid.uuid4()))
+    user_input = data.get("message", "").strip()
+    user_id = data.get("user_id", str(uuid.uuid4()))
 
     if not user_input:
-        return jsonify({'reply': "I didn't catch that. Try again."})
+        return jsonify({"reply": "Can you repeat that?"})
 
-    # Detect personality
-    personality_type = "friendly"
-    if any(word in user_input.lower() for word in ["data", "cost", "rate", "how much", "analyze"]):
-        personality_type = "analytical"
-    elif any(word in user_input.lower() for word in ["scam", "not sure", "seems shady"]):
-        personality_type = "skeptical"
-    elif any(word in user_input.lower() for word in ["hurry", "busy", "quick", "fast"]):
-        personality_type = "rushed"
-    print("Personality:", personality_type)
-
-    # Redis thread memory
+    # Redis thread tracking
     thread_id = None
     if r:
         try:
@@ -59,17 +46,19 @@ def chat():
             if thread_id:
                 thread_id = thread_id.decode()
         except Exception as e:
-            print(f"Redis error: {e}")
+            print("Redis error:", e)
 
+    is_new_thread = False
     if not thread_id:
         try:
             thread = client.beta.threads.create()
             thread_id = thread.id
+            is_new_thread = True
             if r:
                 r.set(f"thread:{user_id}", thread_id)
         except Exception as e:
-            print(f"Thread creation error: {e}")
-            return jsonify({'reply': "Sorry, I'm having trouble starting the conversation."})
+            print("Thread creation error:", e)
+            return jsonify({"reply": "Having trouble starting a new conversation. Try again shortly."})
 
     try:
         client.beta.threads.messages.create(
@@ -94,7 +83,7 @@ def chat():
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         assistant_reply = messages.data[0].content[0].text.value.strip()
 
-        # OEA-controlled HubSpot submission logic (natural close detection)
+        # OEA-controlled submission logic
         recent_text = "\n".join(m.content[0].text.value.lower() for m in messages.data[:6])
         if all(x in recent_text for x in ["name", "email", "phone", "business"]):
             print("OEA logic triggered: attempting natural HubSpot submission.")
@@ -122,13 +111,17 @@ def chat():
                     headers={"Content-Type": "application/json"},
                     json={"fields": fields}
                 )
-                print("HubSpot response (OEA):", res.status_code, res.text)
+                print("HubSpot response:", res.status_code, res.text)
+
+        # Smart rotating intro message
+        if is_new_thread and assistant_reply.lower().startswith(("hi", "hello")):
+            assistant_reply = random.choice(config.get("smart_intro_messages", [assistant_reply]))
 
     except Exception as e:
-        print(f"OpenAI API Error: {e}")
-        assistant_reply = "Sorry, something went wrong connecting to the Assistant."
+        print("OpenAI API error:", e)
+        assistant_reply = "Something went wrong connecting to the assistant."
 
-    return jsonify({'reply': assistant_reply})
+    return jsonify({"reply": assistant_reply})
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
