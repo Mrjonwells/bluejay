@@ -41,7 +41,7 @@ def chat():
     if not user_input:
         return jsonify({'reply': "I didn't catch that. Try again."})
 
-    # Detect personality type
+    # Detect personality
     personality_type = "friendly"
     if any(word in user_input.lower() for word in ["data", "cost", "rate", "how much", "analyze"]):
         personality_type = "analytical"
@@ -49,8 +49,7 @@ def chat():
         personality_type = "skeptical"
     elif any(word in user_input.lower() for word in ["hurry", "busy", "quick", "fast"]):
         personality_type = "rushed"
-    style_hint = config["personality_modes"].get(personality_type, {}).get("response_style", "")
-    print(f"Detected personality: {personality_type} | Style: {style_hint}")
+    print("Personality:", personality_type)
 
     # Redis thread memory
     thread_id = None
@@ -95,43 +94,35 @@ def chat():
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         assistant_reply = messages.data[0].content[0].text.value.strip()
 
-        # Trigger fallback if contact fields are complete but user hesitates
-        if config.get("fallback_closure", {}).get("trigger_after_contact_fields"):
-            combined = "\n".join(m.content[0].text.value for m in messages.data[:6])
-            if all(x in combined.lower() for x in ["name", "email", "phone", "business"]):
-                if not any(p in user_input.lower() for p in config["trigger_phrases"]):
-                    assistant_reply += f"\n\n{config['fallback_closure']['fallback_message']}"
+        # OEA-controlled HubSpot submission logic (natural close detection)
+        recent_text = "\n".join(m.content[0].text.value.lower() for m in messages.data[:6])
+        if all(x in recent_text for x in ["name", "email", "phone", "business"]):
+            print("OEA logic triggered: attempting natural HubSpot submission.")
+            name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", recent_text)
+            email = re.search(r"[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}", recent_text)
+            phone = re.search(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", recent_text)
+            company = re.search(r"(?i)business name[:\s]*(.+)", recent_text)
 
-        # Trigger HubSpot lead submission
-        if any(phrase in user_input.lower() for phrase in config["trigger_phrases"]):
-            try:
-                thread_text = "\n".join(m.content[0].text.value for m in messages.data[:5])
-                name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", thread_text)
-                email = re.search(r"[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}", thread_text)
-                phone = re.search(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", thread_text)
-                company = re.search(r"(?i)business name[:\s]*(.+)", thread_text)
+            fields = []
+            if name:
+                parts = name.group(1).split()
+                fields.append({"name": "firstname", "value": parts[0]})
+                if len(parts) > 1:
+                    fields.append({"name": "lastname", "value": parts[1]})
+            if email:
+                fields.append({"name": "email", "value": email.group(0)})
+            if phone:
+                fields.append({"name": "phone", "value": phone.group(0)})
+            if company:
+                fields.append({"name": "company", "value": company.group(1).strip()})
 
-                fields = []
-                if name:
-                    parts = name.group(1).split()
-                    fields.append({"name": "firstname", "value": parts[0]})
-                    if len(parts) > 1:
-                        fields.append({"name": "lastname", "value": parts[1]})
-                if email:
-                    fields.append({"name": "email", "value": email.group(0)})
-                if phone:
-                    fields.append({"name": "phone", "value": phone.group(0)})
-                if company:
-                    fields.append({"name": "company", "value": company.group(1).strip()})
-
-                if fields:
-                    res = requests.post(HUBSPOT_ENDPOINT,
-                        headers={"Content-Type": "application/json"},
-                        json={"fields": fields}
-                    )
-                    print("HubSpot response:", res.status_code, res.text)
-            except Exception as e:
-                print("HubSpot error:", e)
+            if fields:
+                res = requests.post(
+                    HUBSPOT_ENDPOINT,
+                    headers={"Content-Type": "application/json"},
+                    json={"fields": fields}
+                )
+                print("HubSpot response (OEA):", res.status_code, res.text)
 
     except Exception as e:
         print(f"OpenAI API Error: {e}")
