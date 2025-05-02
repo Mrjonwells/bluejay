@@ -91,5 +91,11 @@
     "Want to go deeper or keep it simple?",
     "Cool if I ask one more to help you out?",
     "Should we wrap this up or take a break here?"
-  ]
+  ],
+  "deal_stage_scoring": {
+    "curious": ["what", "how", "interested", "learn", "explore"],
+    "qualified": ["volume", "rate", "square", "stripe", "provider", "ticket"],
+    "stalling": ["later", "busy", "not now", "think", "circle back"],
+    "closing": ["ready", "signup", "send", "move forward", "lock", "finish"]
+  }
 }
