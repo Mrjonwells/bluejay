@@ -84,5 +84,12 @@
       "Want me to compare your rate to ours?",
       "Cool if I email you a savings quote?"
     ]
-  }
+  },
+  "fallbacks": [
+    "Want to take the next step or circle back later?",
+    "Still thinking? I can simplify it for you.",
+    "Want to go deeper or keep it simple?",
+    "Cool if I ask one more to help you out?",
+    "Should we wrap this up or take a break here?"
+  ]
 }
