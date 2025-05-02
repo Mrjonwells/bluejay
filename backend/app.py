@@ -83,21 +83,17 @@ def chat():
         assistant_reply = messages.data[0].content[0].text.value.strip()
         user_text_lower = user_input.lower()
 
-        # Inject forward-moving prompt if early in convo
         if len(messages.data) < 3:
             assistant_reply = random.choice(config["forward_prompts"])
 
-        # Objection handling
         for key, rebuttal in config["objections"].items():
             if key in user_text_lower:
                 assistant_reply += "\n\n" + rebuttal
                 break
 
-        # Urgency boost
         if random.random() < 0.15:
             assistant_reply += "\n\n" + random.choice(config["urgency_triggers"])
 
-        # Emoji logic
         tone = "confident"
         if "?" in user_input:
             tone = "friendly"
@@ -107,7 +103,7 @@ def chat():
             emoji = random.choice(config["emoji_logic"]["tones"].get(tone, []))
             assistant_reply += f" {emoji}"
 
-        # Savings estimate
+        # Annual savings
         monthly = None
         rate = None
         for m in reversed(messages.data):
@@ -127,11 +123,13 @@ def chat():
             line = config["annual_savings_formula"]["response_template"]
             assistant_reply += "\n\n" + line.replace("{rate}", str(rate)).replace("{savings}", str(annual))
 
-        # Smart intro override
-        if is_new_thread and assistant_reply.lower().startswith(("hi", "hello")):
-            assistant_reply = random.choice(config.get("smart_intro_messages", [assistant_reply]))
+        # Clover product recommendation
+        for product_key, product in config.get("product_recommendations", {}).items():
+            if any(k in user_text_lower for k in product["keywords"]):
+                assistant_reply += "\n\n" + product["reply"]
+                break
 
-        # Auto HubSpot
+        # HubSpot auto-push
         recent_text = "\n".join(m.content[0].text.value.lower() for m in messages.data[:6])
         if all(x in recent_text for x in ["name", "email", "phone", "business"]):
             name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", recent_text)
