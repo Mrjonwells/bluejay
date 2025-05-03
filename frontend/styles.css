@@ -1,15 +1,98 @@
-body, html {
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+body, html {
   height: 100%;
+  width: 100%;
+  font-family: 'Arial', sans-serif;
   overflow: hidden;
 }
 
-#background {
-  background-image: url('/chat_card.png');
+.background {
+  background-image: url('chat_card.png');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  height: 100vh;
-  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+.chat-container {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 600px;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(8px) brightness(1.05);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 1;
+}
+
+.chat-box {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 10px;
+  color: #000;
+}
+
+.chat-box .user {
+  text-align: right;
+  margin: 4px 0;
+  font-weight: bold;
+}
+
+.chat-box .assistant {
+  text-align: left;
+  margin: 4px 0;
+  font-style: italic;
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.chat-form button {
+  padding: 10px 16px;
+  background-color: #0077ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.chat-form button:hover {
+  background-color: #005fd4;
+}
+
+footer {
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  color: white;
+  z-index: 1;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
 }
