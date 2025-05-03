@@ -1,98 +1,85 @@
+/* Base Reset */
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
+/* Prevent mobile zoom */
+input,
+textarea,
+button,
+select {
+  font-size: 16px;
+}
+
+/* Fullscreen Background */
 body, html {
   height: 100%;
-  width: 100%;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
+  background: url('chat_card.png') no-repeat center center fixed;
+  background-size: cover;
   overflow: hidden;
 }
 
-.background {
-  background-image: url('chat_card.png');
-  background-size: cover;
-  background-position: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 0;
-}
-
+/* Chat Container */
 .chat-container {
   position: absolute;
-  top: 10%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: 90%;
-  max-width: 600px;
-  height: 80%;
+  max-width: 420px;
+  height: 260px;
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(8px) brightness(1.05);
-  background: rgba(255, 255, 255, 0.2);
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.65);
   border-radius: 12px;
-  padding: 16px;
-  z-index: 1;
+  padding: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 10;
 }
 
-.chat-box {
+/* Chat Display Area */
+#chat-box {
   flex: 1;
   overflow-y: auto;
   margin-bottom: 10px;
-  padding: 10px;
-  color: #000;
+  font-size: 13px;
+  color: #111;
 }
 
-.chat-box .user {
-  text-align: right;
-  margin: 4px 0;
-  font-weight: bold;
-}
-
-.chat-box .assistant {
-  text-align: left;
-  margin: 4px 0;
-  font-style: italic;
-}
-
-.chat-form {
+/* Input Bar */
+#chat-form {
   display: flex;
-  gap: 10px;
 }
 
-.chat-form input {
+#user-input {
   flex: 1;
-  padding: 10px;
+  padding: 8px;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 6px 0 0 6px;
+  outline: none;
+  font-size: 14px;
 }
 
-.chat-form button {
-  padding: 10px 16px;
-  background-color: #0077ff;
+button[type="submit"] {
+  padding: 8px 16px;
+  background-color: #333;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 0 6px 6px 0;
   cursor: pointer;
 }
 
-.chat-form button:hover {
-  background-color: #005fd4;
+/* Scrollbar styling */
+#chat-box::-webkit-scrollbar {
+  width: 4px;
 }
 
-footer {
-  position: absolute;
-  bottom: 8px;
-  width: 100%;
-  text-align: center;
-  font-size: 0.75rem;
-  color: white;
-  z-index: 1;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+#chat-box::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 4px;
 }
