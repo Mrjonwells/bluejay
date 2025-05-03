@@ -1,71 +1,54 @@
 body {
   margin: 0;
   padding: 0;
-  background: url('chat_card.png') no-repeat center center fixed;
+  background-image: url('chat_card.png');
   background-size: cover;
-  font-family: Arial, sans-serif;
-  -webkit-text-size-adjust: none;
-  -ms-text-size-adjust: none;
-  text-size-adjust: none;
+  background-position: center;
+  font-family: 'Arial', sans-serif;
+  height: 100vh;
   overflow: hidden;
 }
 
-.chat-container {
-  position: fixed;
-  bottom: 80px;
+#chat-container {
+  position: absolute;
+  top: 26%;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
-  max-width: 420px;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  z-index: 999;
+  max-width: 400px;
+  backdrop-filter: blur(14px);
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.chat-messages {
-  max-height: 250px;
+#chat-box {
+  height: 200px;
   overflow-y: auto;
-  margin-bottom: 8px;
-  font-size: 12px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #000;
 }
 
-.chat-input {
+#chat-form {
   display: flex;
 }
 
-input[type="text"] {
+#user-input {
   flex: 1;
-  padding: 8px;
-  border: none;
+  padding: 10px;
   border-radius: 12px;
-  font-size: 14px;
+  border: none;
+  outline: none;
 }
 
 button {
+  padding: 10px 16px;
   margin-left: 8px;
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: 12px;
-  border: none;
-  background-color: #0061ff;
+  background-color: #0056d2;
   color: white;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-}
-
-@media (max-width: 600px) {
-  .chat-container {
-    width: 95%;
-    bottom: 60px;
-  }
-
-  .chat-messages {
-    max-height: 200px;
-  }
-
-  input[type="text"] {
-    font-size: 12px;
-  }
 }
