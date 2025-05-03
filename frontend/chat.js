@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("chat-form");
   const input = document.getElementById("chat-input");
   const messages = document.getElementById("chat-messages");
+  const sendBtn = document.getElementById("send-button");
 
   function appendMessage(content, sender) {
     const msg = document.createElement("div");
@@ -25,11 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (typing) typing.remove();
   }
 
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const userInput = input.value.trim();
-    if (!userInput) return;
-
+  async function sendMessage(userInput) {
     appendMessage(userInput, "user");
     input.value = "";
     showTyping();
@@ -47,6 +44,17 @@ document.addEventListener("DOMContentLoaded", function () {
       removeTyping();
       appendMessage("Something went wrong. Please try again.", "bluejay");
     }
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const userInput = input.value.trim();
+    if (userInput) sendMessage(userInput);
+  });
+
+  sendBtn.addEventListener("click", function () {
+    const userInput = input.value.trim();
+    if (userInput) sendMessage(userInput);
   });
 
   input.addEventListener("keydown", function (e) {
@@ -55,4 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
       form.dispatchEvent(new Event("submit"));
     }
   });
+
+  // Initial greeting message
+  appendMessage("Hi, I'm BlueJay your business expert, what's your name?", "bluejay");
 });
