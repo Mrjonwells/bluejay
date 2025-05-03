@@ -22,8 +22,9 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
-config_path = os.path.join(os.path.dirname(__file__), "bluejay", "bluejay_config.json")
-with open(config_path) as f:
+# Load BlueJay brain
+brain_path = os.path.join(os.path.dirname(__file__), "bluejay", "bluejay_config.json")
+with open(brain_path) as f:
     config = json.load(f)
 
 @app.route("/chat", methods=["POST"])
@@ -31,6 +32,8 @@ def chat():
     data = request.get_json()
     user_input = data.get("message", "").strip()
     user_id = data.get("user_id", str(uuid.uuid4()))
+
+    print(f"[DEBUG] Incoming message: {user_input} | User ID: {user_id}")
 
     if not user_input:
         return jsonify({"response": "Can you repeat that?"})
@@ -41,10 +44,12 @@ def chat():
             thread_id = r.get(f"thread:{user_id}")
             if thread_id:
                 thread_id = thread_id.decode()
+                print(f"[DEBUG] Found existing thread ID: {thread_id}")
 
         if not thread_id:
             thread = client.beta.threads.create()
             thread_id = thread.id
+            print(f"[DEBUG] Created new thread ID: {thread_id}")
             if r:
                 r.set(f"thread:{user_id}", thread_id)
 
@@ -53,11 +58,13 @@ def chat():
             role="user",
             content=user_input
         )
+        print(f"[DEBUG] Sent user message to thread {thread_id}")
 
         run = client.beta.threads.runs.create(
             thread_id=thread_id,
             assistant_id=assistant_id
         )
+        print(f"[DEBUG] Started run: {run.id}")
 
         while True:
             status = client.beta.threads.runs.retrieve(
@@ -65,14 +72,13 @@ def chat():
                 run_id=run.id
             )
             if status.status == "completed":
+                print("[DEBUG] Run completed")
                 break
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
-        reply = None
-        for msg in messages.data:
-            if msg.role == "assistant":
-                reply = msg.content[0].text.value.strip()
-                break
+        reply = messages.data[0].content[0].text.value.strip()
+
+        print(f"[DEBUG] Assistant reply: {reply}")
 
         if not reply:
             reply = "Sorry, I didn’t catch that."
@@ -80,7 +86,7 @@ def chat():
         return jsonify({"response": reply})
 
     except Exception as e:
-        print("Chat error:", e)
+        print("[ERROR] Chat failure:", e)
         return jsonify({"response": "Something went wrong on my end. Try again soon."})
 
 if __name__ == "__main__":
