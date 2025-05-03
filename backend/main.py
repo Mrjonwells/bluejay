@@ -72,13 +72,7 @@ def chat():
         reply = messages.data[0].content[0].text.value.strip()
 
         if not reply:
-            reply = "Sorry, I didn’t catch that."
-
-        # Check if multiple inputs are needed
-        if "business_info" in config.get("bullet_point_prompts", {}):
-            prompts = config["bullet_point_prompts"]["business_info"]
-            formatted_prompt = "To better understand your business, could you provide:\n" + "\n".join(f"- {q}" for q in prompts)
-            reply = formatted_prompt
+            reply = "Sorry, I didn't catch that."
 
         return jsonify({"response": reply})
 
