@@ -37,14 +37,14 @@ document.addEventListener("DOMContentLoaded", function () {
     appendMessage("user", message);
     showTypingIndicator();
     try {
-      const response = await fetch("/chat", {
+      const response = await fetch("https://bluejay-3999.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
       const data = await response.json();
       removeTypingIndicator();
-      appendMessage("bot", data.response);
+      appendMessage("bot", data.reply);
     } catch (error) {
       removeTypingIndicator();
       appendMessage("bot", "Oops! Something went wrong.");
