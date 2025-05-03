@@ -2,22 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
   <title>Ask BlueJay</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="background"></div>
-  <div id="overlay">
-    <div id="chat-container">
-      <div id="chat"></div>
-      <div id="input-container">
-        <input type="text" id="user-input" placeholder="Type your message..." />
-        <button id="send-btn">➤</button>
-      </div>
-    </div>
-    <div id="legal">By using this assistant, you agree to the terms and understand this is not financial advice.</div>
+  <div class="chat-wrapper">
+    <div id="chatbox" class="chatbox"></div>
+    <form id="chat-form" autocomplete="off">
+      <input type="text" id="user-input" placeholder="Type a message..." />
+      <button type="submit">➤</button>
+    </form>
   </div>
+  <div class="legal">BlueJay and AskBlueJay.ai are the property of Fortified Capital LLC. All rights reserved.</div>
   <script src="chat.js"></script>
 </body>
 </html>
