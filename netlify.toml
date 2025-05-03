@@ -1,3 +1,14 @@
 [build]
-  publish = "frontend"
-  command = ""
+  base = "frontend"
+  publish = "./"
+  command = "echo Frontend build complete"
+
+[dev]
+  command = "echo Frontend dev"
+  port = 8888
+
+[[redirects]]
+  from = "/chat"
+  to = "https://bluejay-api.onrender.com/chat"
+  status = 200
+  force = true
