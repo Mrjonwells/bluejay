@@ -22,7 +22,6 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
-# Load config from subdirectory
 config_path = os.path.join(os.path.dirname(__file__), "bluejay", "bluejay_config.json")
 with open(config_path) as f:
     config = json.load(f)
@@ -38,7 +37,7 @@ def chat():
     user_id = data.get("user_id", str(uuid.uuid4()))
 
     if not user_input:
-        return jsonify({"reply": "Can you repeat that?"})
+        return jsonify({"response": "Can you repeat that?"})
 
     thread_id = None
     if r:
@@ -59,7 +58,7 @@ def chat():
                 r.set(f"thread:{user_id}", thread_id)
         except Exception as e:
             print("Thread creation error:", e)
-            return jsonify({"reply": "Having trouble starting a new conversation. Try again shortly."})
+            return jsonify({"response": "Having trouble starting a new conversation. Try again shortly."})
 
     try:
         client.beta.threads.messages.create(
@@ -84,13 +83,10 @@ def chat():
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         assistant_reply = messages.data[0].content[0].text.value.strip()
 
-        # Truncate long replies
         if assistant_reply.count(".") > 2 or len(assistant_reply.split()) > 50:
             assistant_reply = assistant_reply.split(".")[0] + "..."
 
         user_text_lower = user_input.lower()
-
-        # Score deal stage
         current_stage = "curious"
         for stage, keywords in config.get("deal_stage_scoring", {}).items():
             if any(kw in user_text_lower for kw in keywords):
@@ -120,7 +116,6 @@ def chat():
             emoji = random.choice(config["emoji_logic"]["tones"].get(tone, []))
             assistant_reply += f" {emoji}"
 
-        # Annual savings estimate
         monthly = None
         rate = None
         for m in reversed(messages.data):
@@ -140,13 +135,11 @@ def chat():
             line = config["annual_savings_formula"]["response_template"]
             assistant_reply += "\n\n" + line.replace("{rate}", str(rate)).replace("{savings}", str(annual))
 
-        # Clover recommendation
         for product_key, product in config.get("product_recommendations", {}).items():
             if any(k in user_text_lower for k in product["keywords"]):
                 assistant_reply += "\n\n" + product["reply"]
                 break
 
-        # HubSpot form trigger
         recent_text = "\n".join(m.content[0].text.value.lower() for m in messages.data[:6])
         if all(x in recent_text for x in ["name", "email", "phone", "business"]):
             name = re.search(r"(?i)name[:\s]*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", recent_text)
@@ -173,7 +166,6 @@ def chat():
                 )
                 print("HubSpot form response:", res.status_code)
 
-        # Log conversation to Redis and push as HubSpot note
         if r:
             try:
                 chat_log_key = f"log:{user_id}"
@@ -202,7 +194,7 @@ def chat():
         print("OpenAI API error:", e)
         assistant_reply = "Something went wrong connecting to the assistant."
 
-    return jsonify({"reply": assistant_reply})
+    return jsonify({"response": assistant_reply})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
