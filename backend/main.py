@@ -2,15 +2,16 @@ import os
 import uuid
 import redis
 import json
+import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/chat": {"origins": "https://askbluejay.ai"}})
+CORS(app, resources={r"/chat": {"origins": "*"}})
 
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url) if redis_url else None
@@ -57,6 +58,7 @@ def chat():
             assistant_id=assistant_id
         )
 
+        # Wait for the run to complete
         while True:
             status = client.beta.threads.runs.retrieve(
                 thread_id=thread_id,
@@ -64,6 +66,9 @@ def chat():
             )
             if status.status == "completed":
                 break
+            elif status.status in ["failed", "cancelled", "expired"]:
+                return jsonify({"response": "Sorry, I encountered an issue processing your request."})
+            time.sleep(1)  # Avoid tight loop
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         reply = messages.data[0].content[0].text.value.strip()
@@ -73,6 +78,9 @@ def chat():
 
         return jsonify({"response": reply})
 
+    except OpenAIError as e:
+        print("OpenAI API error:", e)
+        return jsonify({"response": "An error occurred while processing your request."})
     except Exception as e:
         print("Chat error:", e)
         return jsonify({"response": "Something went wrong on my end. Try again soon."})
