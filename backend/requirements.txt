@@ -1,8 +1,7 @@
-flask
-flask-cors
-openai
-python-dotenv
-redis
-requests
-uvicorn
-fastapi
+flask==3.1.0
+flask-cors==5.0.1
+openai==1.77.0
+python-dotenv==1.1.0
+redis==6.0.0
+requests==2.32.3
+uvicorn==0.34.2
