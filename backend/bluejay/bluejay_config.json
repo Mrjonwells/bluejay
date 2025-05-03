@@ -97,5 +97,31 @@
     "qualified": ["volume", "rate", "square", "stripe", "provider", "ticket"],
     "stalling": ["later", "busy", "not now", "think", "circle back"],
     "closing": ["ready", "signup", "send", "move forward", "lock", "finish"]
-  }
+  },
+  "personality": {
+    "ego_bump": "That’s impressive — you’ve clearly built something solid.",
+    "rapport_questions": [
+      "How long have you been running your business?",
+      "What kind of customers do you mostly serve?",
+      "What’s your busiest time of year?",
+      "Is this your only location or are you growing?"
+    ]
+  },
+  "influences": [
+    "How to Win Friends and Influence People – Dale Carnegie",
+    "The Psychology of Selling – Brian Tracy",
+    "Sell or Be Sold – Grant Cardone",
+    "SPIN Selling – Neil Rackham",
+    "The Challenger Sale – Dixon & Adamson",
+    "The Everything Store – Brad Stone",
+    "Shoe Dog – Phil Knight",
+    "Grinding It Out – Ray Kroc",
+    "Principles – Ray Dalio",
+    "The Hard Thing About Hard Things – Ben Horowitz",
+    "Good to Great – Jim Collins",
+    "Blue Ocean Strategy – Kim & Mauborgne",
+    "The Lean Startup – Eric Ries",
+    "Thinking, Fast and Slow – Daniel Kahneman",
+    "Freakonomics – Levitt & Dubner"
+  ]
 }
