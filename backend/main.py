@@ -1,86 +1,46 @@
 import os
-import re
-import uuid
+import time
 import redis
-import json
-import random
-import requests
-from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+import uuid
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from openai import OpenAI
+from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://askbluejay.ai"],
-    allow_methods=["*"],
-    allow_headers=["*"]
-)
+app = Flask(__name__)
+CORS(app)
 
-redis_url = os.getenv("REDIS_URL")
-r = redis.Redis.from_url(redis_url) if redis_url else None
+r = redis.from_url(os.getenv("REDIS_URL"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+assistant_id = os.getenv("ASSISTANT_ID")
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=openai_api_key)
-assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
-
-with open("bluejay/bluejay_config.json") as f:
-    config = json.load(f)
-
-HUBSPOT_PORTAL_ID = "45853776"
-HUBSPOT_FORM_GUID = "3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
-HUBSPOT_ENDPOINT = f"https://api.hsforms.com/submissions/v3/integration/submit/{HUBSPOT_PORTAL_ID}/{HUBSPOT_FORM_GUID}"
-
-@app.post("/chat")
-async def chat(request: Request):
-    data = await request.json()
-    user_input = data.get("message", "").strip()
-    user_id = data.get("user_id", str(uuid.uuid4()))
-
-    if not user_input:
-        return {"reply": "Can you repeat that?"}
-
-    thread_id = None
-    if r:
-        try:
-            thread_id = r.get(f"thread:{user_id}")
-            if thread_id:
-                thread_id = thread_id.decode()
-        except:
-            pass
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    user_input = data.get("message", "")
+    thread_id = data.get("thread_id")
 
     if not thread_id:
         thread = client.beta.threads.create()
         thread_id = thread.id
-        if r:
-            r.set(f"thread:{user_id}", thread_id)
 
-    client.beta.threads.messages.create(
-        thread_id=thread_id,
-        role="user",
-        content=user_input
-    )
+    client.beta.threads.messages.create(thread_id=thread_id, role="user", content=user_input)
+    run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=assistant_id)
 
-    run_response = client.beta.threads.runs.create(
-        thread_id=thread_id,
-        assistant_id=assistant_id,
-        stream=True
-    )
+    while True:
+        run_status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+        if run_status.status == "completed":
+            break
+        time.sleep(0.5)
 
-    def stream_response():
-        try:
-            for chunk in client.beta.threads.runs.stream(
-                thread_id=thread_id,
-                run_id=run_response.id
-            ):
-                if chunk.status == "completed":
-                    break
-                yield json.dumps({"partial": chunk.status}) + "\n"
-        except Exception as e:
-            yield json.dumps({"error": str(e)}) + "\n"
+    messages = client.beta.threads.messages.list(thread_id=thread_id)
+    reply = messages.data[0].content[0].text.value if messages.data else "..."
 
-    return StreamingResponse(stream_response(), media_type="text/event-stream")
+    # Memory expiry
+    r.setex(f"thread:{thread_id}", 600, "active")
+    return jsonify({"reply": reply, "thread_id": thread_id})
+
+if __name__ == "__main__":
+    app.run(debug=True)
