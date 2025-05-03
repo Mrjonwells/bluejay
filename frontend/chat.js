@@ -1,35 +1,58 @@
-const form = document.getElementById("chat-form");
-const input = document.getElementById("user-input");
-const chatBox = document.getElementById("chat-box");
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("chat-input");
+  const messages = document.getElementById("chat-messages");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const message = input.value.trim();
-  if (!message) return;
-
-  appendMessage("You", message);
-  input.value = "";
-
-  appendMessage("BlueJay", "Thinking...");
-
-  try {
-    const res = await fetch("https://your-render-backend-url.onrender.com/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
-
-    const data = await res.json();
-    document.querySelectorAll(".assistant").slice(-1)[0].textContent = `BlueJay: ${data.reply}`;
-  } catch (err) {
-    document.querySelectorAll(".assistant").slice(-1)[0].textContent = "BlueJay: Sorry, something went wrong.";
+  function appendMessage(content, sender) {
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.innerHTML = content;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
   }
-});
 
-function appendMessage(sender, text) {
-  const messageEl = document.createElement("div");
-  messageEl.className = sender === "You" ? "user" : "assistant";
-  messageEl.textContent = `${sender}: ${text}`;
-  chatBox.appendChild(messageEl);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
+  function showTyping() {
+    const typing = document.createElement("div");
+    typing.classList.add("message", "bluejay", "typing");
+    typing.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+    typing.id = "typing-indicator";
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function removeTyping() {
+    const typing = document.getElementById("typing-indicator");
+    if (typing) typing.remove();
+  }
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const userInput = input.value.trim();
+    if (!userInput) return;
+
+    appendMessage(userInput, "user");
+    input.value = "";
+    showTyping();
+
+    try {
+      const response = await fetch("https://bluejay.onrender.com/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userInput }),
+      });
+      const data = await response.json();
+      removeTyping();
+      appendMessage(data.reply, "bluejay");
+    } catch (error) {
+      removeTyping();
+      appendMessage("Something went wrong. Please try again.", "bluejay");
+    }
+  });
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.dispatchEvent(new Event("submit"));
+    }
+  });
+});
