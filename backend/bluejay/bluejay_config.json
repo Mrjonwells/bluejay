@@ -123,5 +123,23 @@
     "The Lean Startup – Eric Ries",
     "Thinking, Fast and Slow – Daniel Kahneman",
     "Freakonomics – Levitt & Dubner"
-  ]
+  ],
+  "smart_advisor_logic": {
+    "resilient_replies": [
+      "Got it. Can I ask what kind of business you run?",
+      "Thanks — how do you usually take payments?",
+      "No problem. Want me to run a quick savings estimate?",
+      "Cool — is your average sale around $20 or more?",
+      "Appreciate it — can I ask how much you're processing per month?"
+    ],
+    "discovery_priority": [
+      "business name",
+      "monthly volume",
+      "average ticket",
+      "current processor",
+      "in-person vs online",
+      "interest in switching"
+    ],
+    "default_behavior": "If unrelated, pivot back with one short fact-finding question — always pushing the conversation forward politely."
+  }
 }
