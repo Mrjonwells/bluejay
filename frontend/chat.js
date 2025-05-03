@@ -1,40 +1,39 @@
-const messagesDiv = document.getElementById("chat-messages");
-const userInput = document.getElementById("user-input");
+const form = document.getElementById('chat-form');
+const input = document.getElementById('user-input');
+const chatBox = document.getElementById('chat-box');
 
-function appendMessage(sender, text) {
-  const msg = document.createElement("div");
-  msg.className = sender;
-  msg.textContent = text;
-  messagesDiv.appendChild(msg);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
+const apiURL = 'https://bluejay-api.onrender.com/chat';
 
-async function sendMessage() {
-  const input = userInput.value.trim();
-  if (!input) return;
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const message = input.value.trim();
+  if (!message) return;
 
-  appendMessage("user", input);
-  userInput.value = "";
-
-  appendMessage("bot", "Thinking...");
-
-  const response = await fetch("https://askbluejay.onrender.com/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: input, user_id: "browser-user" })
-  });
-
-  const data = await response.json();
-
-  // Remove "Thinking..." and show actual reply
-  const allMessages = messagesDiv.querySelectorAll(".bot");
-  if (allMessages.length) {
-    messagesDiv.removeChild(allMessages[allMessages.length - 1]);
+  addMessage('You', message);
+  input.value = '';
+  try {
+    const res = await fetch(apiURL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+    const data = await res.json();
+    addMessage('BlueJay', data.reply);
+  } catch (err) {
+    addMessage('Error', 'Something went wrong.');
   }
+});
 
-  appendMessage("bot", data.reply);
+function addMessage(sender, text) {
+  const msg = document.createElement('div');
+  msg.textContent = `${sender}: ${text}`;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-userInput.addEventListener("keypress", function (e) {
-  if (e.key === "Enter") sendMessage();
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    form.dispatchEvent(new Event('submit'));
+  }
 });
