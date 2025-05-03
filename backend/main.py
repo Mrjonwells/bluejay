@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/chat": {"origins": "*"}})
+CORS(app, resources={r"/chat": {"origins": "https://askbluejay.ai"}})
 
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url) if redis_url else None
@@ -29,19 +29,21 @@ with open(brain_path) as f:
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    data = request.get_json()
+    user_input = data.get("message", "").strip()
+    user_id = data.get("user_id", str(uuid.uuid4()))
+
+    if not user_input:
+        return jsonify({"response": "Can you repeat that?"})
+
     try:
-        data = request.get_json()
-        user_input = data.get("message", "").strip()
-        user_id = data.get("user_id", str(uuid.uuid4()))
+        thread_id = None
+        if r:
+            thread_id = r.get(f"thread:{user_id}")
+            if thread_id:
+                thread_id = thread_id.decode()
 
-        if not user_input:
-            return jsonify({"reply": "Can you repeat that?"})
-
-        # Redis thread management
-        thread_id = r.get(f"thread:{user_id}") if r else None
-        if thread_id:
-            thread_id = thread_id.decode()
-        else:
+        if not thread_id:
             thread = client.beta.threads.create()
             thread_id = thread.id
             if r:
@@ -72,13 +74,17 @@ def chat():
         if not reply:
             reply = "Sorry, I didn’t catch that."
 
-        print("Assistant reply:", reply)  # DEBUG
+        # Check if multiple inputs are needed
+        if "business_info" in config.get("bullet_point_prompts", {}):
+            prompts = config["bullet_point_prompts"]["business_info"]
+            formatted_prompt = "To better understand your business, could you provide:\n" + "\n".join(f"- {q}" for q in prompts)
+            reply = formatted_prompt
 
-        return jsonify({"reply": reply})
+        return jsonify({"response": reply})
 
     except Exception as e:
-        print("Chat error:", str(e))
-        return jsonify({"reply": "Something went wrong on my end. Try again soon."})
+        print("Chat error:", e)
+        return jsonify({"response": "Something went wrong on my end. Try again soon."})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
