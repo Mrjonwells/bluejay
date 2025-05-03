@@ -71,10 +71,13 @@ def chat():
             time.sleep(1)  # Avoid tight loop
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
-        reply = messages.data[0].content[0].text.value.strip()
-
+        reply = None
+        for m in messages.data:
+            if m.role == "assistant":
+                reply = m.content[0].text.value.strip()
+                break
         if not reply:
-            reply = "Sorry, I didn't catch that."
+            reply = "Sorry, I didn’t catch that."
 
         return jsonify({"response": reply})
 
