@@ -1,80 +1,71 @@
-* {
+body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-body, html {
-  height: 100%;
+  background: url('chat_card.png') no-repeat center center fixed;
+  background-size: cover;
+  font-family: Arial, sans-serif;
+  -webkit-text-size-adjust: none;
+  -ms-text-size-adjust: none;
+  text-size-adjust: none;
   overflow: hidden;
 }
 
-.background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url('chat_card.png') no-repeat center center/cover;
-  z-index: -2;
-}
-
 .chat-container {
-  position: absolute;
-  top: 24%;
+  position: fixed;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
   max-width: 420px;
   backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  z-index: 2;
+  padding: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 999;
 }
 
-.chat-box {
-  height: 250px;
+.chat-messages {
+  max-height: 250px;
   overflow-y: auto;
-  padding: 6px 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.chat-input {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 12px;
   font-size: 14px;
 }
 
-#chat-form {
-  display: flex;
-  margin-top: 10px;
-}
-
-#user-input {
-  flex: 1;
+button {
+  margin-left: 8px;
   padding: 8px 12px;
-  border-radius: 8px 0 0 8px;
+  font-size: 14px;
+  border-radius: 12px;
   border: none;
-  outline: none;
-}
-
-#chat-form button {
-  background: #0066ff;
+  background-color: #0061ff;
   color: white;
-  border: none;
-  border-radius: 0 8px 8px 0;
-  padding: 0 14px;
-  font-size: 18px;
   cursor: pointer;
 }
 
-.legal {
-  position: absolute;
-  bottom: 6px;
-  width: 100%;
-  text-align: center;
-  font-size: 11px;
-  color: #444;
+@media (max-width: 600px) {
+  .chat-container {
+    width: 95%;
+    bottom: 60px;
+  }
+
+  .chat-messages {
+    max-height: 200px;
+  }
+
+  input[type="text"] {
+    font-size: 12px;
+  }
 }
