@@ -1,54 +1,15 @@
-body {
+body, html {
   margin: 0;
   padding: 0;
-  background-image: url('chat_card.png');
-  background-size: cover;
-  background-position: center;
-  font-family: 'Arial', sans-serif;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
 }
 
-#chat-container {
-  position: absolute;
-  top: 26%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 400px;
-  backdrop-filter: blur(14px);
-  background-color: rgba(255, 255, 255, 0.25);
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-#chat-box {
-  height: 200px;
-  overflow-y: auto;
-  font-size: 14px;
-  margin-bottom: 10px;
-  color: #000;
-}
-
-#chat-form {
-  display: flex;
-}
-
-#user-input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 12px;
-  border: none;
-  outline: none;
-}
-
-button {
-  padding: 10px 16px;
-  margin-left: 8px;
-  background-color: #0056d2;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
+#background {
+  background-image: url('/chat_card.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  width: 100vw;
 }
