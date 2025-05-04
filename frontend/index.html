@@ -8,20 +8,13 @@
 </head>
 <body>
   <div id="chat-container">
-    <div id="chat-box">
-      <div id="chat-log"></div>
-      <div id="typing-indicator" style="display: none;">BlueJay is typing...</div>
-      <input
-        type="text"
-        id="user-input"
-        placeholder="Ask BlueJay anything..."
-        autocomplete="off"
-      />
+    <div id="messages"></div>
+    <div id="input-area">
+      <input type="text" id="input" placeholder="Ask BlueJay anything..." autocomplete="off" />
+      <button id="send">Send</button>
     </div>
   </div>
-  <div id="footer">
-    <p class="footer-text">Powered by BlueJay &middot; All rights reserved</p>
-  </div>
+  <footer>Powered by BlueJay · All rights reserved</footer>
   <script src="chat.js"></script>
 </body>
 </html>
