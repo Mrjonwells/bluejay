@@ -7,14 +7,16 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="background"></div>
+  <div class="bg-card"></div>
   <div class="chat-container">
     <div id="chat-box" class="chat-box"></div>
-    <div class="input-container">
-      <input id="user-input" type="text" placeholder="Ask BlueJay anything..." />
-      <button id="send-btn">➤</button>
+    <div class="input-row">
+      <input type="text" id="user-input" placeholder="Ask BlueJay..." autocomplete="off" />
+      <button id="send-btn">Send</button>
     </div>
-    <div class="footer">Powered by BlueJay — Smart, Fast, Human</div>
+  </div>
+  <div class="legal-footer">
+    <p>© 2025 AskBlueJay.ai • All rights reserved</p>
   </div>
   <script src="chat.js"></script>
 </body>
