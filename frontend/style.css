@@ -8,8 +8,9 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   color: #333;
+  position: relative;
 }
 
 .chat-container {
@@ -27,12 +28,16 @@ body {
   flex-direction: column;
   gap: 8px;
   z-index: 10;
+  max-height: 60vh;
 }
 
 .chat-history {
-  max-height: 200px;
+  flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
   padding-right: 5px;
+  height: 150px;
 }
 
 .chat-bubble {
