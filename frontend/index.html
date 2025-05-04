@@ -3,20 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AskBluejay.ai</title>
+  <title>Ask BlueJay</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="background"></div>
-  <div class="overlay">
-    <div class="motto">We help businesses keep more of what they earn.</div>
-    <div id="chat-box"></div>
-    <form id="chat-form">
-      <input type="text" id="chat-input" autocomplete="off" placeholder="Ask BlueJay..." />
+  <div class="chat-container">
+    <div id="chat"></div>
+    <form id="input-form">
+      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" />
+      <button type="submit">Send</button>
     </form>
-    <div id="typing-indicator" class="hidden">BlueJay is typing<span class="dots">...</span></div>
-    <div class="footer">© 2025 BlueJay.ai</div>
   </div>
+
+  <div class="footer">
+    &copy; 2025 AskBlueJay.ai — All rights reserved.
+  </div>
+
   <script src="chat.js"></script>
 </body>
 </html>
