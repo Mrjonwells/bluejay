@@ -2,24 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BlueJay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ask BlueJay</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="background"></div>
-  <div class="chat-container">
-    <div id="chat-messages" class="chat-box"></div>
-    <form id="chat-form">
-      <input
-        type="text"
-        id="chat-input"
-        placeholder="Type your message..."
-        autocomplete="off"
-      />
-    </form>
+  <div class="background">
+    <img src="chat_card.png" alt="Background" class="background-image" />
+    <div class="chat-container">
+      <div class="motto">Built for Business. Backed by AI.</div>
+      <div id="chat-box" class="chat-box"></div>
+      <div id="typing-indicator" class="typing-indicator hidden">BlueJay is typing...</div>
+      <div class="input-container">
+        <input
+          type="text"
+          id="user-input"
+          placeholder="Type your message..."
+          autofocus
+        />
+        <button id="send-btn">➤</button>
+      </div>
+      <div class="footer">
+        <div class="footer-icons">
+          <span>© 2025 BlueJay</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="footer">© 2025 BlueJay AI</div>
   <script src="chat.js"></script>
 </body>
 </html>
