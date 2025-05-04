@@ -1,49 +1,44 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const input = document.getElementById("user-input");
-  const sendBtn = document.getElementById("send-btn");
+document.addEventListener("DOMContentLoaded", () => {
   const chatBox = document.getElementById("chat-box");
-  let userId = localStorage.getItem("bluejay_user_id");
+  const userInput = document.getElementById("user-input");
+  const sendBtn = document.getElementById("send-btn");
 
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem("bluejay_user_id", userId);
-  }
-
-  function addMessage(role, text) {
-    const msg = document.createElement("div");
-    msg.className = role;
-    msg.innerText = text;
-    chatBox.appendChild(msg);
+  function appendMessage(message, role) {
+    const bubble = document.createElement("div");
+    bubble.classList.add("chat-bubble", role);
+    bubble.innerText = message;
+    chatBox.appendChild(bubble);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
   async function sendMessage() {
-    const message = input.value.trim();
+    const message = userInput.value.trim();
     if (!message) return;
 
-    addMessage("user", message);
-    input.value = "";
+    appendMessage(message, "user");
+    userInput.value = "";
 
-    addMessage("bot", "...");
-    const loading = chatBox.querySelector(".bot:last-child");
+    appendMessage("...", "assistant");
 
     try {
       const res = await fetch("https://bluejay-3999.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, user_id: userId }),
+        body: JSON.stringify({ message })
       });
+
       const data = await res.json();
-      loading.remove();
-      addMessage("bot", data.response);
-    } catch (e) {
-      loading.remove();
-      addMessage("bot", "Something went wrong. Try again.");
+      const bubbles = document.querySelectorAll(".chat-bubble.assistant");
+      if (bubbles.length) {
+        bubbles[bubbles.length - 1].innerText = data.response || "Sorry, I didn’t get that.";
+      }
+    } catch (err) {
+      console.error("Error:", err);
     }
   }
 
   sendBtn.addEventListener("click", sendMessage);
-  input.addEventListener("keydown", (e) => {
+  userInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendMessage();
   });
 });
