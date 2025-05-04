@@ -1,8 +1,8 @@
 import os
 import uuid
-import redis
 import json
 import time
+import redis
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI, OpenAIError
@@ -13,14 +13,16 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/chat": {"origins": "*"}})
 
+# Initialize Redis
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url) if redis_url else None
 
+# Initialize OpenAI client
 openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
-assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
+assistant_id = os.getenv("ASSISTANT_ID")  # Ensure this is set in your .env
 
-# Load BlueJay brain
+# Load BlueJay brain configuration
 brain_path = os.path.join(os.path.dirname(__file__), "bluejay", "bluejay_config.json")
 with open(brain_path) as f:
     config = json.load(f)
@@ -58,7 +60,7 @@ def chat():
             assistant_id=assistant_id
         )
 
-        # Wait for completion
+        # Wait for the run to complete
         while True:
             status = client.beta.threads.runs.retrieve(
                 thread_id=thread_id,
@@ -67,23 +69,26 @@ def chat():
             if status.status == "completed":
                 break
             elif status.status in ["failed", "cancelled", "expired"]:
-                return jsonify({"response": "Sorry, I hit a snag running your request."})
-            time.sleep(1)
+                return jsonify({"response": "Sorry, I encountered an issue processing your request."})
+            time.sleep(1)  # Avoid tight loop
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
-        reply = next(
-            (m.content[0].text.value.strip() for m in messages.data if m.role == "assistant"),
-            "Sorry, I didn’t catch that."
-        )
+        reply = None
+        for m in messages.data:
+            if m.role == "assistant":
+                reply = m.content[0].text.value.strip()
+                break
+        if not reply:
+            reply = "Sorry, I didn’t catch that."
 
         return jsonify({"response": reply})
 
     except OpenAIError as e:
-        print("OpenAI error:", e)
-        return jsonify({"response": "My brain hit an API error. Try again?"})
+        print("OpenAI API error:", e)
+        return jsonify({"response": "An error occurred while processing your request."})
     except Exception as e:
         print("Chat error:", e)
         return jsonify({"response": "Something went wrong on my end. Try again soon."})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
