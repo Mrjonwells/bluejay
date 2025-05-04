@@ -1,76 +1,88 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
-  background: url('chat_card.png') no-repeat center center fixed;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: url('/chat_card.png') no-repeat center center fixed;
   background-size: cover;
-}
-
-#chat-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
+  overflow: hidden;
 }
 
-#chat-box {
+.chat-container {
+  position: absolute;
+  top: calc(50% - 30px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 500px;
   background: rgba(255, 255, 255, 0.8);
   border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   padding: 20px;
-  width: 90%;
-  max-width: 400px;
-  max-height: 70vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
-  position: relative;
+  gap: 12px;
 }
 
-#chat-log {
-  flex-grow: 1;
+.chat-box {
+  max-height: 300px;
   overflow-y: auto;
-  margin-bottom: 10px;
-}
-
-#typing-indicator {
-  font-size: 12px;
-  color: #555;
-  margin-bottom: 8px;
-}
-
-#user-input {
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  outline: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   font-size: 14px;
 }
 
-.user-message,
-.bot-message {
-  padding: 10px 14px;
-  border-radius: 12px;
-  margin-bottom: 10px;
+.input-container {
+  display: flex;
+  gap: 8px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+button {
+  padding: 12px 18px;
+  background-color: #005bbb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #004799;
+}
+
+.message {
+  padding: 10px;
+  border-radius: 10px;
   max-width: 80%;
   word-wrap: break-word;
 }
 
-.user-message {
-  background-color: #daf0ff;
+.message.user {
   align-self: flex-end;
+  background-color: #daf1ff;
 }
 
-.bot-message {
-  background-color: #e6ffe6;
+.message.assistant {
   align-self: flex-start;
+  background-color: #f1f1f1;
 }
 
-#footer {
-  position: fixed;
-  bottom: 12px;
+.footer {
+  position: absolute;
+  bottom: 10px;
   width: 100%;
   text-align: center;
   font-size: 12px;
-  color: #888;
+  color: #555;
 }
