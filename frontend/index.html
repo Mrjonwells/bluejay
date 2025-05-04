@@ -7,28 +7,21 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="background">
-    <img src="chat_card.png" alt="Background" class="background-image" />
-    <div class="chat-container">
-      <div class="motto">Built for Business. Backed by AI.</div>
-      <div id="chat-box" class="chat-box"></div>
-      <div id="typing-indicator" class="typing-indicator hidden">BlueJay is typing...</div>
-      <div class="input-container">
-        <input
-          type="text"
-          id="user-input"
-          placeholder="Type your message..."
-          autofocus
-        />
-        <button id="send-btn">➤</button>
-      </div>
-      <div class="footer">
-        <div class="footer-icons">
-          <span>© 2025 BlueJay</span>
-        </div>
-      </div>
+  <div id="background"></div>
+
+  <div id="chat-container">
+    <div id="chat-box" class="frosted"></div>
+
+    <div id="input-area">
+      <input id="user-input" type="text" placeholder="Type your message..." />
+      <button id="send-btn">➤</button>
+    </div>
+
+    <div id="legal">
+      <p>By chatting, you agree to our terms and privacy policy.</p>
     </div>
   </div>
+
   <script src="chat.js"></script>
 </body>
 </html>
