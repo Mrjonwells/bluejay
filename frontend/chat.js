@@ -1,64 +1,49 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const chatBox = document.getElementById("chat-box");
   const chatForm = document.getElementById("chat-form");
-  const userInput = document.getElementById("user-input");
+  const chatInput = document.getElementById("chat-input");
+  const chatContainer = document.getElementById("chat-container");
+  const typingIndicator = document.getElementById("typing-indicator");
+  const userId = localStorage.getItem("bluejay_user_id") || crypto.randomUUID();
+  localStorage.setItem("bluejay_user_id", userId);
 
-  function appendMessage(sender, text) {
-    const message = document.createElement("div");
-    message.classList.add("message", sender === "user" ? "user-message" : "bot-message");
-    message.textContent = text;
-    chatBox.appendChild(message);
-    scrollChatToBottom();
+  function addMessage(message, sender) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message", sender);
+    messageElement.textContent = message;
+    chatContainer.appendChild(messageElement);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
-  function showTypingIndicator() {
-    const typingDiv = document.createElement("div");
-    typingDiv.classList.add("typing-indicator");
-    typingDiv.innerHTML = `
-      <div class="bubble"></div>
-      <div class="bubble"></div>
-      <div class="bubble"></div>
-    `;
-    typingDiv.id = "typing";
-    chatBox.appendChild(typingDiv);
-    scrollChatToBottom();
+  function showTyping(show) {
+    typingIndicator.style.display = show ? "block" : "none";
   }
 
-  function removeTypingIndicator() {
-    const typing = document.getElementById("typing");
-    if (typing) typing.remove();
-  }
+  chatForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const message = chatInput.value.trim();
+    if (!message) return;
 
-  function scrollChatToBottom() {
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+    addMessage(message, "user");
+    chatInput.value = "";
+    showTyping(true);
 
-  async function sendMessage(message) {
-    appendMessage("user", message);
-    showTypingIndicator();
     try {
       const response = await fetch("https://bluejay-3999.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, user_id: userId })
       });
+
       const data = await response.json();
-      removeTypingIndicator();
-      appendMessage("bot", data.reply);
+      if (data.response) {
+        addMessage(data.response, "assistant");
+      } else {
+        addMessage("Hmm... no reply came back.", "assistant");
+      }
     } catch (error) {
-      removeTypingIndicator();
-      appendMessage("bot", "Oops! Something went wrong.");
+      addMessage("Error talking to BlueJay. Try again.", "assistant");
+    } finally {
+      showTyping(false);
     }
-  }
-
-  chatForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    const message = userInput.value.trim();
-    if (!message) return;
-    userInput.value = "";
-    sendMessage(message);
   });
-
-  // Start conversation
-  appendMessage("bot", "Hi, I'm BlueJay, your business expert. What's your name?");
 });
