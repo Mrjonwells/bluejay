@@ -1,61 +1,132 @@
-const chatBox = document.querySelector(".chat-box");
-const input = document.querySelector("input");
-const sendBtn = document.getElementById("send-btn");
-
-let user_id = localStorage.getItem("bluejay_user_id");
-if (!user_id) {
-  user_id = crypto.randomUUID();
-  localStorage.setItem("bluejay_user_id", user_id);
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Helvetica Neue", sans-serif;
+  background-color: #000;
+  overflow: hidden;
 }
 
-function addMessage(role, text) {
-  const bubble = document.createElement("div");
-  bubble.className = `chat-bubble ${role}`;
-  bubble.innerText = text;
-  chatBox.appendChild(bubble);
-  chatBox.scrollTop = chatBox.scrollHeight;
+.background {
+  background: url("chat_card.png") no-repeat center center;
+  background-size: cover;
+  filter: brightness(1);
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: -1;
 }
 
-function showTyping() {
-  const typing = document.createElement("div");
-  typing.className = "chat-bubble assistant";
-  typing.id = "typing-indicator";
-  typing.innerText = "BlueJay is typing...";
-  chatBox.appendChild(typing);
-  chatBox.scrollTop = chatBox.scrollHeight;
+.chat-container {
+  position: fixed;
+  top: calc(50% - 30px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  padding: 20px 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+  overflow: hidden;
 }
 
-function removeTyping() {
-  const typing = document.getElementById("typing-indicator");
-  if (typing) typing.remove();
+#chat-log {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-right: 4px;
+  font-size: 13px;
+  color: #000;
 }
 
-async function sendMessage() {
-  const text = input.value.trim();
-  if (!text) return;
-  addMessage("user", text);
-  input.value = "";
+.user-bubble, .bot-bubble {
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 80%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
 
-  showTyping();
+.user-bubble {
+  background-color: #daf1ff;
+  align-self: flex-end;
+}
 
-  try {
-    const res = await fetch("https://bluejay-3999.onrender.com/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text, user_id })
-    });
+.bot-bubble {
+  background-color: #f2f2f2;
+  align-self: flex-start;
+}
 
-    const data = await res.json();
-    removeTyping();
-    addMessage("assistant", data.response || "...");
-  } catch (err) {
-    removeTyping();
-    addMessage("assistant", "Something went wrong.");
+#chat-form {
+  display: flex;
+  gap: 10px;
+}
+
+#user-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+#chat-form button {
+  background: #007aff;
+  color: #fff;
+  border: none;
+  padding: 0 16px;
+  font-size: 18px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+footer {
+  position: fixed;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 300;
+}
+
+#typing-indicator {
+  font-size: 12px;
+  color: #333;
+  margin-left: 2px;
+  margin-bottom: 6px;
+}
+
+#typing-indicator .dot {
+  animation: blink 1.2s infinite;
+}
+
+#typing-indicator .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+#typing-indicator .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes blink {
+  0%, 80%, 100% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
   }
 }
-
-sendBtn.onclick = sendMessage;
-
-input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendMessage();
-});
