@@ -1,47 +1,40 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const chatForm = document.getElementById("chat-form");
-  const chatInput = document.getElementById("chat-input");
-  const chatMessages = document.getElementById("chat-messages");
+const chatBox = document.getElementById("chat-box");
+const input = document.getElementById("chat-input");
+const form = document.getElementById("chat-form");
 
-  function appendMessage(sender, text) {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message", sender);
-    messageElement.innerText = text;
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+function appendMessage(sender, text) {
+  const bubble = document.createElement("div");
+  bubble.className = `bubble ${sender}`;
+  bubble.innerText = text;
+  chatBox.appendChild(bubble);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const message = input.value.trim();
+  if (!message) return;
+
+  appendMessage("user", message);
+  input.value = "";
+
+  appendMessage("assistant", "Typing...");
+
+  try {
+    const res = await fetch("https://bluejay-3999.onrender.com/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, user_id: "demo-user" }),
+    });
+
+    const data = await res.json();
+    const lastBubble = chatBox.querySelector(".assistant:last-child");
+    if (lastBubble) lastBubble.remove();
+    appendMessage("assistant", data.response);
+  } catch (err) {
+    console.error(err);
+    const lastBubble = chatBox.querySelector(".assistant:last-child");
+    if (lastBubble) lastBubble.remove();
+    appendMessage("assistant", "Something went wrong. Try again.");
   }
-
-  async function sendMessage(message) {
-    appendMessage("user", message);
-    chatInput.value = "";
-
-    appendMessage("assistant", "...");
-    const pending = chatMessages.lastChild;
-
-    try {
-      const response = await fetch("https://bluejay-3999.onrender.com/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: message,
-          user_id: localStorage.getItem("bluejay_uid") || crypto.randomUUID(),
-        }),
-      });
-
-      const data = await response.json();
-      pending.remove();
-      appendMessage("assistant", data.response);
-    } catch (err) {
-      pending.remove();
-      appendMessage("assistant", "Error reaching the server.");
-    }
-  }
-
-  chatForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    const message = chatInput.value.trim();
-    if (message) sendMessage(message);
-  });
 });
