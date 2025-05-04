@@ -1,58 +1,49 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const chatBox = document.getElementById("chat-box");
-  const userInput = document.getElementById("user-input");
+document.addEventListener("DOMContentLoaded", function () {
+  const input = document.getElementById("user-input");
   const sendBtn = document.getElementById("send-btn");
+  const chatBox = document.getElementById("chat-box");
+  let userId = localStorage.getItem("bluejay_user_id");
 
-  function addMessage(text, role) {
+  if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem("bluejay_user_id", userId);
+  }
+
+  function addMessage(role, text) {
     const msg = document.createElement("div");
-    msg.className = `chat-message ${role}`;
-    msg.textContent = text;
+    msg.className = role;
+    msg.innerText = text;
     chatBox.appendChild(msg);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  function showTyping() {
-    const typing = document.createElement("div");
-    typing.id = "typing";
-    typing.className = "typing-indicator assistant";
-    typing.textContent = "BlueJay is typing...";
-    chatBox.appendChild(typing);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  function hideTyping() {
-    const typing = document.getElementById("typing");
-    if (typing) typing.remove();
-  }
-
   async function sendMessage() {
-    const message = userInput.value.trim();
+    const message = input.value.trim();
     if (!message) return;
 
-    addMessage(message, "user");
-    userInput.value = "";
-    showTyping();
+    addMessage("user", message);
+    input.value = "";
+
+    addMessage("bot", "...");
+    const loading = chatBox.querySelector(".bot:last-child");
 
     try {
-      const res = await fetch("/chat", {
+      const res = await fetch("https://bluejay-3999.onrender.com/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, user_id: userId }),
       });
-
       const data = await res.json();
-      hideTyping();
-      addMessage(data.response, "assistant");
-    } catch (err) {
-      hideTyping();
-      addMessage("Something went wrong. Please try again.", "assistant");
+      loading.remove();
+      addMessage("bot", data.response);
+    } catch (e) {
+      loading.remove();
+      addMessage("bot", "Something went wrong. Try again.");
     }
   }
 
   sendBtn.addEventListener("click", sendMessage);
-  userInput.addEventListener("keydown", (e) => {
+  input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendMessage();
   });
 });
