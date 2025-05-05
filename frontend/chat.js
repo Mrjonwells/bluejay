@@ -3,10 +3,6 @@ document.getElementById("user-input").addEventListener("keypress", function (e) 
   if (e.key === "Enter") sendMessage();
 });
 
-window.onload = () => {
-  appendMessage("bot", "Welcome to BlueJay, what’s your name?");
-};
-
 function sendMessage() {
   const inputField = document.getElementById("user-input");
   const message = inputField.value.trim();
@@ -15,7 +11,7 @@ function sendMessage() {
   appendMessage("user", message);
   inputField.value = "";
 
-  showTyping();
+  document.getElementById("typing-indicator").classList.remove("hidden");
 
   fetch("https://bluejay-3999.onrender.com/chat", {
     method: "POST",
@@ -24,12 +20,11 @@ function sendMessage() {
   })
     .then((res) => res.json())
     .then((data) => {
-      removeTyping();
-      appendMessage("bot", data.reply || "Hmm... something went wrong.");
+      document.getElementById("typing-indicator").classList.add("hidden");
+      appendMessage("bot", data.reply);
     })
-    .catch((err) => {
-      console.error("Error:", err);
-      removeTyping();
+    .catch(() => {
+      document.getElementById("typing-indicator").classList.add("hidden");
       appendMessage("bot", "Something went wrong.");
     });
 }
@@ -41,19 +36,4 @@ function appendMessage(sender, message) {
   msg.innerText = message;
   chatlog.appendChild(msg);
   chatlog.scrollTop = chatlog.scrollHeight;
-}
-
-function showTyping() {
-  const chatlog = document.getElementById("chatlog");
-  const typing = document.createElement("div");
-  typing.id = "typing-indicator";
-  typing.className = "bot-msg typing";
-  typing.innerText = "BlueJay is typing...";
-  chatlog.appendChild(typing);
-  chatlog.scrollTop = chatlog.scrollHeight;
-}
-
-function removeTyping() {
-  const typing = document.getElementById("typing-indicator");
-  if (typing) typing.remove();
 }
