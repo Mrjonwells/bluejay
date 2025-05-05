@@ -2,93 +2,93 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  background-color: black;
+  overflow: hidden;
   font-family: Arial, sans-serif;
 }
 
 .background {
-  background-image: url('chat_card.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center top;
-  height: 100%;
+  position: relative;
   width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: -1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.bg-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .chat-container {
   position: absolute;
-  top: 230px;
-  bottom: 130px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 44%;
+  left: 5%;
   width: 90%;
-  max-width: 600px;
-  background-color: rgba(0, 0, 0, 0.85);
-  border-radius: 20px;
+  height: 38%;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 18px;
   border: 2px solid #ccc;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 10px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+  justify-content: flex-end;
+  box-shadow: 0 0 12px #aaa;
 }
 
 .chatlog {
   flex: 1;
   overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+.user-msg, .bot-msg {
   padding: 10px;
-  color: white;
+  margin: 4px;
+  max-width: 90%;
+  border-radius: 16px;
+  color: #fff;
 }
 
 .user-msg {
-  background-color: #007bff;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 18px;
-  margin: 5px 0;
-  max-width: 80%;
+  background: #007bff;
   align-self: flex-end;
 }
 
 .bot-msg {
-  background-color: #444;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 18px;
-  margin: 5px 0;
-  max-width: 80%;
+  background: #333;
   align-self: flex-start;
 }
 
 .input-row {
   display: flex;
-  margin-top: 10px;
+  align-items: center;
 }
 
 #user-input {
   flex: 1;
   padding: 10px;
-  border-radius: 10px 0 0 10px;
+  border-radius: 10px;
   border: none;
-  font-size: 16px;
+  font-size: 1em;
 }
 
 #send-btn {
   padding: 10px 16px;
-  border: none;
+  margin-left: 6px;
   background-color: #007bff;
   color: white;
-  font-size: 16px;
-  border-radius: 0 10px 10px 0;
-  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  font-size: 1em;
 }
 
 .typing {
-  font-style: italic;
-  color: #ccc;
-  margin-top: 5px;
+  font-size: 0.9em;
+  color: #aaa;
+  margin-top: 4px;
+}
+
+.hidden {
+  display: none;
 }
