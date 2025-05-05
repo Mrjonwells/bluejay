@@ -4,17 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BlueJay</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="background"></div>
-  <div class="chat-container">
-    <div id="chatlog" class="chat-log"></div>
-    <div class="input-area">
-      <input type="text" id="user-input" placeholder="Ask BlueJay..." />
-      <button id="send-btn">Send</button>
+  <div class="background">
+    <img src="chat_card.png" alt="Chat Background" class="bg-img" />
+    <div class="chat-container">
+      <div id="chatlog" class="chatlog"></div>
+      <div class="input-area">
+        <input type="text" id="user-input" placeholder="Ask BlueJay..." />
+        <button id="send-btn">Send</button>
+      </div>
     </div>
-    <div id="typing-indicator" class="typing">BlueJay is typing<span>.</span><span>.</span><span>.</span></div>
   </div>
   <script src="chat.js"></script>
 </body>
