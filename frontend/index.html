@@ -3,20 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BlueJay AI</title>
+  <title>BlueJay</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="background"></div>
   <div class="chat-container">
-    <div id="chatlog" class="chatlog"></div>
-    <div id="typing-indicator" class="typing hidden">BlueJay is typing<span>.</span><span>.</span><span>.</span></div>
-    <div class="input-container">
+    <div id="chatlog" class="chat-log"></div>
+    <div class="input-area">
       <input type="text" id="user-input" placeholder="Ask BlueJay..." />
       <button id="send-btn">Send</button>
     </div>
+    <div id="typing-indicator" class="typing">BlueJay is typing<span>.</span><span>.</span><span>.</span></div>
   </div>
-  <div class="legal">BlueJay and AskBlueJay ai are property of Fortified Capital LLC. All rights reserved.</div>
   <script src="chat.js"></script>
 </body>
 </html>
