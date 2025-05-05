@@ -4,40 +4,43 @@ document.getElementById("user-input").addEventListener("keypress", function (e) 
 });
 
 function sendMessage() {
-  const input = document.getElementById("user-input");
-  const msg = input.value.trim();
-  if (!msg) return;
-  appendMessage("user", msg);
-  input.value = "";
+  const inputField = document.getElementById("user-input");
+  const message = inputField.value.trim();
+  if (!message) return;
+
+  appendMessage("user", message);
+  inputField.value = "";
 
   showTyping(true);
 
   fetch("https://bluejay-3999.onrender.com/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: msg })
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message }),
   })
-  .then(res => res.json())
-  .then(data => {
-    showTyping(false);
-    appendMessage("bot", data.reply);
-  })
-  .catch(() => {
-    showTyping(false);
-    appendMessage("bot", "Something went wrong.");
-  });
+    .then((res) => res.json())
+    .then((data) => {
+      showTyping(false);
+      appendMessage("bot", data.reply);
+    })
+    .catch((err) => {
+      console.error("Error:", err);
+      showTyping(false);
+      appendMessage("bot", "Something went wrong.");
+    });
 }
 
-function appendMessage(sender, text) {
+function appendMessage(sender, message) {
   const chatlog = document.getElementById("chatlog");
-  const bubble = document.createElement("div");
-  bubble.className = sender === "user" ? "user-msg" : "bot-msg";
-  bubble.innerText = text;
-  chatlog.appendChild(bubble);
+  const msg = document.createElement("div");
+  msg.className = sender === "user" ? "user-msg" : "bot-msg";
+  msg.innerText = message;
+  chatlog.appendChild(msg);
   chatlog.scrollTop = chatlog.scrollHeight;
 }
 
 function showTyping(show) {
-  const el = document.getElementById("typing-indicator");
-  el.classList.toggle("hidden", !show);
+  document.getElementById("typing-indicator").style.display = show ? "block" : "none";
 }
