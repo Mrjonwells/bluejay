@@ -20,7 +20,7 @@ r = redis.Redis.from_url(redis_url)
 client = OpenAI()
 ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
-# Load BlueJay brain
+# Load BlueJay brain (left brain)
 with open("bluejay/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
@@ -32,6 +32,18 @@ def get_thread_id(session_id):
     new_thread = client.beta.threads.create()
     r.set(key, new_thread.id)
     return new_thread.id
+
+@app.route("/", methods=["GET"])
+def index():
+    return """
+    <html>
+      <head><title>BlueJay Backend</title></head>
+      <body style="background-color:#000; color:#fff; font-family:sans-serif; text-align:center; padding:50px;">
+        <h1>BlueJay backend is live!</h1>
+        <p>Brain + Assistant are ready. POST to <code>/chat</code> to begin.</p>
+      </body>
+    </html>
+    """
 
 @app.route("/chat", methods=["POST"])
 def chat():
