@@ -2,18 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>BlueJay</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="background">
+    <img src="chat_card.png" alt="Chat Background" class="bg-image" />
     <div class="chat-container">
-      <div id="chatlog" class="chatlog"></div>
+      <div id="chatlog" class="chatlog">
+        <div class="bot-msg">Welcome to BlueJay, what’s your name?</div>
+      </div>
       <div class="input-row">
-        <input type="text" id="user-input" placeholder="Ask BlueJay..." />
+        <input id="user-input" type="text" placeholder="Ask BlueJay..." />
         <button id="send-btn">Send</button>
       </div>
+      <div id="typing-indicator" class="typing hidden">BlueJay is typing...</div>
     </div>
   </div>
   <script src="chat.js"></script>
