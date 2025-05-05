@@ -13,15 +13,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Redis setup
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
-# OpenAI setup
 client = OpenAI()
 ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
-# Load BlueJay brain
 with open("bluejay/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
@@ -56,32 +53,25 @@ def extract_conversation_info(message):
     return info
 
 def submit_to_hubspot(contact, note):
-    token = os.getenv("HUBSPOT_TOKEN")
+    form_data = {
+        "firstname": contact["name"],
+        "email": contact["email"],
+        "phone": contact["phone"],
+        "bluejay_notes": note
+    }
     headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/x-www-form-urlencoded"
     }
-    data = {
-        "properties": {
-            "firstname": contact["name"],
-            "phone": contact["phone"],
-            "email": contact["email"],
-            "bluejay_notes": note
-        }
-    }
-    res = requests.post("https://api.hubapi.com/crm/v3/objects/contacts", headers=headers, json=data)
-    return res.text if res.ok else f"Error: {res.text}"
+    response = requests.post(
+        "https://forms.hubspot.com/uploads/form/v2/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1",
+        data=form_data,
+        headers=headers
+    )
+    return response.text if response.ok else f"Error: {response.text}"
 
 @app.route("/", methods=["GET"])
 def index():
-    return """
-    <html>
-      <head><title>BlueJay Backend</title></head>
-      <body style="background-color:#000; color:#fff; font-family:sans-serif; text-align:center; padding:50px;">
-        <h1>BlueJay backend is live</h1>
-      </body>
-    </html>
-    """
+    return "<html><head><title>BlueJay</title></head><body style='background:black;color:white;'><h1>BlueJay backend is live</h1></body></html>"
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -111,13 +101,13 @@ def chat():
             for k, v in memory.items():
                 if k not in capture_keys and k != "submitted":
                     note += f"• {k.replace('_', ' ').title()}: {v}\n"
-            result = submit_to_hubspot(
+            submit_to_hubspot(
                 {"name": memory["name"], "phone": memory["phone"], "email": memory["email"]},
                 note
             )
             memory["submitted"] = True
             r.set(memory_key, json.dumps(memory))
-            return jsonify({"reply": bluejay_brain["hubspot_trigger"]["submit_message"].replace("{name}", memory["name"])})
+            return jsonify({"reply": "Let’s get started — are you a new business or an existing business?"})
 
     r.set(memory_key, json.dumps(memory))
     return jsonify({"reply": "Got it — want to keep going or see your savings next?"})
