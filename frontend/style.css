@@ -7,88 +7,87 @@ body, html {
 }
 
 .background {
+  background: url('chat_card.png') no-repeat center center fixed;
+  background-size: cover;
+  height: 100vh;
   position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.bg-image {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .chat-container {
   position: absolute;
-  top: 44%;
-  left: 5%;
+  top: 37%;
+  left: 50%;
+  transform: translateX(-50%);
   width: 90%;
-  height: 38%;
-  background: rgba(0, 0, 0, 0.85);
-  border-radius: 18px;
+  max-width: 420px;
+  height: 285px;
+  background-color: rgba(0, 0, 0, 0.85);
+  border-radius: 20px;
   border: 2px solid #ccc;
   padding: 10px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  box-shadow: 0 0 12px #aaa;
+  justify-content: space-between;
 }
 
 .chatlog {
-  flex: 1;
+  flex-grow: 1;
   overflow-y: auto;
   margin-bottom: 8px;
-}
-
-.user-msg, .bot-msg {
-  padding: 10px;
-  margin: 4px;
-  max-width: 90%;
-  border-radius: 16px;
-  color: #fff;
-}
-
-.user-msg {
-  background: #007bff;
-  align-self: flex-end;
-}
-
-.bot-msg {
-  background: #333;
-  align-self: flex-start;
+  padding: 5px;
+  color: white;
+  font-size: 14px;
 }
 
 .input-row {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
-#user-input {
-  flex: 1;
+input#user-input {
+  flex-grow: 1;
   padding: 10px;
   border-radius: 10px;
   border: none;
-  font-size: 1em;
+  font-size: 14px;
 }
 
-#send-btn {
+button#send-btn {
   padding: 10px 16px;
-  margin-left: 6px;
-  background-color: #007bff;
-  color: white;
   border: none;
   border-radius: 10px;
-  font-size: 1em;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-.typing {
-  font-size: 0.9em;
-  color: #aaa;
-  margin-top: 4px;
+.user-msg, .bot-msg {
+  margin: 5px 0;
+  padding: 8px 12px;
+  border-radius: 20px;
+  max-width: 85%;
+  display: inline-block;
 }
 
-.hidden {
-  display: none;
+.user-msg {
+  background-color: #007bff;
+  color: white;
+  align-self: flex-end;
+}
+
+.bot-msg {
+  background-color: #333;
+  color: white;
+  align-self: flex-start;
+}
+
+.legal {
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  color: white;
 }
