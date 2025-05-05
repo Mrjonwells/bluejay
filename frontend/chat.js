@@ -1,44 +1,47 @@
-const chatbox = document.getElementById("chatbox");
-const userInput = document.getElementById("userInput");
-const typingIndicator = document.getElementById("typingIndicator");
+document.addEventListener("DOMContentLoaded", () => {
+  const chatForm = document.getElementById("chatForm");
+  const chatInput = document.getElementById("chatInput");
+  const chatLog = document.getElementById("chatLog");
 
-function appendMessage(sender, message) {
-  const messageDiv = document.createElement("div");
-  messageDiv.className = `message ${sender}`;
-  messageDiv.innerText = message;
-  chatbox.appendChild(messageDiv);
-  chatbox.scrollTop = chatbox.scrollHeight;
-}
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userMessage = chatInput.value.trim();
+    if (!userMessage) return;
 
-function showTyping(show) {
-  typingIndicator.style.display = show ? "block" : "none";
-  chatbox.scrollTop = chatbox.scrollHeight;
-}
+    appendMessage("user", userMessage);
+    chatInput.value = "";
 
-async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;
+    try {
+      const response = await fetch("https://bluejay-api.onrender.com/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userMessage,
+          user_id: getUserId(),
+        }),
+      });
 
-  appendMessage("user", message);
-  userInput.value = "";
-  showTyping(true);
+      const data = await response.json();
+      appendMessage("assistant", data.response);
+    } catch (err) {
+      appendMessage("assistant", "Something went wrong.");
+    }
+  });
 
-  try {
-    const response = await fetch("https://bluejay-api.onrender.com/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
-
-    const data = await response.json();
-    appendMessage("bot", data.response);
-  } catch (error) {
-    appendMessage("bot", "Sorry, something went wrong.");
-  } finally {
-    showTyping(false);
+  function appendMessage(role, message) {
+    const div = document.createElement("div");
+    div.textContent = message;
+    div.className = role === "user" ? "userBubble" : "assistantBubble";
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
   }
-}
 
-userInput.addEventListener("keydown", function (e) {
-  if (e.key === "Enter") sendMessage();
+  function getUserId() {
+    let id = localStorage.getItem("bluejay_user_id");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("bluejay_user_id", id);
+    }
+    return id;
+  }
 });
