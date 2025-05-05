@@ -9,7 +9,7 @@ body {
 
 .chat-container {
   position: absolute;
-  top: 315px; /* moved up by 20px from 335px */
+  top: 355px; /* moved down 40px from previous 315px */
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
@@ -20,7 +20,7 @@ body {
   padding: 12px;
   box-sizing: border-box;
   overflow-y: auto;
-  border: 2px solid #c0c0c0; /* chrome outline */
+  border: 2px solid #c0c0c0;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
