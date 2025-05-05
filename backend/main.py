@@ -1,9 +1,7 @@
-
 import os
 import json
 import redis
 import uuid
-import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -43,29 +41,6 @@ def extract_info(message):
         info["name"] = message
     return info
 
-def submit_to_hubspot(contact, note):
-    data = {
-        "fields": [
-            {"name": "firstname", "value": contact.get("name", "")},
-            {"name": "email", "value": contact.get("email", "")},
-            {"name": "phone", "value": contact.get("phone", "")},
-            {"name": "bluejay_notes", "value": note}
-        ],
-        "context": {
-            "pageUri": "https://askbluejay.ai",
-            "pageName": "BlueJay AI Assistant"
-        }
-    }
-    headers = {
-        "Content-Type": "application/json"
-    }
-    res = requests.post(
-        "https://forms.hsforms.com/submissions/v3/public/submit/formsnext/multipart/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1",
-        json=data,
-        headers=headers
-    )
-    return res.text if res.ok else f"HubSpot Error: {res.text}"
-
 @app.route("/", methods=["GET"])
 def index():
     return "<html><head><title>BlueJay</title></head><body style='background:black;color:white;'><h1>BlueJay backend is live</h1></body></html>"
@@ -100,15 +75,6 @@ def chat():
                 (item["prompt"] for item in bluejay_brain["capture_sequence"] if item["key"] == field),
                 "Can you provide your " + field + "?"
             )})
-
-    if all(k in memory for k in capture_keys) and not memory.get("submitted"):
-        note = "\n".join(
-            f"• {k.title()}: {v}" for k, v in memory.items() if k not in ["submitted"]
-        )
-        submit_to_hubspot(memory, note)
-        memory["submitted"] = True
-        r.set(memory_key, json.dumps(memory))
-        return jsonify({"reply": "Let’s get started — are you a new business or an existing business?"})
 
     r.set(memory_key, json.dumps(memory))
 
@@ -147,4 +113,3 @@ def chat():
 
     except Exception as e:
         return jsonify({"reply": "Error: " + str(e)})
-
