@@ -11,7 +11,7 @@ function sendMessage() {
   appendMessage("user", message);
   inputField.value = "";
 
-  fetch("https://your-backend-url.com/chat", {
+  fetch("https://bluejay-3999.onrender.com/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
