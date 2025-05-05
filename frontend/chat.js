@@ -3,7 +3,7 @@ document.getElementById("user-input").addEventListener("keypress", function (e) 
   if (e.key === "Enter") sendMessage();
 });
 
-window.onload = function () {
+window.onload = () => {
   appendMessage("bot", "Welcome to BlueJay, what’s your name?");
 };
 
@@ -15,29 +15,21 @@ function sendMessage() {
   appendMessage("user", message);
   inputField.value = "";
 
-  const typing = document.createElement("div");
-  typing.className = "bot-msg typing-indicator";
-  typing.id = "typing";
-  document.getElementById("chatlog").appendChild(typing);
-  scrollChatToBottom();
+  showTyping();
 
-  fetch("https://your-backend-url.com/chat", {
+  fetch("https://bluejay-3999.onrender.com/chat", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
   })
     .then((res) => res.json())
     .then((data) => {
-      const typingElem = document.getElementById("typing");
-      if (typingElem) typingElem.remove();
-      appendMessage("bot", data.reply);
+      removeTyping();
+      appendMessage("bot", data.reply || "Hmm... something went wrong.");
     })
     .catch((err) => {
       console.error("Error:", err);
-      const typingElem = document.getElementById("typing");
-      if (typingElem) typingElem.remove();
+      removeTyping();
       appendMessage("bot", "Something went wrong.");
     });
 }
@@ -48,10 +40,20 @@ function appendMessage(sender, message) {
   msg.className = sender === "user" ? "user-msg" : "bot-msg";
   msg.innerText = message;
   chatlog.appendChild(msg);
-  scrollChatToBottom();
+  chatlog.scrollTop = chatlog.scrollHeight;
 }
 
-function scrollChatToBottom() {
+function showTyping() {
   const chatlog = document.getElementById("chatlog");
+  const typing = document.createElement("div");
+  typing.id = "typing-indicator";
+  typing.className = "bot-msg typing";
+  typing.innerText = "BlueJay is typing...";
+  chatlog.appendChild(typing);
   chatlog.scrollTop = chatlog.scrollHeight;
+}
+
+function removeTyping() {
+  const typing = document.getElementById("typing-indicator");
+  if (typing) typing.remove();
 }
