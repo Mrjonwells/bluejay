@@ -3,45 +3,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatInput = document.getElementById("chatInput");
   const chatLog = document.getElementById("chatLog");
 
+  const appendMessage = (sender, message) => {
+    const bubble = document.createElement("div");
+    bubble.className = sender === "user" ? "user-bubble" : "assistant-bubble";
+    bubble.innerText = message;
+    chatLog.appendChild(bubble);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  };
+
   chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const userMessage = chatInput.value.trim();
-    if (!userMessage) return;
+    const message = chatInput.value.trim();
+    if (!message) return;
 
-    appendMessage("user", userMessage);
+    appendMessage("user", message);
     chatInput.value = "";
 
     try {
       const response = await fetch("https://bluejay-api.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: userMessage,
-          user_id: getUserId(),
-        }),
+        body: JSON.stringify({ message }),
       });
 
       const data = await response.json();
-      appendMessage("assistant", data.response);
+      if (data.reply) {
+        appendMessage("assistant", data.reply);
+      } else {
+        appendMessage("assistant", "Sorry, I didn't get that.");
+      }
     } catch (err) {
-      appendMessage("assistant", "Something went wrong.");
+      appendMessage("assistant", "Error reaching BlueJay.");
     }
   });
-
-  function appendMessage(role, message) {
-    const div = document.createElement("div");
-    div.textContent = message;
-    div.className = role === "user" ? "userBubble" : "assistantBubble";
-    chatLog.appendChild(div);
-    chatLog.scrollTop = chatLog.scrollHeight;
-  }
-
-  function getUserId() {
-    let id = localStorage.getItem("bluejay_user_id");
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem("bluejay_user_id", id);
-    }
-    return id;
-  }
 });
