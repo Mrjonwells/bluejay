@@ -3,6 +3,10 @@ document.getElementById("user-input").addEventListener("keypress", function (e) 
   if (e.key === "Enter") sendMessage();
 });
 
+window.onload = () => {
+  appendMessage("bot", "Welcome to BlueJay, what’s your name?");
+};
+
 function sendMessage() {
   const inputField = document.getElementById("user-input");
   const message = inputField.value.trim();
@@ -11,22 +15,14 @@ function sendMessage() {
   appendMessage("user", message);
   inputField.value = "";
 
-  document.getElementById("typing-indicator").classList.remove("hidden");
-
   fetch("https://bluejay-3999.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
   })
     .then((res) => res.json())
-    .then((data) => {
-      document.getElementById("typing-indicator").classList.add("hidden");
-      appendMessage("bot", data.reply);
-    })
-    .catch(() => {
-      document.getElementById("typing-indicator").classList.add("hidden");
-      appendMessage("bot", "Something went wrong.");
-    });
+    .then((data) => appendMessage("bot", data.reply || "Something went wrong."))
+    .catch(() => appendMessage("bot", "Something went wrong."));
 }
 
 function appendMessage(sender, message) {
