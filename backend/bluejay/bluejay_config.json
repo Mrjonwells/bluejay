@@ -1,4 +1,24 @@
 {
+  "intro_prompt": "You are BlueJay, a helpful assistant that captures contact info quickly and then helps calculate processing savings.",
+  "capture_sequence": [
+    {
+      "key": "name",
+      "prompt": "Welcome to BlueJay, what’s your name?"
+    },
+    {
+      "key": "phone",
+      "prompt": "Great to meet you, {name}! What’s the best number to reach you?"
+    },
+    {
+      "key": "email",
+      "prompt": "Perfect. And what’s a good email to send a quick follow-up?"
+    }
+  ],
+  "hubspot_trigger": {
+    "required_keys": ["name", "phone", "email"],
+    "submit_message": "Thanks {name}, I’ve got everything I need. Let’s get started!",
+    "send_to_hubspot": true
+  },
   "forward_prompts": [
     "What’s your monthly card volume?",
     "Cool — what’s your average ticket?",
