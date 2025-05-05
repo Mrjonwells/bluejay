@@ -1,110 +1,120 @@
-body, html {
+body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
-  height: 100%;
-  background-color: #000;
-}
-
-.background {
-  position: relative;
-  height: 100%;
-  width: 100%;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: black;
   overflow: hidden;
 }
 
-.bg-image {
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  position: absolute;
+  background: url('chat_card.png') no-repeat center center;
+  background-size: cover;
   z-index: -1;
 }
 
-.overlay {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.logo {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #007bff;
-  margin-top: 20px;
-}
-
-.motto {
-  color: white;
-  margin-bottom: 10px;
-}
-
 .chat-container {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 15px;
-  padding: 10px;
+  position: absolute;
+  top: 33%;
+  left: 50%;
+  transform: translate(-50%, 0);
   width: 90%;
-  max-width: 400px;
-  height: 260px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  backdrop-filter: blur(6px);
-  margin-bottom: 20px;
+  max-width: 480px;
+  background: rgba(0,0,0,0.5);
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  padding: 16px;
+  box-sizing: border-box;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 12px rgba(255,255,255,0.1);
 }
 
 .chatlog {
-  flex: 1;
+  height: 240px;
   overflow-y: auto;
   color: white;
-  padding: 5px;
-  font-size: 14px;
+  padding: 8px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.input-row {
+.input-container {
   display: flex;
-  margin-top: 5px;
+  gap: 8px;
 }
 
 #user-input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px 0 0 8px;
-  border: none;
+  flex-grow: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
 }
 
 #send-btn {
-  padding: 8px 12px;
-  background: #007bff;
+  padding: 10px 16px;
+  background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 0 8px 8px 0;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-.features {
-  display: flex;
-  justify-content: space-between;
-  margin-top: auto;
-  width: 90%;
-  max-width: 420px;
-}
-
-.feature-card {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 12px;
+.user-msg, .bot-msg {
+  padding: 10px;
   border-radius: 10px;
-  color: white;
-  text-align: center;
-  flex: 1;
-  margin: 0 5px;
-  font-size: 13px;
+  max-width: 80%;
+  word-wrap: break-word;
 }
 
-.footer {
+.user-msg {
+  align-self: flex-end;
+  background-color: #007bff;
   color: white;
-  font-size: 11px;
-  margin-top: 12px;
+}
+
+.bot-msg {
+  align-self: flex-start;
+  background-color: #444;
+  color: white;
+}
+
+.typing {
+  font-style: italic;
+  color: #ccc;
+  padding: 4px 8px;
+}
+
+.typing span {
+  animation: blink 1s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+.hidden {
+  display: none;
+}
+
+.legal {
+  position: absolute;
+  bottom: 6px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #ccc;
 }
