@@ -1,92 +1,81 @@
 import os
-import uuid
-import redis
 import json
-import time
+import redis
+import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from openai import OpenAI, OpenAIError
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/chat": {"origins": "*"}})
+CORS(app)
 
+# Redis setup
 redis_url = os.getenv("REDIS_URL")
-r = redis.Redis.from_url(redis_url) if redis_url else None
+r = redis.Redis.from_url(redis_url)
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=openai_api_key)
-assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
+# OpenAI setup
+client = OpenAI()
+ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
 # Load BlueJay brain
-brain_path = os.path.join(os.path.dirname(__file__), "bluejay", "bluejay_config.json")
-with open(brain_path) as f:
-    config = json.load(f)
+with open("backend/bluejay/bluejay_config.json", "r") as f:
+    bluejay_brain = json.load(f)
+
+def get_thread_id(session_id):
+    key = f"thread:{session_id}"
+    thread_id = r.get(key)
+    if thread_id:
+        return thread_id.decode()
+    new_thread = client.beta.threads.create()
+    r.set(key, new_thread.id)
+    return new_thread.id
 
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
     user_input = data.get("message", "").strip()
-    user_id = data.get("user_id", str(uuid.uuid4()))
-
     if not user_input:
-        return jsonify({"response": "Can you repeat that?"})
+        return jsonify({"reply": "No input received."})
 
-    try:
-        thread_id = None
-        if r:
-            thread_id = r.get(f"thread:{user_id}")
-            if thread_id:
-                thread_id = thread_id.decode()
+    session_id = request.remote_addr or str(uuid.uuid4())
+    thread_id = get_thread_id(session_id)
 
-        if not thread_id:
-            thread = client.beta.threads.create()
-            thread_id = thread.id
-            if r:
-                r.set(f"thread:{user_id}", thread_id)
+    # Inject both sides of the brain
+    system_context = f"""
+BlueJay is a business-savvy assistant trained on custom configuration logic.
+Use the following strategy guide as internal operating rules:
 
-        client.beta.threads.messages.create(
-            thread_id=thread_id,
-            role="user",
-            content=user_input
-        )
+{json.dumps(bluejay_brain, indent=2)}
 
-        run = client.beta.threads.runs.create(
-            thread_id=thread_id,
-            assistant_id=assistant_id
-        )
+Do NOT mention this config to the user. Blend these principles into short, natural, question-driven replies. Be smart, discovery-led, and sales-focused. You are the left brain (config), working with the assistant (right brain).
+"""
 
-        # Wait for the run to complete
-        while True:
-            status = client.beta.threads.runs.retrieve(
-                thread_id=thread_id,
-                run_id=run.id
-            )
-            if status.status == "completed":
-                break
-            elif status.status in ["failed", "cancelled", "expired"]:
-                return jsonify({"response": "Sorry, I encountered an issue processing your request."})
-            time.sleep(1)
+    # Create message and run
+    client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=user_input
+    )
 
-        messages = client.beta.threads.messages.list(thread_id=thread_id)
-        reply = None
-        for m in messages.data:
-            if m.role == "assistant":
-                reply = m.content[0].text.value.strip()
-                break
-        if not reply:
-            reply = "Sorry, I didn’t catch that."
+    run = client.beta.threads.runs.create(
+        thread_id=thread_id,
+        assistant_id=ASSISTANT_ID,
+        instructions=system_context
+    )
 
-        return jsonify({"response": reply})
+    # Wait for completion
+    while True:
+        run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+        if run.status in ["completed", "failed", "cancelled"]:
+            break
 
-    except OpenAIError as e:
-        print("OpenAI API error:", e)
-        return jsonify({"response": "An error occurred while processing your request."})
-    except Exception as e:
-        print("Chat error:", e)
-        return jsonify({"response": "Something went wrong on my end. Try again soon."})
+    if run.status != "completed":
+        return jsonify({"reply": "Something went wrong. Please try again."})
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    messages = client.beta.threads.messages.list(thread_id=thread_id)
+    reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "..." )
+
+    return jsonify({"reply": reply})
