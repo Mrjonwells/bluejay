@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const data = await response.json();
-      if (data.reply) {
-        appendMessage("assistant", data.reply);
+      if (data.response) {
+        appendMessage("assistant", data.response);
       } else {
         appendMessage("assistant", "Sorry, I didn't get that.");
       }
