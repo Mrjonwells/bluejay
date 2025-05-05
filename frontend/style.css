@@ -4,6 +4,7 @@ body, html {
   height: 100%;
   font-family: sans-serif;
   overflow: hidden;
+  background-color: #000;
 }
 
 #background {
@@ -47,6 +48,8 @@ body, html {
   font-size: 14px;
   color: #fff;
   margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
 }
 
 #chatForm {
@@ -70,6 +73,29 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.user-bubble, .assistant-bubble {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  max-width: 80%;
+  border-radius: 16px;
+  display: inline-block;
+  word-wrap: break-word;
+}
+
+.user-bubble {
+  background-color: #0059ff;
+  color: #fff;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.assistant-bubble {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  align-self: flex-start;
+  margin-right: auto;
 }
 
 #legalFooter {
