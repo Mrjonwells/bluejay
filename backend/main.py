@@ -21,7 +21,7 @@ client = OpenAI()
 ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
 # Load BlueJay brain
-with with open("bluejay/bluejay_config.json", "r") as f:
+with open("bluejay/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
 def get_thread_id(session_id):
