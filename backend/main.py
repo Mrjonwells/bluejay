@@ -20,6 +20,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 assistant_id = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
+# Load BlueJay brain
 brain_path = os.path.join(os.path.dirname(__file__), "bluejay", "bluejay_config.json")
 with open(brain_path) as f:
     config = json.load(f)
@@ -54,31 +55,38 @@ def chat():
 
         run = client.beta.threads.runs.create(
             thread_id=thread_id,
-            assistant_id=assistant_id,
-            additional_instructions=json.dumps(config)
+            assistant_id=assistant_id
         )
 
+        # Wait for the run to complete
         while True:
-            status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+            status = client.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run.id
+            )
             if status.status == "completed":
                 break
             elif status.status in ["failed", "cancelled", "expired"]:
-                return jsonify({"response": "Sorry, I had trouble handling that."})
+                return jsonify({"response": "Sorry, I encountered an issue processing your request."})
             time.sleep(1)
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
+        reply = None
         for m in messages.data:
             if m.role == "assistant":
-                return jsonify({"response": m.content[0].text.value.strip()})
+                reply = m.content[0].text.value.strip()
+                break
+        if not reply:
+            reply = "Sorry, I didn’t catch that."
 
-        return jsonify({"response": "No reply found, can you rephrase that?"})
+        return jsonify({"response": reply})
 
     except OpenAIError as e:
-        print("OpenAI error:", e)
-        return jsonify({"response": "Trouble reaching my brain — try again in a sec."})
+        print("OpenAI API error:", e)
+        return jsonify({"response": "An error occurred while processing your request."})
     except Exception as e:
-        print("General error:", e)
-        return jsonify({"response": "Hmm, I hit a snag. Try once more?"})
+        print("Chat error:", e)
+        return jsonify({"response": "Something went wrong on my end. Try again soon."})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
