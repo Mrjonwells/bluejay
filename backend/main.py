@@ -1,7 +1,9 @@
+
 import os
 import json
 import redis
 import uuid
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -12,15 +14,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Redis setup
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
-# OpenAI setup
 client = OpenAI()
 ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
-# Load BlueJay brain
 with open("bluejay/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
@@ -33,17 +32,43 @@ def get_thread_id(session_id):
     r.set(key, new_thread.id)
     return new_thread.id
 
+def extract_info(message):
+    info = {}
+    lowered = message.lower()
+    if "@" in message and "." in message:
+        info["email"] = message
+    elif any(x.isdigit() for x in message) and len(message) >= 10:
+        info["phone"] = message
+    elif " " in message or len(message) >= 2:
+        info["name"] = message
+    return info
+
+def submit_to_hubspot(contact, note):
+    data = {
+        "fields": [
+            {"name": "firstname", "value": contact.get("name", "")},
+            {"name": "email", "value": contact.get("email", "")},
+            {"name": "phone", "value": contact.get("phone", "")},
+            {"name": "bluejay_notes", "value": note}
+        ],
+        "context": {
+            "pageUri": "https://askbluejay.ai",
+            "pageName": "BlueJay AI Assistant"
+        }
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    res = requests.post(
+        "https://forms.hsforms.com/submissions/v3/public/submit/formsnext/multipart/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1",
+        json=data,
+        headers=headers
+    )
+    return res.text if res.ok else f"HubSpot Error: {res.text}"
+
 @app.route("/", methods=["GET"])
 def index():
-    return """
-    <html>
-      <head><title>BlueJay Backend</title></head>
-      <body style="background-color:#000; color:#fff; font-family:sans-serif; text-align:center; padding:50px;">
-        <h1>BlueJay backend is live!</h1>
-        <p>Brain + Assistant are ready. POST to <code>/chat</code> to begin.</p>
-      </body>
-    </html>
-    """
+    return "<html><head><title>BlueJay</title></head><body style='background:black;color:white;'><h1>BlueJay backend is live</h1></body></html>"
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -54,15 +79,46 @@ def chat():
 
     session_id = request.remote_addr or str(uuid.uuid4())
     thread_id = get_thread_id(session_id)
+    memory_key = f"mem:{session_id}"
+    memory = json.loads(r.get(memory_key) or "{}")
 
-    system_context = f"""
-BlueJay is a business-savvy assistant trained on custom configuration logic.
-Use the following strategy guide as internal operating rules:
+    capture_keys = ["name", "phone", "email"]
+    for field in capture_keys:
+        if field not in memory:
+            extracted = extract_info(user_input)
+            if field in extracted:
+                memory[field] = extracted[field]
+                r.set(memory_key, json.dumps(memory))
+                next_prompt = next(
+                    (item["prompt"] for item in bluejay_brain["capture_sequence"] if item["key"] == capture_keys[capture_keys.index(field)+1])
+                    if capture_keys.index(field)+1 < len(capture_keys) else [],
+                    None
+                )
+                if next_prompt:
+                    return jsonify({"reply": next_prompt.replace("{name}", memory.get("name", ""))})
+            return jsonify({"reply": next(
+                (item["prompt"] for item in bluejay_brain["capture_sequence"] if item["key"] == field),
+                "Can you provide your " + field + "?"
+            )})
 
-{json.dumps(bluejay_brain, indent=2)}
+    if all(k in memory for k in capture_keys) and not memory.get("submitted"):
+        note = "\n".join(
+            f"• {k.title()}: {v}" for k, v in memory.items() if k not in ["submitted"]
+        )
+        submit_to_hubspot(memory, note)
+        memory["submitted"] = True
+        r.set(memory_key, json.dumps(memory))
+        return jsonify({"reply": "Let’s get started — are you a new business or an existing business?"})
 
-Do NOT mention this config to the user. Blend these principles into short, natural, question-driven replies. Be smart, discovery-led, and sales-focused. You are the left brain (config), working with the assistant (right brain).
-"""
+    r.set(memory_key, json.dumps(memory))
+
+    system_context = (
+        "BlueJay is a business-savvy assistant trained on custom configuration logic.\n"
+        "Use the following strategy guide as internal operating rules:\n\n"
+        f"{json.dumps(bluejay_brain, indent=2)}\n\n"
+        "Do NOT mention this config to the user. Blend these principles into short, natural, question-driven replies. "
+        "Be smart, discovery-led, and sales-focused. You are the left brain (config), working with the assistant (right brain)."
+    )
 
     try:
         client.beta.threads.messages.create(
@@ -83,8 +139,6 @@ Do NOT mention this config to the user. Blend these principles into short, natur
                 break
 
         if run.status != "completed":
-            print("Run failed:", run.status)
-            print("Last run info:", run)
             return jsonify({"reply": f"Run status: {run.status}"})
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
@@ -92,5 +146,5 @@ Do NOT mention this config to the user. Blend these principles into short, natur
         return jsonify({"reply": reply})
 
     except Exception as e:
-        print("Error during OpenAI call:", str(e))
         return jsonify({"reply": "Error: " + str(e)})
+
