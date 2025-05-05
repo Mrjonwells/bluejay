@@ -10,7 +10,7 @@ body {
 
 .chat-container {
   position: absolute;
-  top: calc(50% - 90px); /* moved up ~1/4 inch */
+  top: calc(50% - 60px); /* original BlueJay 8.0 GM position */
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
