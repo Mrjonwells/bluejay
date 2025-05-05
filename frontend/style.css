@@ -10,7 +10,7 @@ body {
 
 .chat-container {
   position: absolute;
-  top: 35%;
+  top: 22%;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
