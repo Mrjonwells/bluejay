@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
@@ -33,14 +34,53 @@ def get_thread_id(session_id):
     r.set(key, new_thread.id)
     return new_thread.id
 
+def extract_conversation_info(message):
+    info = {}
+    lowered = message.lower()
+    if "volume" in lowered or "$" in lowered:
+        for word in lowered.split():
+            if "$" in word or "k" in word:
+                info["monthly_volume"] = word
+    if "ticket" in lowered:
+        for word in lowered.split():
+            if word.replace(".", "", 1).isdigit():
+                info["average_ticket"] = word
+    if "square" in lowered or "stripe" in lowered:
+        info["processor"] = "Square" if "square" in lowered else "Stripe"
+    if any(x in lowered for x in ["mobile", "truck", "on the go"]):
+        info["setup"] = "mobile"
+    if "not interested" in lowered or "too expensive" in lowered:
+        info["objection"] = "cost"
+    if "ready" in lowered or "move forward" in lowered:
+        info["urgency"] = "high"
+    return info
+
+def submit_to_hubspot(contact, note):
+    hubspot_api = os.getenv("HUBSPOT_API_URL")
+    if not hubspot_api:
+        return "No HUBSPOT_API_URL set"
+
+    # 1. Submit contact
+    contact_res = requests.post(f"{hubspot_api}/contacts", json=contact)
+    if contact_res.status_code != 200:
+        return f"Contact submission failed: {contact_res.text}"
+
+    contact_id = contact_res.json().get("id")
+    if not contact_id:
+        return "No contact ID returned"
+
+    # 2. Submit note
+    note_payload = {"body": note, "contact_id": contact_id}
+    note_res = requests.post(f"{hubspot_api}/notes", json=note_payload)
+    return note_res.text if note_res.ok else note_res.text
+
 @app.route("/", methods=["GET"])
 def index():
     return """
     <html>
       <head><title>BlueJay Backend</title></head>
       <body style="background-color:#000; color:#fff; font-family:sans-serif; text-align:center; padding:50px;">
-        <h1>BlueJay backend is live!</h1>
-        <p>Brain + Assistant are ready. POST to <code>/chat</code> to begin.</p>
+        <h1>BlueJay backend is live</h1>
       </body>
     </html>
     """
@@ -48,49 +88,41 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_input = data.get("message", "").strip()
-    if not user_input:
-        return jsonify({"reply": "No input received."})
-
-    session_id = request.remote_addr or str(uuid.uuid4())
+    session_id = request.remote_addr
+    message = data.get("message", "")
     thread_id = get_thread_id(session_id)
 
-    system_context = f"""
-BlueJay is a business-savvy assistant trained on custom configuration logic.
-Use the following strategy guide as internal operating rules:
+    r.rpush(f"log:{session_id}", message)
+    memory_key = f"mem:{session_id}"
+    memory = json.loads(r.get(memory_key) or "{}")
 
-{json.dumps(bluejay_brain, indent=2)}
+    # Track info
+    extracted = extract_conversation_info(message)
+    memory.update(extracted)
 
-Do NOT mention this config to the user. Blend these principles into short, natural, question-driven replies. Be smart, discovery-led, and sales-focused. You are the left brain (config), working with the assistant (right brain).
-"""
+    # Capture flow
+    capture_keys = ["name", "phone", "email"]
+    for item in bluejay_brain.get("capture_sequence", []):
+        key = item["key"]
+        if key not in memory:
+            memory[key] = message
+            r.set(memory_key, json.dumps(memory))
+            return jsonify({"reply": item["prompt"].replace("{name}", memory.get("name", ""))})
 
-    try:
-        client.beta.threads.messages.create(
-            thread_id=thread_id,
-            role="user",
-            content=user_input
-        )
+    # If all keys are captured, trigger HubSpot
+    if all(k in memory for k in capture_keys):
+        if not memory.get("submitted"):
+            note = f"Conversation Notes:\n"
+            for k, v in memory.items():
+                if k not in capture_keys and k != "submitted":
+                    note += f"• {k.replace('_', ' ').title()}: {v}\n"
+            result = submit_to_hubspot(
+                {"name": memory["name"], "phone": memory["phone"], "email": memory["email"]},
+                note
+            )
+            memory["submitted"] = True
+            r.set(memory_key, json.dumps(memory))
+            return jsonify({"reply": bluejay_brain["hubspot_trigger"]["submit_message"].replace("{name}", memory["name"])})
 
-        run = client.beta.threads.runs.create(
-            thread_id=thread_id,
-            assistant_id=ASSISTANT_ID,
-            instructions=system_context
-        )
-
-        while True:
-            run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
-            if run.status in ["completed", "failed", "cancelled"]:
-                break
-
-        if run.status != "completed":
-            print("Run failed:", run.status)
-            print("Last run info:", run)
-            return jsonify({"reply": f"Run status: {run.status}"})
-
-        messages = client.beta.threads.messages.list(thread_id=thread_id)
-        reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "...")
-        return jsonify({"reply": reply})
-
-    except Exception as e:
-        print("Error during OpenAI call:", str(e))
-        return jsonify({"reply": "Error: " + str(e)})
+    r.set(memory_key, json.dumps(memory))
+    return jsonify({"reply": "Got it — want to keep going or see your savings next?"})
