@@ -43,5 +43,10 @@ function appendMessage(sender, message) {
 }
 
 function showTyping(show) {
-  document.getElementById("typing-indicator").classList.toggle("hidden", !show);
+  const typingIndicator = document.getElementById("typing-indicator");
+  typingIndicator.classList.toggle("hidden", !show);
+  if (show) {
+    const chatlog = document.getElementById("chatlog");
+    chatlog.scrollTop = chatlog.scrollHeight;
+  }
 }
