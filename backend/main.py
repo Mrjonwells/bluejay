@@ -2,11 +2,11 @@ import os
 import json
 import redis
 import uuid
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
 from dotenv import load_dotenv
-import requests
 
 load_dotenv()
 
@@ -56,23 +56,21 @@ def extract_conversation_info(message):
     return info
 
 def submit_to_hubspot(contact, note):
-    hubspot_api = os.getenv("HUBSPOT_API_URL")
-    if not hubspot_api:
-        return "No HUBSPOT_API_URL set"
-
-    # 1. Submit contact
-    contact_res = requests.post(f"{hubspot_api}/contacts", json=contact)
-    if contact_res.status_code != 200:
-        return f"Contact submission failed: {contact_res.text}"
-
-    contact_id = contact_res.json().get("id")
-    if not contact_id:
-        return "No contact ID returned"
-
-    # 2. Submit note
-    note_payload = {"body": note, "contact_id": contact_id}
-    note_res = requests.post(f"{hubspot_api}/notes", json=note_payload)
-    return note_res.text if note_res.ok else note_res.text
+    token = os.getenv("HUBSPOT_TOKEN")
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "properties": {
+            "firstname": contact["name"],
+            "phone": contact["phone"],
+            "email": contact["email"],
+            "bluejay_notes": note
+        }
+    }
+    res = requests.post("https://api.hubapi.com/crm/v3/objects/contacts", headers=headers, json=data)
+    return res.text if res.ok else f"Error: {res.text}"
 
 @app.route("/", methods=["GET"])
 def index():
@@ -96,11 +94,9 @@ def chat():
     memory_key = f"mem:{session_id}"
     memory = json.loads(r.get(memory_key) or "{}")
 
-    # Track info
     extracted = extract_conversation_info(message)
     memory.update(extracted)
 
-    # Capture flow
     capture_keys = ["name", "phone", "email"]
     for item in bluejay_brain.get("capture_sequence", []):
         key = item["key"]
@@ -109,7 +105,6 @@ def chat():
             r.set(memory_key, json.dumps(memory))
             return jsonify({"reply": item["prompt"].replace("{name}", memory.get("name", ""))})
 
-    # If all keys are captured, trigger HubSpot
     if all(k in memory for k in capture_keys):
         if not memory.get("submitted"):
             note = f"Conversation Notes:\n"
