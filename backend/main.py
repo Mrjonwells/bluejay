@@ -20,7 +20,7 @@ r = redis.Redis.from_url(redis_url)
 client = OpenAI()
 ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 
-# Load BlueJay brain (left brain)
+# Load BlueJay brain
 with open("bluejay/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
@@ -55,7 +55,6 @@ def chat():
     session_id = request.remote_addr or str(uuid.uuid4())
     thread_id = get_thread_id(session_id)
 
-    # Inject both sides of the brain
     system_context = f"""
 BlueJay is a business-savvy assistant trained on custom configuration logic.
 Use the following strategy guide as internal operating rules:
@@ -65,29 +64,33 @@ Use the following strategy guide as internal operating rules:
 Do NOT mention this config to the user. Blend these principles into short, natural, question-driven replies. Be smart, discovery-led, and sales-focused. You are the left brain (config), working with the assistant (right brain).
 """
 
-    # Create message and run
-    client.beta.threads.messages.create(
-        thread_id=thread_id,
-        role="user",
-        content=user_input
-    )
+    try:
+        client.beta.threads.messages.create(
+            thread_id=thread_id,
+            role="user",
+            content=user_input
+        )
 
-    run = client.beta.threads.runs.create(
-        thread_id=thread_id,
-        assistant_id=ASSISTANT_ID,
-        instructions=system_context
-    )
+        run = client.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=ASSISTANT_ID,
+            instructions=system_context
+        )
 
-    # Wait for completion
-    while True:
-        run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
-        if run.status in ["completed", "failed", "cancelled"]:
-            break
+        while True:
+            run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+            if run.status in ["completed", "failed", "cancelled"]:
+                break
 
-    if run.status != "completed":
-        return jsonify({"reply": "Something went wrong. Please try again."})
+        if run.status != "completed":
+            print("Run failed:", run.status)
+            print("Last run info:", run)
+            return jsonify({"reply": f"Run status: {run.status}"})
 
-    messages = client.beta.threads.messages.list(thread_id=thread_id)
-    reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "..." )
+        messages = client.beta.threads.messages.list(thread_id=thread_id)
+        reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "...")
+        return jsonify({"reply": reply})
 
-    return jsonify({"reply": reply})
+    except Exception as e:
+        print("Error during OpenAI call:", str(e))
+        return jsonify({"reply": "Error: " + str(e)})
