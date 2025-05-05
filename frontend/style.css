@@ -1,21 +1,16 @@
-body, html {
+body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-}
-
-.background {
   background: url('chat_card.png') no-repeat center center fixed;
   background-size: cover;
-  height: 100vh;
-  position: relative;
+  font-family: Arial, sans-serif;
+  color: white;
+  overflow-x: hidden;
 }
 
 .chat-container {
   position: absolute;
-  top: 37%;
+  top: 36.5%;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
@@ -24,51 +19,28 @@ body, html {
   background-color: rgba(0, 0, 0, 0.85);
   border-radius: 20px;
   border: 2px solid #ccc;
-  padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
-.chatlog {
+#chatlog {
   flex-grow: 1;
   overflow-y: auto;
-  margin-bottom: 8px;
   padding: 5px;
-  color: white;
-  font-size: 14px;
-}
-
-.input-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-input#user-input {
-  flex-grow: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  font-size: 14px;
-}
-
-button#send-btn {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 10px;
-  background-color: #007bff;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .user-msg, .bot-msg {
-  margin: 5px 0;
-  padding: 8px 12px;
+  padding: 10px 15px;
   border-radius: 20px;
   max-width: 85%;
-  display: inline-block;
+  word-wrap: break-word;
+  font-size: 14px;
 }
 
 .user-msg {
@@ -83,11 +55,34 @@ button#send-btn {
   align-self: flex-start;
 }
 
-.legal {
-  position: absolute;
-  bottom: 8px;
-  width: 100%;
-  text-align: center;
-  font-size: 11px;
+.input-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+#user-input {
+  flex-grow: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  outline: none;
+}
+
+#send-btn {
+  padding: 10px 16px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 10px;
   color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.typing-indicator {
+  font-size: 12px;
+  color: #bbb;
+  font-style: italic;
+  padding-left: 10px;
 }
