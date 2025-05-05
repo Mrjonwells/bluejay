@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>BlueJay</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -10,8 +10,11 @@
   <div class="background">
     <div class="chat-container">
       <div id="chatlog" class="chatlog"></div>
+      <div id="typing-indicator" class="typing-indicator hidden">
+        <span></span><span></span><span></span>
+      </div>
       <div class="input-row">
-        <input id="user-input" type="text" placeholder="Ask BlueJay..." />
+        <input id="user-input" type="text" placeholder="Ask BlueJay..." autocomplete="off" />
         <button id="send-btn">Send</button>
       </div>
     </div>
