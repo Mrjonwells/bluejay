@@ -1,39 +1,38 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const chatForm = document.getElementById("chatForm");
-  const chatInput = document.getElementById("chatInput");
-  const chatLog = document.getElementById("chatLog");
-
-  const appendMessage = (sender, message) => {
-    const bubble = document.createElement("div");
-    bubble.className = sender === "user" ? "user-bubble" : "assistant-bubble";
-    bubble.innerText = message;
-    chatLog.appendChild(bubble);
-    chatLog.scrollTop = chatLog.scrollHeight;
-  };
-
-  chatForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const message = chatInput.value.trim();
-    if (!message) return;
-
-    appendMessage("user", message);
-    chatInput.value = "";
-
-    try {
-      const response = await fetch("https://bluejay-api.onrender.com/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-      });
-
-      const data = await response.json();
-      if (data.response) {
-        appendMessage("assistant", data.response);
-      } else {
-        appendMessage("assistant", "Sorry, I didn't get that.");
-      }
-    } catch (err) {
-      appendMessage("assistant", "Error reaching BlueJay.");
-    }
-  });
+document.getElementById("send-btn").addEventListener("click", sendMessage);
+document.getElementById("user-input").addEventListener("keypress", function (e) {
+  if (e.key === "Enter") sendMessage();
 });
+
+function sendMessage() {
+  const inputField = document.getElementById("user-input");
+  const message = inputField.value.trim();
+  if (!message) return;
+
+  appendMessage("user", message);
+  inputField.value = "";
+
+  fetch("https://your-backend-url.com/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      appendMessage("bot", data.reply);
+    })
+    .catch((err) => {
+      console.error("Error:", err);
+      appendMessage("bot", "Something went wrong.");
+    });
+}
+
+function appendMessage(sender, message) {
+  const chatlog = document.getElementById("chatlog");
+  const msg = document.createElement("div");
+  msg.className = sender === "user" ? "user-msg" : "bot-msg";
+  msg.innerText = message;
+  chatlog.appendChild(msg);
+  chatlog.scrollTop = chatlog.scrollHeight;
+}
