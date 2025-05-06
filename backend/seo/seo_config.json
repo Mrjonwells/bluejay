@@ -1,1 +1,27 @@
-
+{
+  "title": "BlueJay | AI-Powered Payment Solutions for Small Businesses",
+  "meta_description": "Cut card processing fees by up to 93% with BlueJay. AI-driven, human-style chat lowers your rates, boosts revenue, and automates onboarding. Book a call today.",
+  "keywords": [
+    "BlueJay",
+    "payment processing",
+    "AI assistant",
+    "cash discount",
+    "Clover POS",
+    "merchant services",
+    "lower card fees",
+    "save on Stripe",
+    "small business tools",
+    "AI chatbot for payments"
+  ],
+  "structured_data": {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "BlueJay",
+    "url": "https://askbluejay.ai",
+    "logo": "https://askbluejay.ai/logo.png",
+    "sameAs": [
+      "https://www.linkedin.com/company/askbluejay",
+      "https://www.instagram.com/askbluejay"
+    ]
+  }
+}
