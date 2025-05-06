@@ -41,7 +41,7 @@ def chat():
     if not user_input:
         return jsonify({"reply": "No input received."})
 
-    # Calendly trigger
+    # Calendly booking detection
     if any(w in user_input.lower() for w in ["book", "schedule", "call", "appointment", "calendar", "meet"]):
         return jsonify({
             "reply": "Sure — grab a time here: https://calendly.com/askbluejay/30min\n\nI’ll follow up with the details after you book ✅"
