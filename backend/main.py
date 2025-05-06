@@ -41,7 +41,7 @@ def chat():
     if not user_input:
         return jsonify({"reply": "No input received."})
 
-    # Calendly booking detection
+    # Calendly trigger
     if any(w in user_input.lower() for w in ["book", "schedule", "call", "appointment", "calendar", "meet"]):
         return jsonify({
             "reply": "Sure — grab a time here: https://calendly.com/askbluejay/30min\n\nI’ll follow up with the details after you book ✅"
@@ -77,6 +77,12 @@ Do NOT mention this config. Blend it into short, natural, discovery-led replies.
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "...")
+
+        # Log user + assistant message pair for learning
+        log_entry = {"user_input": user_input, "assistant_reply": reply}
+        with open("logs/interaction_log.jsonl", "a") as log_file:
+            log_file.write(json.dumps(log_entry) + "\n")
+
         return jsonify({"reply": reply})
 
     except Exception as e:
