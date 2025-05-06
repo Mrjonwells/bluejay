@@ -2,43 +2,45 @@ import json
 from datetime import datetime
 from pytrends.request import TrendReq
 
-# Load existing config
-with open("backend/seo/seo_config.json", "r") as f:
+seo_path = "backend/seo/seo_config.json"
+index_path = "frontend/index.html"
+
+with open(seo_path, "r") as f:
     seo_data = json.load(f)
 
-# Pull fresh keywords from Google Trends
+# Fetch trending keywords
 pytrends = TrendReq()
-pytrends.build_payload(["merchant services", "point of sale", "card processing"], timeframe="now 7-d")
+pytrends.build_payload(["merchant processing", "point of sale", "card fees"], timeframe="now 7-d")
 trends = pytrends.related_queries()
+
 top_terms = []
+for group in trends.values():
+    if group and group["top"] is not None:
+        top_terms += group["top"]["query"].head(5).tolist()
 
-for topic in trends.values():
-    if topic and topic['top'] is not None:
-        top_terms += topic['top']['query'].head(5).tolist()
+keywords = sorted(set(top_terms + seo_data.get("keywords", [])))
+meta_block = f"""
+<!-- SEO START -->
+<title>{seo_data.get('title')}</title>
+<meta name="description" content="{seo_data.get('meta_description')}">
+<meta name="keywords" content="{', '.join(keywords)}">
+<script type="application/ld+json">{json.dumps(seo_data.get("structured_data", {}))}</script>
+<!-- SEO END -->
+"""
 
-# Inject keywords into HTML head
-with open("frontend/index.html", "r") as f:
+# Inject into index.html
+with open(index_path, "r") as f:
     html = f.read()
 
 start = html.find("<!-- SEO START -->")
 end = html.find("<!-- SEO END -->") + len("<!-- SEO END -->")
 
-keywords = ", ".join(sorted(set(top_terms)))
-meta_block = f"""
-<!-- SEO START -->
-<title>{seo_data.get('title')}</title>
-<meta name="description" content="{seo_data.get('description')}">
-<meta name="keywords" content="{keywords}">
-<!-- SEO END -->
-"""
-
-# Replace old block
 if start != -1 and end != -1:
     html = html[:start] + meta_block + html[end:]
 else:
     html = html.replace("</head>", meta_block + "\n</head>")
 
-with open("frontend/index.html", "w") as f:
+with open(index_path, "w") as f:
     f.write(html)
 
-print(f"✅ SEO updated with {len(top_terms)} keywords on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"✅ SEO updated with {len(keywords)} keywords on {datetime.now().isoformat()}")
