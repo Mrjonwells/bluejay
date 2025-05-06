@@ -1,49 +1,44 @@
 import json
+from datetime import datetime
 from pytrends.request import TrendReq
 
-SEO_PATH = "backend/seo/seo_config.json"
-HTML_PATH = "frontend/index.html"
+# Load existing config
+with open("backend/seo/seo_config.json", "r") as f:
+    seo_data = json.load(f)
 
-# Step 1: Fetch trending keywords related to merchant processing
-pytrends = TrendReq(hl='en-US', tz=360)
-pytrends.build_payload(["merchant processing", "Clover POS", "cash discount"], timeframe='now 7-d')
-related = pytrends.related_queries()
+# Pull fresh keywords from Google Trends
+pytrends = TrendReq()
+pytrends.build_payload(["merchant services", "point of sale", "card processing"], timeframe="now 7-d")
+trends = pytrends.related_queries()
+top_terms = []
 
-# Extract top terms
-keywords = ["BlueJay", "AI assistant"]
-for term in related.values():
-    if term["top"] is not None:
-        keywords += [entry["query"] for entry in term["top"].head(5).to_dict("records")]
+for topic in trends.values():
+    if topic and topic['top'] is not None:
+        top_terms += topic['top']['query'].head(5).tolist()
 
-# Step 2: Load existing SEO config
-with open(SEO_PATH, "r") as f:
-    seo = json.load(f)
-
-seo["keywords"] = sorted(set(keywords))[:12]  # Limit to 12 unique terms
-
-# Step 3: Save updated SEO config
-with open(SEO_PATH, "w") as f:
-    json.dump(seo, f, indent=2)
-
-# Step 4: Inject updated SEO into index.html
-seo_tags = f"""  <title>{seo['title']}</title>
-  <meta name="description" content="{seo['meta_description']}" />
-  <meta name="keywords" content="{', '.join(seo['keywords'])}" />
-  <script type="application/ld+json">
-{json.dumps(seo['structured_data'], indent=2)}
-  </script>"""
-
-with open(HTML_PATH, "r") as f:
+# Inject keywords into HTML head
+with open("frontend/index.html", "r") as f:
     html = f.read()
 
-start_marker = "<!-- SEO-INJECT-START -->"
-end_marker = "<!-- SEO-INJECT-END -->"
+start = html.find("<!-- SEO START -->")
+end = html.find("<!-- SEO END -->") + len("<!-- SEO END -->")
 
-before = html.split(start_marker)[0] + start_marker
-after = html.split(end_marker)[-1]
-new_html = before + "\n" + seo_tags + "\n  " + end_marker + after
+keywords = ", ".join(sorted(set(top_terms)))
+meta_block = f"""
+<!-- SEO START -->
+<title>{seo_data.get('title')}</title>
+<meta name="description" content="{seo_data.get('description')}">
+<meta name="keywords" content="{keywords}">
+<!-- SEO END -->
+"""
 
-with open(HTML_PATH, "w") as f:
-    f.write(new_html)
+# Replace old block
+if start != -1 and end != -1:
+    html = html[:start] + meta_block + html[end:]
+else:
+    html = html.replace("</head>", meta_block + "\n</head>")
 
-print("✅ SEO updated from Google Trends and injected into index.html")
+with open("frontend/index.html", "w") as f:
+    f.write(html)
+
+print(f"✅ SEO updated with {len(top_terms)} keywords on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
