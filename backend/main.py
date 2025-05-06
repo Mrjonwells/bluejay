@@ -2,8 +2,8 @@ import os
 import json
 import redis
 import uuid
-import time
 import requests
+import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -27,6 +27,8 @@ with open("bluejay/bluejay_config.json", "r") as f:
 
 HUBSPOT_URL = "https://forms.hsforms.com/submissions/v3/public/submit/formsnext/multipart/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
+INTAKE_FIELDS = ["name", "email", "phone", "business_name", "business_type", "location", "monthly_volume", "average_ticket"]
+
 def get_thread_id(session_id):
     key = f"thread:{session_id}"
     thread_id = r.get(key)
@@ -42,18 +44,34 @@ def extract_info(text):
         info["email"] = text
     elif any(c.isdigit() for c in text) and len(text) >= 10 and "-" in text:
         info["phone"] = text
-    elif " " in text or len(text) >= 2:
+    elif "business" in text.lower():
+        info["business_name"] = text
+    elif any(x in text.lower() for x in ["restaurant", "retail", "online", "service"]):
+        info["business_type"] = text
+    elif any(x in text.lower() for x in ["city", "street", "ave", "blvd", "rd", "california"]):
+        info["location"] = text
+    elif "volume" in text.lower() or "$" in text:
+        info["monthly_volume"] = text
+    elif "ticket" in text.lower():
+        info["average_ticket"] = text
+    elif " " in text or len(text) > 2:
         info["name"] = text
     return info
 
 def submit_to_hubspot(contact, note=""):
+    fields = [
+        {"name": "firstname", "value": contact.get("name", "")},
+        {"name": "email", "value": contact.get("email", "")},
+        {"name": "phone", "value": contact.get("phone", "")},
+        {"name": "business_name", "value": contact.get("business_name", "")},
+        {"name": "business_type", "value": contact.get("business_type", "")},
+        {"name": "location", "value": contact.get("location", "")},
+        {"name": "monthly_volume", "value": contact.get("monthly_volume", "")},
+        {"name": "average_ticket", "value": contact.get("average_ticket", "")},
+        {"name": "bluejay_notes", "value": note}
+    ]
     data = {
-        "fields": [
-            {"name": "firstname", "value": contact.get("name", "")},
-            {"name": "email", "value": contact.get("email", "")},
-            {"name": "phone", "value": contact.get("phone", "")},
-            {"name": "bluejay_notes", "value": note}
-        ],
+        "fields": fields,
         "context": {
             "pageUri": "https://askbluejay.ai",
             "pageName": "BlueJay AI Assistant"
@@ -105,13 +123,17 @@ def chat():
     r.setex(seen_key, timedelta(minutes=30), "1")
 
     extracted = extract_info(user_input)
-    memory.update(extracted)
+    changed = False
+    for k, v in extracted.items():
+        if k not in memory:
+            memory[k] = v
+            changed = True
 
-    if all(k in memory for k in ["name", "phone", "email"]) and not memory.get("submitted"):
-        note = "\n".join(f"• {k.title()}: {v}" for k, v in memory.items() if k in ["name", "phone", "email"])
+    # Send updated lead info if something new was added
+    if changed and all(field in memory for field in ["name", "email", "phone"]):
+        note = "\n".join(f"• {k.title()}: {v}" for k, v in memory.items() if k in INTAKE_FIELDS)
         submit_to_hubspot(memory, note)
         memory["submitted"] = True
-        Thread(target=monitor_timeout, args=(session_id, memory, log_key)).start()
 
     r.set(memory_key, json.dumps(memory))
 
