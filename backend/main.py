@@ -17,6 +17,10 @@ r = redis.Redis.from_url(redis_url)
 with open("bluejay/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
+# Load SEO config
+with open("backend/seo/seo_config.json", "r") as f:
+    seo_config = json.load(f)
+
 def get_thread_id(session_id):
     key = f"thread:{session_id}"
     thread_id = r.get(key)
@@ -29,6 +33,10 @@ def get_thread_id(session_id):
 @app.route("/", methods=["GET"])
 def index():
     return "<h1 style='color:white;background:black;padding:50px;text-align:center'>BlueJay backend is live!</h1>"
+
+@app.route("/seo", methods=["GET"])
+def seo():
+    return jsonify(seo_config)
 
 @app.route("/chat", methods=["POST"])
 def chat():
