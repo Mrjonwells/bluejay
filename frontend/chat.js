@@ -26,6 +26,11 @@ function sendMessage() {
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
+
+      // Calendly embed trigger
+      if (data.reply && data.reply.includes("calendly.com")) {
+        document.getElementById("calendly-frame").style.display = "block";
+      }
     })
     .catch(() => {
       showTyping(false);
