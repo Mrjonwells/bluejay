@@ -1,3 +1,7 @@
 #!/bin/bash
-pip install --upgrade pip
+
+echo "🔧 Installing dependencies..."
 pip install -r requirements.txt
+
+echo "🚀 Starting BlueJay backend..."
+python main.py
