@@ -24,5 +24,13 @@
     </div>
   </div>
   <script src="chat.js"></script>
+<!-- Calendly Popup Modal -->
+<div id="calendly-frame" style="display:none;position:fixed;top:10%;left:5%;width:90%;height:80%;z-index:9999;border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(0,0,0,0.5);">
+  <div style="text-align:right;background:#fff;padding:5px;">
+    <button onclick="document.getElementById('calendly-frame').style.display='none'" style="background:none;border:none;font-size:20px;">×</button>
+  </div>
+  <iframe src="https://calendly.com/askbluejay/30min" width="100%" height="100%" frameborder="0"></iframe>
+</div>
+
 </body>
 </html>
