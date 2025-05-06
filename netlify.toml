@@ -1,11 +1,10 @@
 [build]
   base = "frontend"
   publish = "./"
-  command = "echo Frontend build complete"
+  command = "pip install -r requirements.txt && python ../dev_sync_seo.py && npm run build"
 
-[dev]
-  command = "echo Frontend dev"
-  port = 8888
+[build.environment]
+  PYTHON_VERSION = "3.9"
 
 [[redirects]]
   from = "/chat"
