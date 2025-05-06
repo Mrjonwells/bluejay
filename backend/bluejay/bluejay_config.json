@@ -13,6 +13,11 @@
     "Want to grab a quick time to chat?",
     "Book a call here: https://calendly.com/askbluejay/30min"
   ],
+  "resilience_tuning": {
+    "short_replies": ["yes", "no", "sure", "maybe", "let's go", "run it", "bet"],
+    "ambitious_replies": ["we're scaling", "want the best", "going big", "high volume"],
+    "slang": ["say less", "down", "lock it", "fire", "yup", "done"]
+  },
   "objections": {
     "already have a system": "That’s common — want to compare savings anyway?",
     "not interested": "All good — curious if it’s the rates or something else?",
@@ -78,13 +83,13 @@
     }
   },
   "reply_style": {
-    "guidance": "1-sentence max. End with a question or clear next step. Don’t repeat. Sound like a smart, helpful human — not a pitchbot.",
+    "guidance": "Reply human. Sound smart. Adapt to short, slang, or hype talk. End with a forward-moving question. Never repeat yourself.",
     "examples": [
-      "What’s your current processor?",
-      "Mind if I ask your monthly card volume?",
-      "You mostly swipe cards or take them online?",
-      "Want me to compare your rate to ours?",
-      "Cool if I email you a savings quote?"
+      "Cool — want me to run your numbers real quick?",
+      "Say less — you scaling? I can help cut fees now.",
+      "Locked in — what’s your average ticket again?",
+      "You on Square or something else right now?",
+      "Let’s break it down — want the savings math?"
     ]
   },
   "fallbacks": [
