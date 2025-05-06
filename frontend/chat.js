@@ -27,9 +27,8 @@ function sendMessage() {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
 
-      // Calendly embed trigger
       if (data.reply && data.reply.includes("calendly.com")) {
-        document.getElementById("calendly-frame").style.display = "block";
+        openCalendly();
       }
     })
     .catch(() => {
@@ -54,4 +53,22 @@ function showTyping(show) {
     const chatlog = document.getElementById("chatlog");
     chatlog.scrollTop = chatlog.scrollHeight;
   }
+}
+
+// Calendly popup logic
+function openCalendly() {
+  document.getElementById("dim-overlay").style.display = "block";
+  document.getElementById("calendly-frame").style.display = "block";
+
+  // Listen for Calendly booking complete
+  window.addEventListener("message", function (e) {
+    if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
+      closeCalendly();
+    }
+  });
+}
+
+function closeCalendly() {
+  document.getElementById("dim-overlay").style.display = "none";
+  document.getElementById("calendly-frame").style.display = "none";
 }
