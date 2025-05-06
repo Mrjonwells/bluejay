@@ -13,6 +13,7 @@ ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
+# Load BlueJay brain
 with open("bluejay/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
@@ -38,7 +39,9 @@ def chat():
 
     # Calendly trigger
     if any(w in user_input.lower() for w in ["book", "schedule", "call", "appointment", "calendar", "meet"]):
-        return jsonify({"reply": "Sure — grab a time here: https://calendly.com/askbluejay/30min"})
+        return jsonify({
+            "reply": "Sure — grab a time here: https://calendly.com/askbluejay/30min\n\nI’ll follow up with the details after you book ✅"
+        })
 
     session_id = request.remote_addr or str(uuid.uuid4())
     thread_id = get_thread_id(session_id)
