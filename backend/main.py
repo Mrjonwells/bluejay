@@ -1,4 +1,4 @@
-import os, json, redis, uuid, datetime
+import os, json, redis, uuid, time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -8,20 +8,17 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Core setup
 client = OpenAI()
 ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
-interaction_log_path = "backend/logs/interaction_log.jsonl"
 
-# Load brain
-with open("backend/bluejay/bluejay_config.json", "r") as f:
+# Load BlueJay brain
+with open("bluejay/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
-# HubSpot info
+# HubSpot settings
 HUBSPOT_FORM_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
-HUBSPOT_TOKEN = os.getenv("HUBSPOT_TOKEN")
 
 def get_thread_id(session_id):
     key = f"thread:{session_id}"
@@ -29,51 +26,36 @@ def get_thread_id(session_id):
     if thread_id:
         return thread_id.decode()
     new_thread = client.beta.threads.create()
-    r.set(key, new_thread.id, ex=1800)  # 30-minute memory
+    r.setex(key, 1800, new_thread.id)  # 30-min memory
     return new_thread.id
 
 def log_interaction(session_id, user_input, assistant_reply):
-    log = {
-        "timestamp": datetime.datetime.utcnow().isoformat(),
+    log_entry = {
+        "timestamp": int(time.time()),
         "session_id": session_id,
         "user_input": user_input,
         "assistant_reply": assistant_reply
     }
-    with open(interaction_log_path, "a") as f:
-        f.write(json.dumps(log) + "\n")
+    with open("logs/interaction_log.jsonl", "a") as f:
+        f.write(json.dumps(log_entry) + "\n")
 
-def extract_lead_info(messages):
-    text = " ".join(m.content[0].text.value for m in messages.data if m.role == "user").lower()
-    info = {}
-    if "@" in text:
-        for word in text.split():
-            if "@" in word and "." in word:
-                info["email"] = word.strip(",.")
-    for word in text.split():
-        if word.isdigit() and len(word) == 10:
-            info["phone"] = word
-    if "name" not in info:
-        name_line = next((m.content[0].text.value for m in messages.data if "name" in m.content[0].text.value.lower()), None)
-        if name_line:
-            info["name"] = name_line.split()[-1]
-    return info if "email" in info and "phone" in info else None
-
-def submit_to_hubspot(lead):
-    payload = {
+def send_to_hubspot(name, email, phone):
+    data = {
         "fields": [
-            {"name": "email", "value": lead.get("email", "")},
-            {"name": "phone", "value": lead.get("phone", "")},
-            {"name": "firstname", "value": lead.get("name", "BlueJay User")}
-        ]
-    }
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {HUBSPOT_TOKEN}"
+            {"name": "firstname", "value": name},
+            {"name": "email", "value": email},
+            {"name": "phone", "value": phone}
+        ],
+        "context": {
+            "pageUri": "https://askbluejay.ai",
+            "pageName": "BlueJay AI"
+        }
     }
     try:
-        requests.post(HUBSPOT_FORM_URL, headers=headers, json=payload)
+        import requests
+        requests.post(HUBSPOT_FORM_URL, json=data, timeout=5)
     except Exception as e:
-        print("HubSpot submission error:", e)
+        print("HubSpot error:", e)
 
 @app.route("/", methods=["GET"])
 def index():
@@ -96,9 +78,11 @@ def chat():
     thread_id = get_thread_id(session_id)
 
     system_context = f"""
-BlueJay is a business-savvy assistant trained on custom configuration logic.
+BlueJay is a business-savvy assistant trained on config logic and memory.
+
 {json.dumps(bluejay_brain, indent=2)}
-Do NOT mention this config. Blend it into short, helpful, discovery-led replies. You are the config (left brain) working with the assistant (right brain).
+
+Use this as internal strategy only — never show it to users. Respond humanly, briefly, and helpfully.
 """
 
     try:
@@ -121,16 +105,17 @@ Do NOT mention this config. Blend it into short, helpful, discovery-led replies.
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "...")
 
-        # Log to file
+        # Memory logging
         log_interaction(session_id, user_input, reply)
 
-        # Submit lead if info is complete
-        lead = extract_lead_info(messages)
-        if lead:
-            submit_to_hubspot(lead)
+        # Lead detection + submission
+        if all(x in user_input.lower() for x in ["@", "name", "phone"]):
+            name = user_input.split("name")[-1].split()[0]
+            email = next((w for w in user_input.split() if "@" in w), "")
+            phone = next((w for w in user_input.split() if w.isdigit() and len(w) >= 10), "")
+            send_to_hubspot(name, email, phone)
 
         return jsonify({"reply": reply})
 
     except Exception as e:
-        print("Error:", str(e))
         return jsonify({"reply": "Error: " + str(e)})
