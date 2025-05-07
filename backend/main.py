@@ -10,33 +10,46 @@ CORS(app)
 
 client = OpenAI()
 ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
-r = redis.Redis.from_url(os.getenv("REDIS_URL"))
+redis_url = os.getenv("REDIS_URL")
+r = redis.Redis.from_url(redis_url)
 
 # Load BlueJay brain
-brain_path = os.path.join("backend", "bluejay", "bluejay_config.json")
-with open(brain_path, "r") as f:
+with open("backend/config/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
-# Log memory per thread
+# Interaction log path
+LOG_PATH = "backend/logs/interaction_log.jsonl"
+
+# HubSpot form
+HUBSPOT_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
+
 def get_thread_id(session_id):
     key = f"thread:{session_id}"
     thread_id = r.get(key)
     if thread_id:
         return thread_id.decode()
     new_thread = client.beta.threads.create()
-    r.setex(key, 1800, new_thread.id)
+    r.set(key, new_thread.id, ex=1800)
     return new_thread.id
 
-# Store interaction log
-def log_interaction(session_id, user_input, assistant_reply):
-    ts = int(time.time())
-    log = {"ts": ts, "session_id": session_id, "input": user_input, "reply": assistant_reply}
-    with open("backend/logs/interaction_log.jsonl", "a") as f:
-        f.write(json.dumps(log) + "\n")
+def store_fields(session_id, message):
+    fields = {
+        "monthly_card_volume": ["$","monthly volume","per month"],
+        "average_ticket": ["ticket","average sale"],
+        "processor": ["square", "stripe", "clover"],
+        "business_name": ["business is", "company name", "we are"],
+        "transaction_type": ["in-person", "online"]
+    }
+    for k, triggers in fields.items():
+        if any(t in message.lower() for t in triggers):
+            r.set(f"{session_id}:{k}", message, ex=1800)
+
+def extract_memory(session_id):
+    return {k.decode(): v.decode() for k, v in r.scan_iter(f"{session_id}:*") for v in [r.get(k)]}
 
 @app.route("/", methods=["GET"])
 def index():
-    return "<h1 style='color:white;background:black;text-align:center;padding:50px'>BlueJay backend is live!</h1>"
+    return "<h1 style='color:white;background:black;padding:50px;text-align:center'>BlueJay backend is live!</h1>"
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -45,42 +58,69 @@ def chat():
     if not user_input:
         return jsonify({"reply": "No input received."})
 
-    # Calendly trigger
-    if any(x in user_input.lower() for x in ["book", "schedule", "call", "calendar"]):
-        return jsonify({"reply": "Sure — grab a time here: https://calendly.com/askbluejay/30min"})
-
     session_id = request.remote_addr or str(uuid.uuid4())
+
+    # Trigger Calendly
+    if any(word in user_input.lower() for word in ["book", "calendar", "schedule", "appointment", "meeting"]):
+        return jsonify({"reply": "Grab a time here: https://calendly.com/askbluejay/30min"})
+
     thread_id = get_thread_id(session_id)
+    store_fields(session_id, user_input)
+    memory = extract_memory(session_id)
 
     system_context = f"""
-BlueJay is a business-savvy sales assistant. Use this config to guide your replies without repeating answered questions:
+BlueJay is a human-style merchant advisor assistant.
+Use these config rules as your internal strategy guide:
 
 {json.dumps(bluejay_brain)}
 
-You are smart, adaptive, and focused on moving the sale forward. Do not ask for info already gathered.
+Conversation memory: {json.dumps(memory, indent=2)}
+
+Speak like a helpful expert, use natural tone. Focus on savings, rate match or beat, and smooth signup.
 """
 
     try:
         client.beta.threads.messages.create(
-            thread_id=thread_id, role="user", content=user_input
+            thread_id=thread_id,
+            role="user",
+            content=user_input
         )
-
         run = client.beta.threads.runs.create(
             thread_id=thread_id,
             assistant_id=ASSISTANT_ID,
             instructions=system_context
         )
-
         while run.status not in ["completed", "failed", "cancelled"]:
-            time.sleep(0.5)
             run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
-
-        if run.status != "completed":
-            return jsonify({"reply": "Error during assistant run."})
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "...")
-        log_interaction(session_id, user_input, reply)
+
+        # Log interaction
+        with open(LOG_PATH, "a") as log:
+            log.write(json.dumps({
+                "session_id": session_id,
+                "timestamp": time.time(),
+                "user_input": user_input,
+                "assistant_reply": reply,
+                "memory": memory
+            }) + "\n")
+
+        # Submit to HubSpot if core fields are captured
+        if all(r.get(f"{session_id}:{k}") for k in ["business_name", "monthly_card_volume", "average_ticket"]):
+            payload = {
+                "fields": [
+                    {"name": "email", "value": r.get(f"{session_id}:email") or "n/a"},
+                    {"name": "firstname", "value": r.get(f"{session_id}:business_name") or "Business"},
+                    {"name": "phone", "value": r.get(f"{session_id}:phone") or "n/a"},
+                    {"name": "message", "value": json.dumps(memory)}
+                ]
+            }
+            try:
+                requests.post(HUBSPOT_URL, json=payload, timeout=4)
+            except:
+                pass
+
         return jsonify({"reply": reply})
 
     except Exception as e:
