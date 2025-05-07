@@ -1,46 +1,37 @@
 import json
-from datetime import datetime
 from pytrends.request import TrendReq
 
 seo_path = "backend/seo/seo_config.json"
-index_path = "frontend/index.html"
 
-with open(seo_path, "r") as f:
-    seo_data = json.load(f)
+# Load current config
+try:
+    with open(seo_path, "r") as f:
+        config = json.load(f)
+except FileNotFoundError:
+    print(f"⚠️ SEO config not found at {seo_path}")
+    config = {}
 
-# Fetch trending keywords
+# Pull top trending keywords from Google Trends
 pytrends = TrendReq()
-pytrends.build_payload(["merchant processing", "point of sale", "card fees"], timeframe="now 7-d")
-trends = pytrends.related_queries()
+pytrends.build_payload(kw_list=["Clover POS", "AI payment", "cash discount"])
 
-top_terms = []
-for group in trends.values():
-    if group and group["top"] is not None:
-        top_terms += group["top"]["query"].head(5).tolist()
+try:
+    trends = pytrends.related_queries()
+    ranked = trends.get("default", {}).get("rankedList", [])
+    if ranked and "rankedKeyword" in ranked[0]:
+        seo_keywords = [kw["query"] for kw in ranked[0]["rankedKeyword"]]
+    else:
+        print("⚠️ No ranked keywords found — using fallback list.")
+        seo_keywords = ["AI payments", "merchant savings", "Clover POS"]
+except Exception as e:
+    print(f"⚠️ Pytrends error: {e}")
+    seo_keywords = ["AI payments", "merchant savings", "Clover POS"]
 
-keywords = sorted(set(top_terms + seo_data.get("keywords", [])))
-meta_block = f"""
-<!-- SEO START -->
-<title>{seo_data.get('title')}</title>
-<meta name="description" content="{seo_data.get('meta_description')}">
-<meta name="keywords" content="{', '.join(keywords)}">
-<script type="application/ld+json">{json.dumps(seo_data.get("structured_data", {}))}</script>
-<!-- SEO END -->
-"""
+# Update SEO config
+config["keywords"] = list(set(config.get("keywords", []) + seo_keywords))
 
-# Inject into index.html
-with open(index_path, "r") as f:
-    html = f.read()
+# Save updated config
+with open(seo_path, "w") as f:
+    json.dump(config, f, indent=2)
 
-start = html.find("<!-- SEO START -->")
-end = html.find("<!-- SEO END -->") + len("<!-- SEO END -->")
-
-if start != -1 and end != -1:
-    html = html[:start] + meta_block + html[end:]
-else:
-    html = html.replace("</head>", meta_block + "\n</head>")
-
-with open(index_path, "w") as f:
-    f.write(html)
-
-print(f"✅ SEO updated with {len(keywords)} keywords on {datetime.now().isoformat()}")
+print("✅ SEO keywords updated.")
