@@ -1,4 +1,4 @@
-import os, json, redis, uuid, requests
+import os, json, redis, uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -13,12 +13,10 @@ ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
-# Load BlueJay brain
-with open("backend/bluejay/bluejay_config.json", "r") as f:
+# Load BlueJay brain (relative path fix for Render)
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "bluejay", "bluejay_config.json")
+with open(CONFIG_PATH, "r") as f:
     bluejay_brain = json.load(f)
-
-# Memory log file
-LOG_FILE = "backend/logs/interaction_log.jsonl"
 
 def get_thread_id(session_id):
     key = f"thread:{session_id}"
@@ -40,26 +38,8 @@ def chat():
     if not user_input:
         return jsonify({"reply": "No input received."})
 
-    # Calendly + HubSpot booking logic
+    # Calendly trigger
     if any(w in user_input.lower() for w in ["book", "schedule", "call", "appointment", "calendar", "meet"]):
-        try:
-            requests.post(
-                "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1",
-                json={
-                    "fields": [
-                        {"name": "message", "value": user_input},
-                        {"name": "booking_triggered", "value": "yes"}
-                    ],
-                    "context": {
-                        "pageUri": "https://askbluejay.ai",
-                        "pageName": "BlueJay Assistant"
-                    }
-                },
-                timeout=3
-            )
-        except Exception:
-            pass
-
         return jsonify({
             "reply": "Sure — grab a time here: https://calendly.com/askbluejay/30min\n\nI’ll follow up with the details after you book ✅"
         })
@@ -94,17 +74,6 @@ Do NOT mention this config. Blend it into short, natural, discovery-led replies.
 
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "...")
-
-        # Log interaction
-        log_entry = {
-            "session_id": session_id,
-            "thread_id": thread_id,
-            "user_input": user_input,
-            "assistant_reply": reply
-        }
-        with open(LOG_FILE, "a") as f:
-            f.write(json.dumps(log_entry) + "\n")
-
         return jsonify({"reply": reply})
 
     except Exception as e:
