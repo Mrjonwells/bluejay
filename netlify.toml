@@ -1,7 +1,7 @@
 [build]
-  base = ""
-  publish = "frontend"
-  command = "pip install pytrends && python dev_sync_seo.py || echo 'SEO sync failed — continuing...' && npm install && npm run build"
+  base = "frontend"
+  publish = "./"
+  command = "pip install pytrends && python ../dev_sync_seo.py || echo 'SEO sync failed — continuing...' && npm install && npm run build"
 
 [build.environment]
   PYTHON_VERSION = "3.9"
