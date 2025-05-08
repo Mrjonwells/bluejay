@@ -1,34 +1,15 @@
 #!/bin/bash
-echo "Building SEO head injection..."
 
-SEO_JSON="backend/seo/seo_config.json"
-INJECT_FILE="backend/seo/seo_injection.html"
-HTML_FILE="index.html"
+echo "=== Starting build process ==="
 
-# Extract fields from JSON
-TITLE=$(jq -r '.title' "$SEO_JSON")
-DESCRIPTION=$(jq -r '.meta_description' "$SEO_JSON")
-KEYWORDS=$(jq -r '.keywords | join(", ")' "$SEO_JSON")
-
-# Build injection content
-cat <<EOF > "$INJECT_FILE"
-<title>$TITLE</title>
-<meta name="description" content="$DESCRIPTION">
-<meta name="keywords" content="$KEYWORDS">
-<link rel="canonical" href="https://askbluejay.ai/">
-<meta name="robots" content="index, follow">
-<meta property="og:title" content="$TITLE" />
-<meta property="og:description" content="$DESCRIPTION" />
-<meta property="og:url" content="https://askbluejay.ai/" />
-<meta property="og:type" content="website" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="$TITLE" />
-<meta name="twitter:description" content="$DESCRIPTION" />
-EOF
-
-# Inject SEO into HTML file between SEO-INJECT markers
-sed -i.bak "/<!-- SEO-INJECT-START -->/,/<!-- SEO-INJECT-END -->/c\
-<!-- SEO-INJECT-START -->\n$(cat $INJECT_FILE)\n<!-- SEO-INJECT-END -->
-" "$HTML_FILE"
+# Step 1: Inject SEO head content from seo_injection.html
+echo "Injecting SEO head tags..."
+SEO_SNIPPET=$(cat backend/seo/seo_injection.html)
+perl -0777 -i -pe "s/<!-- SEO-INJECT-START -->.*?<!-- SEO-INJECT-END -->/<!-- SEO-INJECT-START -->\n$SEO_SNIPPET\n<!-- SEO-INJECT-END -->/s" frontend/index.html
 
 echo "SEO injection complete."
+
+# Step 2: Optional lint or format (disabled for now)
+# black backend/  # Uncomment if using Python formatting
+
+echo "=== Build process complete ==="
