@@ -12,6 +12,9 @@ __pycache__/
 *.sqlite3
 *.env
 
+# SEO build artifacts
+backend/seo/seo_injection.html
+
 # Netlify
 /.netlify/
 # DO NOT ignore netlify.toml
