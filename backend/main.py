@@ -14,7 +14,7 @@ redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
 # Load BlueJay brain
-with open("bluejay/config/bluejay_config.json", "r") as f:
+with open("backend/config/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
 # Log path for circular training
