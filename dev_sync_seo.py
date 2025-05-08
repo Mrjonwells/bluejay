@@ -1,37 +1,51 @@
 import json
-from pytrends.request import TrendReq
+import os
 
-seo_path = "backend/seo/seo_config.json"
+# Paths
+SEO_CONFIG_PATH = "backend/seo/seo_config.json"
+INJECTION_HTML_PATH = "backend/seo/seo_injection.html"
+INDEX_HTML_PATH = "frontend/index.html"
 
-# Load current config
-try:
-    with open(seo_path, "r") as f:
+def generate_seo_injection():
+    with open(SEO_CONFIG_PATH, "r") as f:
         config = json.load(f)
-except FileNotFoundError:
-    print(f"⚠️ SEO config not found at {seo_path}")
-    config = {}
 
-# Pull top trending keywords from Google Trends
-pytrends = TrendReq()
-pytrends.build_payload(kw_list=["Clover POS", "AI payment", "cash discount"])
+    title = config.get("title", "")
+    description = config.get("meta_description", "")
+    keywords = ", ".join(config.get("keywords", []))
+    structured_data = json.dumps(config.get("structured_data", {}), indent=2)
 
-try:
-    trends = pytrends.related_queries()
-    ranked = trends.get("default", {}).get("rankedList", [])
-    if ranked and "rankedKeyword" in ranked[0]:
-        seo_keywords = [kw["query"] for kw in ranked[0]["rankedKeyword"]]
+    html = f"""<title>{title}</title>
+<meta name="description" content="{description}" />
+<meta name="keywords" content="{keywords}" />
+<script type="application/ld+json">
+{structured_data}
+</script>"""
+
+    with open(INJECTION_HTML_PATH, "w") as f:
+        f.write(html.strip())
+
+    print("SEO injection HTML updated.")
+
+def inject_into_index():
+    with open(INJECTION_HTML_PATH, "r") as inject:
+        injection = inject.read()
+
+    with open(INDEX_HTML_PATH, "r") as index:
+        content = index.read()
+
+    pre = "<!-- SEO-INJECT-START -->"
+    post = "<!-- SEO-INJECT-END -->"
+    if pre in content and post in content:
+        start = content.index(pre) + len(pre)
+        end = content.index(post)
+        new_content = content[:start] + "\n" + injection + "\n" + content[end:]
+        with open(INDEX_HTML_PATH, "w") as index:
+            index.write(new_content)
+        print("index.html SEO block updated.")
     else:
-        print("⚠️ No ranked keywords found — using fallback list.")
-        seo_keywords = ["AI payments", "merchant savings", "Clover POS"]
-except Exception as e:
-    print(f"⚠️ Pytrends error: {e}")
-    seo_keywords = ["AI payments", "merchant savings", "Clover POS"]
+        print("Injection tags not found in index.html.")
 
-# Update SEO config
-config["keywords"] = list(set(config.get("keywords", []) + seo_keywords))
-
-# Save updated config
-with open(seo_path, "w") as f:
-    json.dump(config, f, indent=2)
-
-print("✅ SEO keywords updated.")
+if __name__ == "__main__":
+    generate_seo_injection()
+    inject_into_index()
