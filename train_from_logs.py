@@ -1,56 +1,52 @@
 import json
-from collections import defaultdict, Counter
-import os
+from collections import Counter, defaultdict
 
 LOG_PATH = "backend/logs/interaction_log.jsonl"
-BRAIN_PATH = "backend/config/bluejay_config.json"
-RECOMMENDATION_PATH = "backend/logs/brain_update_recommendations.json"
+BRAIN_UPDATE_PATH = "backend/bluejay/brain_update_recommendations.json"
 
 def load_logs():
-    if not os.path.exists(LOG_PATH):
-        print("No log file found.")
-        return []
     with open(LOG_PATH, "r") as f:
         return [json.loads(line) for line in f if line.strip()]
 
-def analyze_logs(logs):
-    field_hits = defaultdict(list)
-    deal_stage_terms = defaultdict(Counter)
+def extract_patterns(logs):
+    keywords = Counter()
+    objections = Counter()
+    fallbacks = Counter()
+    field_keys = Counter()
 
     for entry in logs:
-        memory = entry.get("memory", {})
+        msg = entry.get("user_input", "").lower()
         reply = entry.get("assistant_reply", "").lower()
-        user_input = entry.get("user_input", "").lower()
+        memory = entry.get("memory", {})
 
-        # Track field triggers
-        for key in memory:
-            field_hits[key].append(user_input)
+        for word in msg.split():
+            keywords[word] += 1
 
-        # Score by tone
-        for stage, keywords in [
-            ("curious", ["what", "how", "interested", "learn", "explore"]),
-            ("qualified", ["volume", "rate", "square", "stripe", "provider", "ticket"]),
-            ("stalling", ["later", "busy", "not now", "think", "circle back"]),
-            ("closing", ["ready", "signup", "send", "move forward", "lock", "finish"])
+        if "not interested" in msg or "already have" in msg:
+            objections[msg] += 1
+
+        if reply in [
+            "Want to take the next step or circle back later?",
+            "Still thinking? I can simplify it for you."
         ]:
-            for word in keywords:
-                if word in user_input or word in reply:
-                    deal_stage_terms[stage][word] += 1
+            fallbacks[reply] += 1
+
+        for k in memory.keys():
+            field_keys[k] += 1
 
     return {
-        "field_usage": {k: len(v) for k, v in field_hits.items()},
-        "deal_stage_terms": {k: dict(v.most_common(10)) for k, v in deal_stage_terms.items()}
+        "common_keywords": keywords.most_common(15),
+        "frequent_objections": objections.most_common(5),
+        "fallback_usage": fallbacks.most_common(5),
+        "frequent_memory_fields": field_keys.most_common(10)
     }
 
 def save_recommendations(data):
-    with open(RECOMMENDATION_PATH, "w") as f:
+    with open(BRAIN_UPDATE_PATH, "w") as f:
         json.dump(data, f, indent=2)
-    print(f"Recommendations written to {RECOMMENDATION_PATH}")
+    print(f"Brain update recommendations saved to {BRAIN_UPDATE_PATH}")
 
 if __name__ == "__main__":
     logs = load_logs()
-    if logs:
-        insights = analyze_logs(logs)
-        save_recommendations(insights)
-    else:
-        print("No logs to analyze.")
+    patterns = extract_patterns(logs)
+    save_recommendations(patterns)
