@@ -1,36 +1,39 @@
-# Node
+# Node.js
 node_modules/
 dist/
 npm-debug.log
 
 # Python
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
 *.db
 *.sqlite3
 *.env
-*.egg-info/
-
-# Logs and caches
-*.log
-logs/
-.cache/
-
-# Mac / system files
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Editor/IDE
-.vscode/
-.idea/
-*.swp
-*.bak
-*.tmp
 
 # Netlify
 /.netlify/
 # DO NOT ignore netlify.toml
 
-# Build artifacts
-seo_injection.html
+# IDE/editor files
+*.swp
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+*.jsonl
+
+# Mac system files
+.AppleDouble
+.LSOverride
+
+# Backup files
+*.bak
+*.tmp
+
+# SEO injection artifacts
+frontend/index.html.bak
+backend/seo/seo_injection.html
