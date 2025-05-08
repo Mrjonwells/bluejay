@@ -109,6 +109,17 @@
       "Is this your only location or are you growing?"
     ]
   },
+  "human_flex": {
+    "shorthand_recognition": true,
+    "examples": {
+      "15k": "monthly_card_volume",
+      "25": "average_ticket",
+      "Square": "processor",
+      "online": "transaction_type",
+      "Joe’s Tacos": "business_name"
+    },
+    "fallback_memory_capture": "If a message is short or looks like a field value, guess its intent and store it."
+  },
   "influences": [
     "How to Win Friends and Influence People – Dale Carnegie",
     "The Psychology of Selling – Brian Tracy",
