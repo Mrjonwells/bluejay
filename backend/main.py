@@ -17,8 +17,10 @@ r = redis.Redis.from_url(redis_url)
 with open("bluejay/config/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
-# Log path
+# Log path for circular training
 LOG_PATH = "bluejay/logs/interaction_log.jsonl"
+
+# HubSpot
 HUBSPOT_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
 def get_thread_id(session_id):
@@ -30,41 +32,19 @@ def get_thread_id(session_id):
     r.set(key, new_thread.id, ex=1800)
     return new_thread.id
 
-def normalize_input(msg):
-    msg = msg.strip().lower()
-    if msg.startswith("$") or msg.endswith("k") or "volume" in msg:
-        return "monthly_card_volume"
-    if msg.replace(".", "", 1).isdigit():
-        return "average_ticket"
-    if "square" in msg or "stripe" in msg or "clover" in msg:
-        return "processor"
-    if "online" in msg or "in-person" in msg:
-        return "transaction_type"
-    if "@" in msg or "email" in msg:
-        return "email"
-    if "call" in msg or "phone" in msg or "text" in msg:
-        return "phone"
-    return None
-
 def store_fields(session_id, message):
-    # Shorthand parser
-    category = normalize_input(message)
-    if category:
-        r.set(f"{session_id}:{category}", message, ex=1800)
-        return
-
-    fields = {
-        "monthly_card_volume": ["$","monthly volume","per month"],
-        "average_ticket": ["ticket","average sale"],
-        "processor": ["square", "stripe", "clover"],
-        "business_name": ["business is", "company name", "we are"],
-        "transaction_type": ["in-person", "online"],
-        "email": ["@","email"],
-        "phone": ["call me","phone number","text me"]
+    shorthand_map = {
+        "monthly_card_volume": ["$","k","volume","month"],
+        "average_ticket": ["ticket","avg","per sale"],
+        "processor": ["square","stripe","clover","toast"],
+        "business_name": ["biz","name","called","doing business"],
+        "transaction_type": ["in-person", "online", "pos", "ecom"],
+        "email": ["@",".com"],
+        "phone": ["text","call","phone","digits"]
     }
-    for k, triggers in fields.items():
-        if any(t in message.lower() for t in triggers):
-            r.set(f"{session_id}:{k}", message, ex=1800)
+    for field, triggers in shorthand_map.items():
+        if any(t in message.lower() for t in triggers) or message.strip().isdigit() or "@" in message:
+            r.set(f"{session_id}:{field}", message.strip(), ex=1800)
 
 def extract_memory(session_id):
     return {
@@ -86,7 +66,8 @@ def chat():
 
     session_id = request.remote_addr or str(uuid.uuid4())
 
-    if any(w in user_input.lower() for w in ["book", "calendar", "schedule", "appointment", "meeting"]):
+    # Trigger Calendly
+    if any(word in user_input.lower() for word in ["book", "calendar", "schedule", "appointment", "meeting"]):
         return jsonify({"reply": "Grab a time here: https://calendly.com/askbluejay/30min"})
 
     thread_id = get_thread_id(session_id)
@@ -124,6 +105,7 @@ Ask smart discovery questions and guide toward a close.
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         reply = next((m.content[0].text.value for m in messages.data if m.role == "assistant"), "...")
 
+        # Log interaction
         with open(LOG_PATH, "a") as log:
             log.write(json.dumps({
                 "session_id": session_id,
@@ -132,7 +114,9 @@ Ask smart discovery questions and guide toward a close.
                 "assistant_reply": reply,
                 "memory": memory
             }) + "\n")
+        print("Interaction logged to:", LOG_PATH)
 
+        # Submit to HubSpot if core fields are captured
         if all(r.get(f"{session_id}:{k}") for k in ["business_name", "monthly_card_volume", "average_ticket"]):
             payload = {
                 "fields": [
