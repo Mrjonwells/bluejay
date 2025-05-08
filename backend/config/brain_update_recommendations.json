@@ -1,28 +1,19 @@
 {
-  "forward_prompts": [
-    "Mind if I ask your business name to personalize this?",
-    "Can I grab your email in case we get disconnected?"
-  ],
-  "fallbacks": [
-    "Still there? Want help finishing up?",
-    "Want to go over the numbers again real quick?"
-  ],
-  "deal_stage_scoring": {
-    "curious": [
-      "just checking",
-      "wondering",
-      "thinking about"
-    ],
-    "qualified": [
-      "email is",
-      "name is",
-      "my phone",
-      "we process"
-    ],
-    "closing": [
-      "sign me up",
-      "let's go",
-      "i'm ready"
-    ]
-  }
+  "timestamp": "2025-05-07T00:00:00Z",
+  "field_counts": {
+    "monthly_card_volume": 0,
+    "average_ticket": 0,
+    "processor": 0,
+    "transaction_type": 0,
+    "business_name": 0,
+    "contact_info": 0
+  },
+  "recommendations": [
+    "Improve capture rate for 'monthly_card_volume' — too few logged mentions.",
+    "Improve capture rate for 'average_ticket' — too few logged mentions.",
+    "Improve capture rate for 'processor' — too few logged mentions.",
+    "Improve capture rate for 'transaction_type' — too few logged mentions.",
+    "Improve capture rate for 'business_name' — too few logged mentions.",
+    "Improve capture rate for 'contact_info' — too few logged mentions."
+  ]
 }
