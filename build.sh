@@ -1,15 +1,11 @@
 #!/bin/bash
 
-echo "=== Starting build process ==="
+echo "Starting SEO injection..."
 
-# Step 1: Inject SEO head content from seo_injection.html
-echo "Injecting SEO head tags..."
-SEO_SNIPPET=$(cat backend/seo/seo_injection.html)
-perl -0777 -i -pe "s/<!-- SEO-INJECT-START -->.*?<!-- SEO-INJECT-END -->/<!-- SEO-INJECT-START -->\n$SEO_SNIPPET\n<!-- SEO-INJECT-END -->/s" frontend/index.html
+# Wait briefly for Render to finish file syncing
+sleep 2
 
-echo "SEO injection complete."
+# Run the SEO injector
+python3 dev_sync_seo.py
 
-# Step 2: Optional lint or format (disabled for now)
-# black backend/  # Uncomment if using Python formatting
-
-echo "=== Build process complete ==="
+echo "Finished SEO injection."
