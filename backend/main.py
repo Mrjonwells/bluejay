@@ -14,11 +14,11 @@ redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
 # Load BlueJay brain
-with open("bluejay/config/bluejay_config.json", "r") as f:
+with open("config/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
 # Log path for circular training
-LOG_PATH = "bluejay/logs/interaction_log.jsonl"
+LOG_PATH = "logs/interaction_log.jsonl"
 
 # HubSpot
 HUBSPOT_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
