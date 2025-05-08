@@ -1,28 +1,46 @@
 {
-  "title": "AskBlueJay.ai | AI Assistant for Merchant Processing & Business Growth",
-  "meta_description": "AskBlueJay.ai helps businesses eliminate up to 93% of credit card fees with smart AI. Beat Square, Stripe, and Clover rates with a human-style assistant built for entrepreneurs.",
+  "title": "AskBlueJay.ai | Lower Card Fees with AI Payment Assistant",
+  "meta_description": "AskBlueJay.ai helps small businesses save up to 93% on payment processing. Compare Clover, Square, and Stripe with a smart, human-style AI assistant.",
   "keywords": [
     "AskBlueJay.ai",
-    "AI merchant processing",
-    "lower credit card fees",
-    "cash discount AI assistant",
-    "Clover POS alternative",
-    "Square vs AskBlueJay.ai",
-    "Stripe fee savings",
-    "AI for business payments",
+    "BlueJay",
+    "merchant processing",
+    "credit card fees",
+    "cash discount program",
+    "Clover POS",
+    "Square alternatives",
+    "Stripe fees",
+    "AI assistant for payments",
+    "AI for business",
+    "smart POS system",
+    "best payment solution 2025",
+    "point of sale savings",
+    "lower processing fees",
+    "AI merchant agent",
     "business payment automation",
-    "best AI payment assistant 2025",
-    "AskBlueJay business solutions"
+    "credit card processor comparison"
   ],
   "structured_data": {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "AskBlueJay.ai",
+    "alternateName": "BlueJay",
     "url": "https://askbluejay.ai",
     "logo": "https://askbluejay.ai/logo.png",
+    "founder": {
+      "@type": "Organization",
+      "name": "Fortified Capital LLC",
+      "foundingDate": "2025",
+      "email": "info@AskBlueJay.ai"
+    },
     "sameAs": [
       "https://www.linkedin.com/company/askbluejay",
       "https://www.instagram.com/askbluejay"
-    ]
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "info@AskBlueJay.ai",
+      "contactType": "customer support"
+    }
   }
 }
