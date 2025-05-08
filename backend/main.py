@@ -1,4 +1,4 @@
-import os, json, redis, uuid, time, requests, re
+import os, json, redis, uuid, time, requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -13,9 +13,11 @@ ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
+# Load BlueJay brain
 with open("bluejay/config/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
+# Log path
 LOG_PATH = "bluejay/logs/interaction_log.jsonl"
 HUBSPOT_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
@@ -28,26 +30,45 @@ def get_thread_id(session_id):
     r.set(key, new_thread.id, ex=1800)
     return new_thread.id
 
-def store_fields(session_id, message):
-    shorthand = message.lower().strip()
-    mappings = {
-        "monthly_card_volume": re.compile(r"^\$?\d+[kK]?$"),
-        "average_ticket": re.compile(r"^\$?\d+(\.\d{1,2})?$"),
-        "processor": re.compile(r"(square|stripe|clover)"),
-        "transaction_type": re.compile(r"(in[- ]?person|online)"),
-        "email": re.compile(r"[^@]+@[^@]+\.[^@]+"),
-        "phone": re.compile(r"\b\d{3}[-.\s]??\d{3}[-.\s]??\d{4}\b"),
-    }
-    for k, pattern in mappings.items():
-        if pattern.search(shorthand):
-            r.set(f"{session_id}:{k}", message, ex=1800)
+def normalize_input(msg):
+    msg = msg.strip().lower()
+    if msg.startswith("$") or msg.endswith("k") or "volume" in msg:
+        return "monthly_card_volume"
+    if msg.replace(".", "", 1).isdigit():
+        return "average_ticket"
+    if "square" in msg or "stripe" in msg or "clover" in msg:
+        return "processor"
+    if "online" in msg or "in-person" in msg:
+        return "transaction_type"
+    if "@" in msg or "email" in msg:
+        return "email"
+    if "call" in msg or "phone" in msg or "text" in msg:
+        return "phone"
+    return None
 
-    if any(t in shorthand for t in ["business is", "company", "we are", "name is"]):
-        r.set(f"{session_id}:business_name", message, ex=1800)
+def store_fields(session_id, message):
+    # Shorthand parser
+    category = normalize_input(message)
+    if category:
+        r.set(f"{session_id}:{category}", message, ex=1800)
+        return
+
+    fields = {
+        "monthly_card_volume": ["$","monthly volume","per month"],
+        "average_ticket": ["ticket","average sale"],
+        "processor": ["square", "stripe", "clover"],
+        "business_name": ["business is", "company name", "we are"],
+        "transaction_type": ["in-person", "online"],
+        "email": ["@","email"],
+        "phone": ["call me","phone number","text me"]
+    }
+    for k, triggers in fields.items():
+        if any(t in message.lower() for t in triggers):
+            r.set(f"{session_id}:{k}", message, ex=1800)
 
 def extract_memory(session_id):
     return {
-        k.decode().split(":", 1)[1]: v.decode()
+        k.decode().split(":",1)[1]: v.decode()
         for k in r.scan_iter(f"{session_id}:*")
         for v in [r.get(k)]
     }
@@ -65,7 +86,7 @@ def chat():
 
     session_id = request.remote_addr or str(uuid.uuid4())
 
-    if any(word in user_input.lower() for word in ["book", "calendar", "schedule", "appointment", "meeting"]):
+    if any(w in user_input.lower() for w in ["book", "calendar", "schedule", "appointment", "meeting"]):
         return jsonify({"reply": "Grab a time here: https://calendly.com/askbluejay/30min"})
 
     thread_id = get_thread_id(session_id)
@@ -82,8 +103,8 @@ Memory from this lead:
 
 {json.dumps(memory, indent=2)}
 
-Prioritize savings, rate match/beat, and smart discovery.
-Handle one-word or shorthand answers intelligently.
+Prioritize closing through savings, rate match/beat, and service.
+Ask smart discovery questions and guide toward a close.
 """
 
     try:
