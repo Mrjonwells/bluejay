@@ -1,0 +1,28 @@
+{
+  "forward_prompts": [
+    "Mind if I ask your business name to personalize this?",
+    "Can I grab your email in case we get disconnected?"
+  ],
+  "fallbacks": [
+    "Still there? Want help finishing up?",
+    "Want to go over the numbers again real quick?"
+  ],
+  "deal_stage_scoring": {
+    "curious": [
+      "just checking",
+      "wondering",
+      "thinking about"
+    ],
+    "qualified": [
+      "email is",
+      "name is",
+      "my phone",
+      "we process"
+    ],
+    "closing": [
+      "sign me up",
+      "let's go",
+      "i'm ready"
+    ]
+  }
+}
