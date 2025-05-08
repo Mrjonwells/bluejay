@@ -1,13 +1,16 @@
 services:
   - type: web
-    name: BlueJay
+    name: bluejay-web
     env: python
-    rootDir: backend
+    plan: free
     buildCommand: ./build.sh && pip install -r requirements.txt
-    startCommand: gunicorn main:app --chdir backend --bind 0.0.0.0:$PORT
+    startCommand: gunicorn backend.main:app --bind 0.0.0.0:$PORT
+    autoDeploy: true
 
-  - type: cron
-    name: AutoTrainer
+  - type: worker
+    name: bluejay-train-worker
     env: python
-    schedule: "0 2 */2 * *"
-    command: "python train_from_logs.py"
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python train_from_logs.py
+    schedule: "0 */48 * * *"  # every 2 days
