@@ -1,4 +1,4 @@
-import os, json, redis, uuid, time
+import os, json, redis, uuid, time, requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -14,13 +14,13 @@ redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
 # Load BlueJay brain
-with open("backend/config/bluejay_config.json", "r") as f:
+with open("bluejay/config/bluejay_config.json", "r") as f:
     bluejay_brain = json.load(f)
 
-# Interaction log path
-LOG_PATH = "backend/logs/interaction_log.jsonl"
+# Log path for circular training
+LOG_PATH = "bluejay/logs/interaction_log.jsonl"
 
-# HubSpot form
+# HubSpot
 HUBSPOT_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
 def get_thread_id(session_id):
@@ -38,14 +38,20 @@ def store_fields(session_id, message):
         "average_ticket": ["ticket","average sale"],
         "processor": ["square", "stripe", "clover"],
         "business_name": ["business is", "company name", "we are"],
-        "transaction_type": ["in-person", "online"]
+        "transaction_type": ["in-person", "online"],
+        "email": ["@","email"],
+        "phone": ["call me","phone number","text me"]
     }
     for k, triggers in fields.items():
         if any(t in message.lower() for t in triggers):
             r.set(f"{session_id}:{k}", message, ex=1800)
 
 def extract_memory(session_id):
-    return {k.decode(): v.decode() for k, v in r.scan_iter(f"{session_id}:*") for v in [r.get(k)]}
+    return {
+        k.decode().split(":",1)[1]: v.decode()
+        for k in r.scan_iter(f"{session_id}:*")
+        for v in [r.get(k)]
+    }
 
 @app.route("/", methods=["GET"])
 def index():
@@ -69,14 +75,17 @@ def chat():
     memory = extract_memory(session_id)
 
     system_context = f"""
-BlueJay is a human-style merchant advisor assistant.
-Use these config rules as your internal strategy guide:
+BlueJay is a persuasive, human-style merchant advisor.
+Use this internal config:
 
 {json.dumps(bluejay_brain)}
 
-Conversation memory: {json.dumps(memory, indent=2)}
+Memory from this lead:
 
-Speak like a helpful expert, use natural tone. Focus on savings, rate match or beat, and smooth signup.
+{json.dumps(memory, indent=2)}
+
+Prioritize closing through savings, rate match/beat, and service.
+Ask smart discovery questions and guide toward a close.
 """
 
     try:
