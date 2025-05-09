@@ -1,83 +1,71 @@
 import os
-import time
 import json
 import redis
-import uuid
-import openai
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from openai import OpenAI
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
-assistant_id = os.getenv("OPENAI_ASSISTANT_ID")
 
-# Redis
-r = redis.from_url(os.getenv("REDIS_URL"))
+# Redis setup
+redis_url = os.getenv("REDIS_URL")
+r = redis.Redis.from_url(redis_url)
 
-# Config + Template paths
-CONFIG_PATH = "config/bluejay_config.json"
-TEMPLATE_PATH = "config/conversation_template.json"
+# Load config once at startup
+CONFIG_PATH = "backend/config/bluejay_config.json"
 with open(CONFIG_PATH, "r") as f:
-    config = json.load(f)
-with open(TEMPLATE_PATH, "r") as f:
-    convo_template = json.load(f)
+    bluejay_config = json.load(f)
 
-# Flask
+# OpenAI setup
+client = OpenAI()
+assistant_id = os.getenv("ASSISTANT_ID")
+
+# Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Memory length (30 min)
-MEMORY_TTL = 60 * 30
-
-def get_thread_id(session_id):
-    redis_key = f"thread:{session_id}"
-    thread_id = r.get(redis_key)
-    if thread_id:
-        return thread_id.decode()
-    new_thread = openai.beta.threads.create()
-    r.setex(redis_key, MEMORY_TTL, new_thread.id)
-    return new_thread.id
-
-def log_interaction(user_input, assistant_response):
-    with open("logs/interaction_log.jsonl", "a") as log:
-        log.write(json.dumps({
-            "user": user_input,
-            "assistant": assistant_response,
-            "timestamp": time.time()
-        }) + "\n")
-
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
-    session_id = data.get("session_id", str(uuid.uuid4()))
-    user_input = data["message"]
+    data = request.get_json()
+    thread_id = data.get("thread_id")
+    message = data.get("message")
 
-    thread_id = get_thread_id(session_id)
-    openai.beta.threads.messages.create(
+    if not thread_id or not message:
+        return jsonify({"error": "Missing thread_id or message"}), 400
+
+    # Save message in Redis
+    key = f"thread:{thread_id}"
+    thread_data = json.loads(r.get(key)) if r.get(key) else {"messages": []}
+    thread_data["messages"].append({"role": "user", "content": message})
+    r.setex(key, 1800, json.dumps(thread_data))  # 30 min TTL
+    r.expire(key, 1800)  # Refresh TTL on access
+
+    # Send message to OpenAI Assistant with streaming
+    stream = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
-        content=user_input
+        content=message
     )
 
-    response = openai.beta.threads.runs.create_and_poll(
+    run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id,
-        instructions=f"""Use this config: {json.dumps(config)}.
-And this sales flow as your guide: {json.dumps(convo_template)}.
-Move the deal forward like a pro.""",
+        instructions="Use bluejay_config to guide behavior.",
     )
 
-    messages = openai.beta.threads.messages.list(thread_id=thread_id)
-    final = next((m for m in reversed(messages.data) if m.role == "assistant"), None)
+    # Poll run status
+    while True:
+        run_check = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+        if run_check.status == "completed":
+            break
+        elif run_check.status == "failed":
+            return jsonify({"error": "Assistant run failed"}), 500
 
-    log_interaction(user_input, final.content[0].text.value)
-    return jsonify({"reply": final.content[0].text.value})
+    messages = client.beta.threads.messages.list(thread_id=thread_id)
+    latest = messages.data[0].content[0].text.value
+    return jsonify({"reply": latest})
 
-@app.route("/")
-def index():
-    return jsonify({"status": "BlueJay backend active."})
-
+# For gunicorn
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
