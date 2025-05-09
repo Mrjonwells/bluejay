@@ -13,12 +13,15 @@ ASSISTANT_ID = "asst_bLMfZI9fO9E5jltHY8KDq9ZT"
 redis_url = os.getenv("REDIS_URL")
 r = redis.Redis.from_url(redis_url)
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "bluejay_config.json")
+CONFIG_PATH = "backend/config/bluejay_config.json"
+TEMPLATE_PATH = "backend/config/conversation_template.json"
+LOG_PATH = "backend/logs/interaction_log.jsonl"
+HUBSPOT_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
+
 with open(CONFIG_PATH, "r") as f:
     bluejay_brain = json.load(f)
-
-LOG_PATH = os.path.join(os.path.dirname(__file__), "logs", "interaction_log.jsonl")
-HUBSPOT_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
+with open(TEMPLATE_PATH, "r") as f:
+    sales_template = json.load(f)
 
 def get_thread_id(session_id):
     key = f"thread:{session_id}"
@@ -31,16 +34,16 @@ def get_thread_id(session_id):
 
 def store_fields(session_id, message):
     fields = {
-        "monthly_card_volume": ["$", "monthly volume", "per month"],
+        "monthly_card_volume": ["$", "monthly", "volume", "sales"],
         "average_ticket": ["ticket", "average sale"],
         "processor": ["square", "stripe", "clover"],
         "business_name": ["business is", "company name", "we are"],
-        "transaction_type": ["in-person", "online"],
+        "transaction_type": ["in-person", "online", "store", "website"],
         "email": ["@", "email"],
-        "phone": ["call me", "phone number", "text me"]
+        "phone": ["call", "phone", "text"]
     }
     for k, triggers in fields.items():
-        if any(t in message.lower() for t in triggers) or len(message.strip()) < 10:
+        if any(t in message.lower() for t in triggers):
             r.set(f"{session_id}:{k}", message.strip(), ex=1800)
 
 def extract_memory(session_id):
@@ -72,7 +75,11 @@ def chat():
 
     system_context = f"""
 BlueJay is a persuasive, human-style merchant advisor.
-Use this internal config:
+Reference this sales flow:
+
+{json.dumps(sales_template, indent=2)}
+
+Internal config:
 
 {json.dumps(bluejay_brain)}
 
@@ -80,8 +87,7 @@ Memory from this lead:
 
 {json.dumps(memory, indent=2)}
 
-Prioritize closing through savings, rate match/beat, and service.
-Ask smart discovery questions and guide toward a close.
+Ask smart discovery questions to guide toward a closed deal.
 """
 
     try:
