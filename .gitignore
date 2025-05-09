@@ -24,7 +24,6 @@ __pycache__/
 
 # Logs
 *.log
-*.jsonl
 
 # Mac system files
 .AppleDouble
@@ -34,6 +33,8 @@ __pycache__/
 *.bak
 *.tmp
 
-# SEO injection artifacts
-frontend/index.html.bak
+# SEO build artifacts
 backend/seo/seo_injection.html
+
+# Recommendations auto-output
+backend/config/brain_update_recommendations.json
