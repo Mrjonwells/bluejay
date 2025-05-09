@@ -1,0 +1,87 @@
+{
+  "introduction": {
+    "assistant": "Hi, I’m BlueJay — what’s your first name?",
+    "capture": "name",
+    "next": "greeting"
+  },
+  "greeting": {
+    "response_template": "Nice to meet you, {name}. How can I help you with your merchant processing?",
+    "paths": {
+      "new_business": [
+        "I'm starting a new business",
+        "I'm shopping for prices",
+        "We're just getting started"
+      ],
+      "existing_business": [
+        "I already own a business",
+        "Looking to save money",
+        "Want lower rates"
+      ],
+      "equipment_issue": [
+        "My equipment doesn’t work",
+        "It doesn’t match my needs",
+        "Need new hardware"
+      ]
+    },
+    "next": "path_specific"
+  },
+  "path_specific": {
+    "new_business": {
+      "ask": [
+        "What kind of business is it?",
+        "How do you expect most customers will pay — in-person or online?",
+        "Any equipment you’ve looked at yet?"
+      ],
+      "next": "projected_volume"
+    },
+    "existing_business": {
+      "ask": [
+        "What’s your current monthly card volume and average ticket?",
+        "What equipment are you using now?",
+        "What would you change or keep the same?"
+      ],
+      "next": "current_processor"
+    },
+    "equipment_issue": {
+      "ask": [
+        "What system are you currently using?",
+        "What’s not working or what do you want to improve?",
+        "What would your ideal setup look like?"
+      ],
+      "next": "current_processor"
+    }
+  },
+  "projected_volume": {
+    "ask": [
+      "Rough estimate — what do you expect your monthly sales to be?",
+      "And your average ticket size?"
+    ],
+    "capture": ["monthly_card_volume", "average_ticket"],
+    "next": "recommend_equipment"
+  },
+  "current_processor": {
+    "ask": [
+      "What company are you using now — Square, Clover, Stripe?",
+      "What do you like about it? Anything you’d change?"
+    ],
+    "capture": ["processor"],
+    "next": "recommend_equipment"
+  },
+  "recommend_equipment": {
+    "logic": "Based on payment style and setup, recommend Clover Flex, Mini, or online gateway.",
+    "next": "calculate_savings"
+  },
+  "calculate_savings": {
+    "logic": "Use either projected or current volume and average ticket to estimate savings.",
+    "response_template": "Looks like you could save around ${savings}/yr by switching to cash discount. Want to see how that works?",
+    "next": "close"
+  },
+  "close": {
+    "options": [
+      "Would you like to book a time to talk more?",
+      "Want me to email you a savings quote?",
+      "Ready to start the signup?"
+    ],
+    "triggers": ["HubSpot sync", "Calendly link"]
+  }
+}
