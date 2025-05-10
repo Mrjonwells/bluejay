@@ -5,14 +5,13 @@ from datetime import datetime
 LOG_PATH = "backend/logs/interaction_log.jsonl"
 BRAIN_RECOMMENDATIONS_PATH = "backend/config/brain_update_recommendations.json"
 
-# Keywords for field detection
 FIELD_KEYWORDS = {
-    "monthly_card_volume": ["$10,000", "$15000", "75000", "20k", "monthly volume", "card sales", "processing"],
-    "average_ticket": ["average ticket", "ticket size", "typically spend", "avg sale", "$8", "$15", "$18"],
-    "processor": ["Square", "Stripe", "Clover", "POS", "processor", "terminal", "using"],
-    "transaction_type": ["online", "counter", "in person", "ecommerce", "website"],
-    "business_name": ["LLC", "Inc", "taco shop", "company name", "we’re a coffee shop"],
-    "contact_info": ["@gmail.com", "@yahoo.com", "@", "phone", "reach me"]
+    "monthly_card_volume": ["monthly", "k", "processing", "10k", "15k", "20k", "volume"],
+    "average_ticket": ["ticket", "avg", "average sale", "per transaction", "each sale"],
+    "processor": ["square", "stripe", "clover", "paypal", "pos", "processor"],
+    "transaction_type": ["online", "in person", "tap", "counter", "ecommerce"],
+    "business_name": ["shop", "llc", "inc", "taco", "called", "named"],
+    "contact_info": ["@", ".com", "email", "phone", "text", "reach me"]
 }
 
 def parse_logs():
@@ -37,7 +36,7 @@ def generate_recommendations(counts):
     recommendations = []
     for field, count in counts.items():
         if count < 3:
-            recommendations.append(f"Improve capture rate for '{field}' — too few logged mentions.")
+            recommendations.append(f"Low capture: '{field}' — improve detection or nudge questions.")
     return recommendations
 
 def save_output(field_counts, recs):
@@ -49,7 +48,7 @@ def save_output(field_counts, recs):
     os.makedirs(os.path.dirname(BRAIN_RECOMMENDATIONS_PATH), exist_ok=True)
     with open(BRAIN_RECOMMENDATIONS_PATH, "w") as f:
         json.dump(output, f, indent=2)
-    print("Recommendations written to brain_update_recommendations.json")
+    print("✅ Brain update recommendations written.")
 
 if __name__ == "__main__":
     counts = parse_logs()
