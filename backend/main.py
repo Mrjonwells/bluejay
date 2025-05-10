@@ -1,76 +1,90 @@
 import os
-import json
+import time
 import redis
+import openai
+import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from openai import OpenAI
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
+from datetime import datetime
 
 # Config paths
 CONFIG_PATH = "backend/config/bluejay_config.json"
-TEMPLATE_PATH = "backend/config/conversation_template.json"
-LOG_PATH = "backend/logs/interaction_log.jsonl"
+CONVO_TEMPLATE_PATH = "backend/config/conversation_template.json"
 
-# Initialize app and services
+# Load assistant + config brain
+with open(CONFIG_PATH, "r") as f:
+    brain_config = json.load(f)
+with open(CONVO_TEMPLATE_PATH, "r") as f:
+    convo_template = json.load(f)
+
+# Init app
 app = Flask(__name__)
 CORS(app)
-client = OpenAI()
-r = redis.from_url(os.getenv("REDIS_URL"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
+redis_url = os.getenv("REDIS_URL")
+r = redis.Redis.from_url(redis_url)
 
-# Load BlueJay config ("brain") and sales template
-with open(CONFIG_PATH, "r") as f:
-    BLUEJAY_CONFIG = json.load(f)
-with open(TEMPLATE_PATH, "r") as f:
-    CONVERSATION_TEMPLATE = json.load(f)
+# Assistant identity
+ASSISTANT_ID = os.getenv("ASSISTANT_ID")
 
-ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
+# Thread TTL (30 min)
+TTL = 1800
+
+def log_interaction(user_msg, assistant_msg, thread_id):
+    log = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "thread_id": thread_id,
+        "user": user_msg,
+        "assistant": assistant_msg
+    }
+    with open("backend/logs/interaction_log.jsonl", "a") as f:
+        f.write(json.dumps(log) + "\n")
+    print("Logged interaction")
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
-    thread_id = data.get("thread_id")
-    user_input = data.get("message", "")
+    data = request.json
+    user_input = data.get("message", "").strip()
+    thread_id = data.get("thread_id") or f"thread_{int(time.time()*1000)}"
 
-    if not thread_id or not user_input:
-        return jsonify({"error": "Missing thread_id or message"}), 400
+    if not user_input:
+        return jsonify({"error": "Empty message"}), 400
 
-    # Store user input in Redis
-    r.rpush(thread_id, json.dumps({"user": user_input}))
+    # Recall or create thread
+    redis_key = f"thread:{thread_id}"
+    if not r.exists(redis_key):
+        r.set(redis_key, json.dumps([]), ex=TTL)
+    else:
+        r.expire(redis_key, TTL)
 
-    # Build context from memory
-    history = [json.loads(r.lindex(thread_id, i)) for i in range(r.llen(thread_id)) if r.lindex(thread_id, i)]
-    messages = [{"role": "user", "content": item["user"]} if "user" in item else item for item in history]
+    # Update memory
+    history = json.loads(r.get(redis_key))
+    history.append({"role": "user", "content": user_input})
+    r.set(redis_key, json.dumps(history), ex=TTL)
 
-    # Inject config into system prompt
-    system_prompt = {
-        "role": "system",
-        "content": f"You are BlueJay, a smart AI assistant using this config: {json.dumps(BLUEJAY_CONFIG)} and sales flow: {json.dumps(CONVERSATION_TEMPLATE)}"
-    }
-    messages.insert(0, system_prompt)
+    # Send to assistant
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are BlueJay, a smart assistant that helps close merchant processing deals."},
+                {"role": "system", "content": json.dumps(brain_config)},
+                {"role": "system", "content": json.dumps(convo_template)},
+                *history
+            ],
+            max_tokens=400,
+            temperature=0.7
+        )
+        reply = response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    # Chat completion
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=messages,
-        temperature=0.5
-    )
+    # Update thread + log
+    history.append({"role": "assistant", "content": reply})
+    r.set(redis_key, json.dumps(history), ex=TTL)
+    log_interaction(user_input, reply, thread_id)
 
-    reply = response.choices[0].message.content
-    r.rpush(thread_id, json.dumps({"assistant": reply}))
-
-    # Log the interaction
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-    with open(LOG_PATH, "a") as log_file:
-        log_file.write(json.dumps({"thread": thread_id, "user": user_input, "assistant": reply}) + "\n")
-
-    return jsonify({"reply": reply})
-
-@app.route("/health", methods=["GET"])
-def health():
-    return "OK", 200
+    return jsonify({"response": reply, "thread_id": thread_id})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=True)
