@@ -2,25 +2,25 @@ import os
 import json
 import openai
 import redis
+import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from waitress import serve
 
-# Load environment
+# Load environment variables
 load_dotenv()
 
-# Load config
+# Load config from correct absolute path
 base_dir = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(base_dir, "config", "bluejay_config.json")
 TEMPLATE_PATH = os.path.join(base_dir, "config", "conversation_template.json")
 
-if not os.path.exists(CONFIG_PATH):
-    raise FileNotFoundError(f"Missing: {CONFIG_PATH}")
-
+# Load BlueJay brain
 with open(CONFIG_PATH, "r") as f:
     brain = json.load(f)
 
+# Load sales conversation template
 try:
     with open(TEMPLATE_PATH, "r") as tf:
         conversation_template = json.load(tf)
@@ -30,24 +30,31 @@ except:
 # Setup services
 app = Flask(__name__)
 CORS(app)
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 redis_client = redis.from_url(os.getenv("REDIS_URL"))
 
+# Helper to generate unique thread keys
 def redis_key(thread_id): return f"thread:{thread_id}"
 
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
-    thread_id = data.get("thread_id", "default")
-    user_input = data["message"]
-    print(f"Received message from user: {user_input}")
+    thread_id = data.get("thread_id") or str(uuid.uuid4())
+    user_input = data.get("message", "").strip()
 
-    # Load memory
+    if not user_input:
+        return jsonify({"reply": "What’s on your mind?"})
+
+    # Retrieve history from Redis
     history = redis_client.get(redis_key(thread_id))
     thread_messages = json.loads(history) if history else []
+
+    # Add user message
     thread_messages.append({"role": "user", "content": user_input})
 
-    response = client.chat.completions.create(
+    # OpenAI assistant call
+    response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
             {"role": "system", "content": f"You are BlueJay, a persuasive sales assistant. Use this brain:\n{json.dumps(brain)}\nAlso use this template if helpful:\n{json.dumps(conversation_template)}"},
@@ -56,14 +63,20 @@ def chat():
         temperature=0.7
     )
 
-    reply = response.choices[0].message.content
+    reply = response.choices[0].message.content.strip()
     thread_messages.append({"role": "assistant", "content": reply})
-    redis_client.setex(redis_key(thread_id), 1800, json.dumps(thread_messages))
 
-    return jsonify({"reply": reply})
+    # Store updated history in Redis for 1 hour
+    redis_client.setex(redis_key(thread_id), 3600, json.dumps(thread_messages))
+
+    # Optional: clear memory if a lead is detected
+    if any(trigger in reply.lower() for trigger in ["submitted", "sent to hubspot", "booked a time"]):
+        redis_client.delete(redis_key(thread_id))
+
+    return jsonify({"reply": reply, "thread_id": thread_id})
 
 @app.route("/")
-def ping():
+def health():
     return "BlueJay backend is live."
 
 if __name__ == "__main__":
