@@ -1,12 +1,22 @@
 import json
 import os
+import redis
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 LOG_PATH = "backend/logs/interaction_log.jsonl"
 BRAIN_RECOMMENDATIONS_PATH = "backend/config/brain_update_recommendations.json"
+REDIS_URL = os.getenv("REDIS_URL")
 
+# Connect to Redis
+redis_client = redis.from_url(REDIS_URL)
+
+# Keywords for field detection
 FIELD_KEYWORDS = {
-    "monthly_card_volume": ["$10,000", "$15000", "75000", "20k", "monthly volume", "card sales", "processing"],
+    "monthly_card_volume": ["$10,000", "$15000", "75000", "20k", "monthly volume", "card sales", "processing", "$12000"],
     "average_ticket": ["average ticket", "ticket size", "typically spend", "avg sale", "$8", "$15", "$18"],
     "processor": ["Square", "Stripe", "Clover", "POS", "processor", "terminal", "using"],
     "transaction_type": ["online", "counter", "in person", "ecommerce", "website"],
@@ -14,22 +24,19 @@ FIELD_KEYWORDS = {
     "contact_info": ["@gmail.com", "@yahoo.com", "@", "phone", "reach me"]
 }
 
-def parse_logs():
-    if not os.path.exists(LOG_PATH):
-        print("No interaction log found.")
-        return {}
-
+def parse_redis_threads():
     field_counts = {k: 0 for k in FIELD_KEYWORDS}
-    with open(LOG_PATH, "r") as f:
-        for line in f:
-            try:
-                entry = json.loads(line)
-                user_input = entry.get("user", "").lower()
-                for field, keywords in FIELD_KEYWORDS.items():
-                    if any(kw.lower() in user_input for kw in keywords):
-                        field_counts[field] += 1
-            except Exception:
-                continue
+    for key in redis_client.scan_iter("thread:*"):
+        try:
+            messages = json.loads(redis_client.get(key))
+            for msg in messages:
+                if msg["role"] == "user":
+                    content = msg["content"].lower()
+                    for field, keywords in FIELD_KEYWORDS.items():
+                        if any(kw.lower() in content for kw in keywords):
+                            field_counts[field] += 1
+        except Exception:
+            continue
     return field_counts
 
 def generate_recommendations(counts):
@@ -51,6 +58,6 @@ def save_output(field_counts, recs):
     print("Recommendations written to brain_update_recommendations.json")
 
 if __name__ == "__main__":
-    counts = parse_logs()
+    counts = parse_redis_threads()
     recs = generate_recommendations(counts)
     save_output(counts, recs)
