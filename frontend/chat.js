@@ -1,9 +1,9 @@
-const thread_id = crypto.randomUUID();
-
 document.getElementById("send-btn").addEventListener("click", sendMessage);
 document.getElementById("user-input").addEventListener("keypress", function (e) {
   if (e.key === "Enter") sendMessage();
 });
+
+let thread_id = null;
 
 window.onload = () => {
   appendMessage("bot", "Welcome to BlueJay, what’s your name?");
@@ -16,7 +16,6 @@ function sendMessage() {
 
   appendMessage("user", message);
   inputField.value = "";
-
   showTyping(true);
 
   fetch("https://bluejay-mjpg.onrender.com/chat", {
@@ -27,16 +26,35 @@ function sendMessage() {
     .then((res) => res.json())
     .then((data) => {
       showTyping(false);
+      thread_id = data.thread_id || thread_id;
       appendMessage("bot", data.reply || "Something went wrong.");
 
-      if (data.reply && data.reply.includes("calendly.com")) {
-        openCalendly();
+      if (
+        data.reply &&
+        data.reply.toLowerCase().includes("you can start here: https://calendly.com")
+      ) {
+        waitForUserConsent().then(openCalendly);
       }
     })
     .catch(() => {
       showTyping(false);
       appendMessage("bot", "Something went wrong.");
     });
+}
+
+function waitForUserConsent() {
+  return new Promise((resolve) => {
+    const handler = (e) => {
+      if (e.key === "Enter") {
+        const input = document.getElementById("user-input").value.trim().toLowerCase();
+        if (["yes", "sure", "okay", "let's do it"].some((phrase) => input.includes(phrase))) {
+          window.removeEventListener("keypress", handler);
+          resolve();
+        }
+      }
+    };
+    window.addEventListener("keypress", handler);
+  });
 }
 
 function appendMessage(sender, message) {
@@ -57,6 +75,7 @@ function showTyping(show) {
   }
 }
 
+// Calendly popup logic
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
   document.getElementById("calendly-frame").style.display = "block";
