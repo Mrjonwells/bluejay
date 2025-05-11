@@ -1,90 +1,73 @@
 import os
-import time
-import redis
-import openai
 import json
+import openai
+import redis
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from datetime import datetime
+from dotenv import load_dotenv
+from waitress import serve
 
-# Config paths
-CONFIG_PATH = "backend/config/bluejay_config.json"
-CONVO_TEMPLATE_PATH = "backend/config/conversation_template.json"
+# Load environment
+load_dotenv()
 
-# Load assistant + config brain
+# Load config from correct absolute path
+base_dir = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(base_dir, "config", "bluejay_config.json")
+
 with open(CONFIG_PATH, "r") as f:
-    brain_config = json.load(f)
-with open(CONVO_TEMPLATE_PATH, "r") as f:
-    convo_template = json.load(f)
+    brain = json.load(f)
 
-# Init app
+# Setup services
 app = Flask(__name__)
 CORS(app)
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
-redis_url = os.getenv("REDIS_URL")
-r = redis.Redis.from_url(redis_url)
+redis_client = redis.from_url(os.getenv("REDIS_URL"))
 
-# Assistant identity
-ASSISTANT_ID = os.getenv("ASSISTANT_ID")
+# Thread key generator
+def redis_key(thread_id): return f"thread:{thread_id}"
 
-# Thread TTL (30 min)
-TTL = 1800
+# Load template if available
+TEMPLATE_PATH = os.path.join(base_dir, "config", "conversation_template.json")
+try:
+    with open(TEMPLATE_PATH, "r") as tf:
+        conversation_template = json.load(tf)
+except:
+    conversation_template = {}
 
-def log_interaction(user_msg, assistant_msg, thread_id):
-    log = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "thread_id": thread_id,
-        "user": user_msg,
-        "assistant": assistant_msg
-    }
-    with open("backend/logs/interaction_log.jsonl", "a") as f:
-        f.write(json.dumps(log) + "\n")
-    print("Logged interaction")
-
+# Routes
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
-    user_input = data.get("message", "").strip()
-    thread_id = data.get("thread_id") or f"thread_{int(time.time()*1000)}"
+    thread_id = data.get("thread_id", "default")
+    user_input = data["message"]
 
-    if not user_input:
-        return jsonify({"error": "Empty message"}), 400
+    # Load previous thread
+    history = redis_client.get(redis_key(thread_id))
+    thread_messages = json.loads(history) if history else []
 
-    # Recall or create thread
-    redis_key = f"thread:{thread_id}"
-    if not r.exists(redis_key):
-        r.set(redis_key, json.dumps([]), ex=TTL)
-    else:
-        r.expire(redis_key, TTL)
+    # Append user input
+    thread_messages.append({"role": "user", "content": user_input})
 
-    # Update memory
-    history = json.loads(r.get(redis_key))
-    history.append({"role": "user", "content": user_input})
-    r.set(redis_key, json.dumps(history), ex=TTL)
+    # Call OpenAI assistant
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": f"You are BlueJay, a persuasive sales assistant. Use this brain:\n{json.dumps(brain)}\nAlso use this template if helpful:\n{json.dumps(conversation_template)}"},
+            *thread_messages
+        ],
+        temperature=0.7
+    )
 
-    # Send to assistant
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are BlueJay, a smart assistant that helps close merchant processing deals."},
-                {"role": "system", "content": json.dumps(brain_config)},
-                {"role": "system", "content": json.dumps(convo_template)},
-                *history
-            ],
-            max_tokens=400,
-            temperature=0.7
-        )
-        reply = response['choices'][0]['message']['content'].strip()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    reply = response.choices[0].message["content"]
+    thread_messages.append({"role": "assistant", "content": reply})
+    redis_client.setex(redis_key(thread_id), 1800, json.dumps(thread_messages))
 
-    # Update thread + log
-    history.append({"role": "assistant", "content": reply})
-    r.set(redis_key, json.dumps(history), ex=TTL)
-    log_interaction(user_input, reply, thread_id)
+    return jsonify({"reply": reply})
 
-    return jsonify({"response": reply, "thread_id": thread_id})
+@app.route("/")
+def ping():
+    return "BlueJay backend is live."
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
