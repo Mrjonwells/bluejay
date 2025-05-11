@@ -7,7 +7,7 @@ services:
     startCommand: gunicorn main:app --chdir backend --bind 0.0.0.0:$PORT
 
   - type: worker
-    name: bluejay-trainer
+    name: bluejay-conversation-trainer
     env: python
     plan: starter
     buildCommand: pip install -r requirements.txt
@@ -15,9 +15,9 @@ services:
     schedule: "@every 1h"
 
   - type: worker
-    name: brain-updater
+    name: bluejay-seo-trainer
     env: python
     plan: starter
     buildCommand: pip install -r requirements.txt
-    startCommand: python backend/tools/merge_recommendations.py
-    schedule: "@every 1h"
+    startCommand: python dev_sync_seo.py
+    schedule: "0 * * * *"
