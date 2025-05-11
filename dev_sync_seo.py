@@ -1,42 +1,46 @@
 import json
 import os
-from pytrends.request import TrendReq
 from datetime import datetime
 
 SEO_CONFIG_PATH = "backend/seo/seo_config.json"
-TOPICS = ["merchant services", "business processing", "credit card fees", "Clover POS", "Square alternative"]
+INDEX_HTML_PATH = "index.html"
 
-def fetch_trending_keywords():
-    pytrends = TrendReq(hl='en-US', tz=360)
-    all_related = []
+def generate_meta_tags(config):
+    meta = []
+    meta.append(f'<meta name="description" content="{config.get("description", "")}" />')
+    meta.append(f'<meta name="keywords" content="{", ".join(config.get("keywords", []))}" />')
+    meta.append('<script type="application/ld+json">')
+    meta.append(json.dumps(config.get("schema", {}), indent=2))
+    meta.append('</script>')
+    return "\n  ".join(meta)
 
-    for topic in TOPICS:
-        try:
-            pytrends.build_payload([topic], cat=0, timeframe='now 7-d', geo='US', gprop='')
-            related = pytrends.related_queries()[topic]['top']
-            if related is not None:
-                all_related += [q for q in related['query'].tolist()]
-        except Exception:
-            continue
+def inject_seo():
+    if not os.path.exists(SEO_CONFIG_PATH):
+        print(f"[{datetime.utcnow()}] SEO config file not found.")
+        return
 
-    unique_keywords = list(set(all_related))[:20]  # Limit to top 20 unique keywords
-    return unique_keywords
+    with open(SEO_CONFIG_PATH, "r") as f:
+        config = json.load(f)
 
-def update_seo_file(keywords):
-    if not os.path.exists(os.path.dirname(SEO_CONFIG_PATH)):
-        os.makedirs(os.path.dirname(SEO_CONFIG_PATH))
+    meta_block = generate_meta_tags(config)
 
-    seo_data = {
-        "updated": datetime.utcnow().isoformat(),
-        "focus_keywords": keywords,
-        "meta_title": "BlueJay | Lower Your Processing Fees | Fortified Capital 2025",
-        "meta_description": "Discover how BlueJay helps businesses lower credit card fees with cash discount programs and smarter merchant solutions. Backed by Fortified Capital, est. 2025."
-    }
+    if not os.path.exists(INDEX_HTML_PATH):
+        print(f"[{datetime.utcnow()}] index.html not found.")
+        return
 
-    with open(SEO_CONFIG_PATH, "w") as f:
-        json.dump(seo_data, f, indent=2)
-    print("SEO config updated with fresh keywords.")
+    with open(INDEX_HTML_PATH, "r") as f:
+        index_html = f.read()
+
+    if "<!-- %%SEO_META_TAGS%% -->" not in index_html:
+        print(f"[{datetime.utcnow()}] SEO injection placeholder not found in index.html.")
+        return
+
+    updated_html = index_html.replace("<!-- %%SEO_META_TAGS%% -->", meta_block)
+
+    with open(INDEX_HTML_PATH, "w") as f:
+        f.write(updated_html)
+
+    print(f"[{datetime.utcnow()}] SEO tags injected into index.html successfully.")
 
 if __name__ == "__main__":
-    keywords = fetch_trending_keywords()
-    update_seo_file(keywords)
+    inject_seo()
