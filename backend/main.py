@@ -14,6 +14,10 @@ load_dotenv()
 base_dir = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(base_dir, "config", "bluejay_config.json")
 
+# Safety check for config
+if not os.path.exists(CONFIG_PATH):
+    raise FileNotFoundError(f"Config file not found at {CONFIG_PATH}")
+
 with open(CONFIG_PATH, "r") as f:
     brain = json.load(f)
 
@@ -24,10 +28,9 @@ CORS(app)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 redis_client = redis.from_url(os.getenv("REDIS_URL"))
 
-# Thread key generator
 def redis_key(thread_id): return f"thread:{thread_id}"
 
-# Load template if available
+# Optional template
 TEMPLATE_PATH = os.path.join(base_dir, "config", "conversation_template.json")
 try:
     with open(TEMPLATE_PATH, "r") as tf:
@@ -35,21 +38,19 @@ try:
 except:
     conversation_template = {}
 
-# Routes
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
     thread_id = data.get("thread_id", "default")
     user_input = data["message"]
 
-    # Load previous thread
+    print(f"Received message from user: {user_input}")  # DEBUG LINE
+
+    # Load prior messages
     history = redis_client.get(redis_key(thread_id))
     thread_messages = json.loads(history) if history else []
-
-    # Append user input
     thread_messages.append({"role": "user", "content": user_input})
 
-    # Call OpenAI assistant
     response = openai.ChatCompletion.create(
         model="gpt-4o",
         messages=[
