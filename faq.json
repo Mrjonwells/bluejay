@@ -1,0 +1,20 @@
+{
+  "faqs": [
+    {
+      "question": "What is AskBlueJay.ai?",
+      "answer": "BlueJay is an AI assistant that helps you lower your card processing costs."
+    },
+    {
+      "question": "How much can I save?",
+      "answer": "Many businesses save up to 93% with a cash discount model vs. traditional rates."
+    },
+    {
+      "question": "What devices are supported?",
+      "answer": "We recommend Clover Flex, Mini, or Station based on your business type."
+    },
+    {
+      "question": "How do I get started?",
+      "answer": "Just chat with BlueJay and click 'Connect' when you're ready."
+    }
+  ]
+}
