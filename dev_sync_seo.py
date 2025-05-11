@@ -1,51 +1,42 @@
 import json
 import os
+from pytrends.request import TrendReq
+from datetime import datetime
 
-# Paths
 SEO_CONFIG_PATH = "backend/seo/seo_config.json"
-INJECTION_HTML_PATH = "backend/seo/seo_injection.html"
-INDEX_HTML_PATH = "frontend/index.html"
+TOPICS = ["merchant services", "business processing", "credit card fees", "Clover POS", "Square alternative"]
 
-def generate_seo_injection():
-    with open(SEO_CONFIG_PATH, "r") as f:
-        config = json.load(f)
+def fetch_trending_keywords():
+    pytrends = TrendReq(hl='en-US', tz=360)
+    all_related = []
 
-    title = config.get("title", "")
-    description = config.get("meta_description", "")
-    keywords = ", ".join(config.get("keywords", []))
-    structured_data = json.dumps(config.get("structured_data", {}), indent=2)
+    for topic in TOPICS:
+        try:
+            pytrends.build_payload([topic], cat=0, timeframe='now 7-d', geo='US', gprop='')
+            related = pytrends.related_queries()[topic]['top']
+            if related is not None:
+                all_related += [q for q in related['query'].tolist()]
+        except Exception:
+            continue
 
-    html = f"""<title>{title}</title>
-<meta name="description" content="{description}" />
-<meta name="keywords" content="{keywords}" />
-<script type="application/ld+json">
-{structured_data}
-</script>"""
+    unique_keywords = list(set(all_related))[:20]  # Limit to top 20 unique keywords
+    return unique_keywords
 
-    with open(INJECTION_HTML_PATH, "w") as f:
-        f.write(html.strip())
+def update_seo_file(keywords):
+    if not os.path.exists(os.path.dirname(SEO_CONFIG_PATH)):
+        os.makedirs(os.path.dirname(SEO_CONFIG_PATH))
 
-    print("SEO injection HTML updated.")
+    seo_data = {
+        "updated": datetime.utcnow().isoformat(),
+        "focus_keywords": keywords,
+        "meta_title": "BlueJay | Lower Your Processing Fees | Fortified Capital 2025",
+        "meta_description": "Discover how BlueJay helps businesses lower credit card fees with cash discount programs and smarter merchant solutions. Backed by Fortified Capital, est. 2025."
+    }
 
-def inject_into_index():
-    with open(INJECTION_HTML_PATH, "r") as inject:
-        injection = inject.read()
-
-    with open(INDEX_HTML_PATH, "r") as index:
-        content = index.read()
-
-    pre = "<!-- SEO-INJECT-START -->"
-    post = "<!-- SEO-INJECT-END -->"
-    if pre in content and post in content:
-        start = content.index(pre) + len(pre)
-        end = content.index(post)
-        new_content = content[:start] + "\n" + injection + "\n" + content[end:]
-        with open(INDEX_HTML_PATH, "w") as index:
-            index.write(new_content)
-        print("index.html SEO block updated.")
-    else:
-        print("Injection tags not found in index.html.")
+    with open(SEO_CONFIG_PATH, "w") as f:
+        json.dump(seo_data, f, indent=2)
+    print("SEO config updated with fresh keywords.")
 
 if __name__ == "__main__":
-    generate_seo_injection()
-    inject_into_index()
+    keywords = fetch_trending_keywords()
+    update_seo_file(keywords)
