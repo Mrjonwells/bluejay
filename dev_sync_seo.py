@@ -1,46 +1,35 @@
 import json
 import os
-from datetime import datetime
 
-SEO_CONFIG_PATH = "backend/seo/seo_config.json"
-INDEX_HTML_PATH = "index.html"
+SEO_JSON = "backend/seo/seo_config.json"
+INDEX_HTML = "frontend/index.html"
 
-def generate_meta_tags(config):
-    meta = []
-    meta.append(f'<meta name="description" content="{config.get("description", "")}" />')
-    meta.append(f'<meta name="keywords" content="{", ".join(config.get("keywords", []))}" />')
-    meta.append('<script type="application/ld+json">')
-    meta.append(json.dumps(config.get("schema", {}), indent=2))
-    meta.append('</script>')
-    return "\n  ".join(meta)
+def load_seo_tags():
+    with open(SEO_JSON, "r") as f:
+        data = json.load(f)
+        title = data.get("title", "")
+        description = data.get("description", "")
+        keywords = data.get("keywords", "")
+        return f"""<title>{title}</title>
+<meta name="description" content="{description}" />
+<meta name="keywords" content="{keywords}" />"""
 
-def inject_seo():
-    if not os.path.exists(SEO_CONFIG_PATH):
-        print(f"[{datetime.utcnow()}] SEO config file not found.")
+def inject_meta_tags():
+    if not os.path.exists(INDEX_HTML):
+        print("index.html not found.")
         return
 
-    with open(SEO_CONFIG_PATH, "r") as f:
-        config = json.load(f)
+    with open(INDEX_HTML, "r") as f:
+        content = f.read()
 
-    meta_block = generate_meta_tags(config)
-
-    if not os.path.exists(INDEX_HTML_PATH):
-        print(f"[{datetime.utcnow()}] index.html not found.")
-        return
-
-    with open(INDEX_HTML_PATH, "r") as f:
-        index_html = f.read()
-
-    if "<!-- %%SEO_META_TAGS%% -->" not in index_html:
-        print(f"[{datetime.utcnow()}] SEO injection placeholder not found in index.html.")
-        return
-
-    updated_html = index_html.replace("<!-- %%SEO_META_TAGS%% -->", meta_block)
-
-    with open(INDEX_HTML_PATH, "w") as f:
-        f.write(updated_html)
-
-    print(f"[{datetime.utcnow()}] SEO tags injected into index.html successfully.")
+    new_meta = load_seo_tags()
+    if "<!-- %%SEO_META_TAGS%% -->" in content:
+        content = content.replace("<!-- %%SEO_META_TAGS%% -->", new_meta)
+        with open(INDEX_HTML, "w") as f:
+            f.write(content)
+        print("SEO meta tags injected into index.html")
+    else:
+        print("Placeholder not found in index.html")
 
 if __name__ == "__main__":
-    inject_seo()
+    inject_meta_tags()
