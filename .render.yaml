@@ -5,6 +5,8 @@ services:
     plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn main:app --chdir backend --bind 0.0.0.0:$PORT
+    envVars:
+      - fromFile: .env
 
   - type: worker
     name: bluejay-trainer
@@ -13,3 +15,5 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: python backend/train_from_logs.py
     schedule: "@every 48h"
+    envVars:
+      - fromFile: .env
