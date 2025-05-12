@@ -11,14 +11,14 @@ body, html {
   background-size: 110% auto;
   background-repeat: no-repeat;
   background-position: center;
-  height: 100vh;
+  height: 110v5;
   width: 100vw;
   position: relative;
 }
 
 .top-bar {
   position: absolute;
-  top: 20px;
+  top: 45px;
   right: 15px;
   z-index: 10;
 }
