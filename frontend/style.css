@@ -11,8 +11,11 @@ body, html {
   background-size: cover;
   background-position: center;
   height: 100vh; 
-  width: 115vw;
-  position: relative;
+  width: 100vw;
+  position: fixed;  /* Changed from relative */
+  top: 0;
+  left: 0;
+  z-index: -1;
 }
 
 .top-bar {
