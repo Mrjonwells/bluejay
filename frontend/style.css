@@ -8,7 +8,7 @@ body, html {
 
 .background {
   background-image: url("chat_card.png");
-  background-size: 100% auto; /* width 100%, height auto */
+  background-size: 110% auto; /* width 100%, height auto */
   background-repeat: no-repeat;
   background-position: center;
   height: 100vh;
