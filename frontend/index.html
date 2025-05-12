@@ -1,89 +1,48 @@
-document.getElementById("send-btn").addEventListener("click", sendMessage);
-document.getElementById("user-input").addEventListener("keypress", function (e) {
-  if (e.key === "Enter") sendMessage();
-});
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AskBlueJay.ai | Lower Card Fees with AI Payment Assistant</title>
+  <!-- %%SEO_META_TAGS%% -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="menu-container">
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+    <div id="dropdown-menu" class="dropdown hidden">
+      <a href="faq.json" target="_blank">FAQs</a>
+      <a href="#" onclick="openCalendly()">Connect</a>
+      <a href="legal.html" target="_blank">Legal</a>
+    </div>
+  </div>
 
-window.onload = () => {
-  appendMessage("bot", "Welcome to BlueJay, what’s your name?");
-};
+  <div class="background">
+    <div class="chat-container">
+      <div id="chatlog" class="chatlog"></div>
+      <div id="typing-indicator" class="typing-indicator hidden">
+        <div class="bubble">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+      <div class="input-row">
+        <input id="user-input" type="text" placeholder="Ask BlueJay..." autocomplete="off" />
+        <button id="send-btn">Send</button>
+      </div>
+    </div>
+  </div>
 
-function sendMessage() {
-  const inputField = document.getElementById("user-input");
-  const message = inputField.value.trim();
-  if (!message) return;
+  <div id="dim-overlay"></div>
+  <div id="calendly-frame">
+    <div style="text-align:right;background:#fff;padding:5px;">
+      <button onclick="closeCalendly()">×</button>
+    </div>
+    <iframe id="calendly-iframe" src="https://calendly.com/askbluejay/30min?embed_domain=AskBlueJay.ai&embed_type=Inline" width="100%" height="100%" frameborder="0"></iframe>
+  </div>
 
-  appendMessage("user", message);
-  inputField.value = "";
-
-  showTyping(true);
-
-  fetch("https://bluejay-mjpg.onrender.com/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      showTyping(false);
-      appendMessage("bot", data.reply || "Something went wrong.");
-
-      if (data.reply && data.reply.includes("calendly.com")) {
-        openCalendly();
-      }
-    })
-    .catch(() => {
-      showTyping(false);
-      appendMessage("bot", "Something went wrong.");
-    });
-}
-
-function appendMessage(sender, message) {
-  const chatlog = document.getElementById("chatlog");
-  const msg = document.createElement("div");
-  msg.className = sender === "user" ? "user-msg" : "bot-msg";
-  msg.textContent = message;
-  chatlog.appendChild(msg);
-  chatlog.scrollTop = chatlog.scrollHeight;
-}
-
-function showTyping(show) {
-  const typingIndicator = document.getElementById("typing-indicator");
-  typingIndicator.classList.toggle("hidden", !show);
-  if (show) {
-    const chatlog = document.getElementById("chatlog");
-    chatlog.scrollTop = chatlog.scrollHeight;
-  }
-}
-
-// Calendly popup logic
-function openCalendly() {
-  document.getElementById("dim-overlay").style.display = "block";
-  document.getElementById("calendly-frame").style.display = "block";
-
-  window.addEventListener("message", function (e) {
-    if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
-      closeCalendly();
-    }
-  });
-}
-
-function closeCalendly() {
-  document.getElementById("dim-overlay").style.display = "none";
-  document.getElementById("calendly-frame").style.display = "none";
-}
-
-// Dropdown menu logic
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger = document.querySelector(".hamburger");
-  const dropdown = document.querySelector(".dropdown");
-
-  hamburger.addEventListener("click", () => {
-    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-  });
-
-  window.addEventListener("click", (e) => {
-    if (!e.target.matches(".hamburger")) {
-      dropdown.style.display = "none";
-    }
-  });
-});
+  <script src="https://assets.calendly.com/assets/external/widget.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>
