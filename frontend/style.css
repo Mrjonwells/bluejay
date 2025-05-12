@@ -9,7 +9,7 @@ body, html {
 
 .background {
   background-image: url("chat_card.png");
-  background-size: cover;
+  background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: top center;
   height: 100vh;
@@ -19,13 +19,8 @@ body, html {
 
 .top-bar {
   position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  top: 15px;
+  right: 15px;
   z-index: 10;
 }
 
@@ -75,14 +70,19 @@ body, html {
   border: 2px solid #00baff;
   border-radius: 12px;
   padding: 10px;
+  box-sizing: border-box;
   backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .chatlog {
-  max-height: 140px;
+  flex: 1;
   overflow-y: auto;
   color: white;
-  padding-bottom: 10px;
+  padding-right: 4px;
+  margin-bottom: 10px;
 }
 
 .user-msg {
@@ -100,7 +100,6 @@ body, html {
 .input-row {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
 }
 
 input#user-input {
@@ -126,6 +125,7 @@ button#send-btn {
   display: flex;
   justify-content: left;
   margin-left: 8px;
+  margin-bottom: 4px;
 }
 
 .bubble {
