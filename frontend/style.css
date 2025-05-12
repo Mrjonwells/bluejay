@@ -4,13 +4,14 @@ body, html {
   font-family: system-ui, sans-serif;
   background: black;
   overflow: hidden;
+  height: 100vh;
 }
 
 .background {
   background-image: url("chat_card.png");
-  background-size: 110% auto;
+  background-size: cover;
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: top center;
   height: 100vh;
   width: 100vw;
   position: relative;
@@ -18,12 +19,14 @@ body, html {
 
 .top-bar {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  z-index: 10;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: flex-end;
+  z-index: 10;
 }
 
 .menu-icon {
@@ -64,18 +67,15 @@ body, html {
 .chat-container {
   position: absolute;
   bottom: 420px;
-  margin-left: auto;
-  margin-right: auto;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 90%;
   height: 200px;
-  background: rgba(0, 8, 32, 0.85);
+  background: rgba(0, 0, 0, 0.6);
   border: 2px solid #00baff;
   border-radius: 12px;
   padding: 10px;
   backdrop-filter: blur(8px);
-  box-shadow: 0 0 6px #00baff;
 }
 
 .chatlog {
@@ -83,36 +83,24 @@ body, html {
   overflow-y: auto;
   color: white;
   padding-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.user-msg, .bot-msg {
-  padding: 8px 12px;
-  max-width: 80%;
-  border-radius: 12px;
-  word-wrap: break-word;
-  display: inline-block;
 }
 
 .user-msg {
-  align-self: flex-end;
-  background-color: #00baff;
-  color: black;
+  text-align: right;
+  margin: 5px;
+  color: #00baff;
 }
 
 .bot-msg {
-  align-self: flex-start;
-  background-color: rgba(255, 255, 255, 0.1);
+  text-align: left;
+  margin: 5px;
   color: white;
-  border: 1px solid #00baff;
 }
 
 .input-row {
   display: flex;
   gap: 10px;
-  margin-top: 5px;
+  margin-top: 10px;
 }
 
 input#user-input {
@@ -121,7 +109,7 @@ input#user-input {
   border: none;
   border-radius: 8px;
   outline: none;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 button#send-btn {
@@ -131,7 +119,7 @@ button#send-btn {
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .typing-indicator {
