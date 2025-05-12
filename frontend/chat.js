@@ -17,7 +17,7 @@ function sendMessage() {
 
   showTyping(true);
 
-  fetch("https://bluejay-mjpg.onrender.com/chat", {
+  fetch("/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
@@ -26,7 +26,6 @@ function sendMessage() {
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
-
       if (data.reply && data.reply.includes("calendly.com")) {
         openCalendly();
       }
@@ -55,11 +54,16 @@ function showTyping(show) {
   }
 }
 
+// Dropdown logic
+function toggleMenu() {
+  const menu = document.getElementById("dropdown-menu");
+  menu.classList.toggle("hidden");
+}
+
 // Calendly popup logic
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
   document.getElementById("calendly-frame").style.display = "block";
-
   window.addEventListener("message", function (e) {
     if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
       closeCalendly();
