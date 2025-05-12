@@ -7,6 +7,16 @@ window.onload = () => {
   appendMessage("bot", "Welcome to BlueJay, what’s your name?");
 };
 
+// Handle menu
+const hamburger = document.getElementById("menu-icon");
+const dropdown = document.getElementById("dropdown");
+hamburger.addEventListener("click", () => {
+  dropdown.classList.toggle("hidden");
+});
+window.addEventListener("click", (e) => {
+  if (!e.target.matches("#menu-icon")) dropdown.classList.add("hidden");
+});
+
 function sendMessage() {
   const inputField = document.getElementById("user-input");
   const message = inputField.value.trim();
@@ -17,7 +27,7 @@ function sendMessage() {
 
   showTyping(true);
 
-  fetch("https://bluejay-mjpg.onrender.com/chat", {
+  fetch("https://bluejay-api.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
@@ -26,6 +36,10 @@ function sendMessage() {
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
+
+      if (data.reply && data.reply.includes("calendly.com")) {
+        openCalendly();
+      }
     })
     .catch(() => {
       showTyping(false);
@@ -51,18 +65,17 @@ function showTyping(show) {
   }
 }
 
-// Menu logic
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger = document.querySelector(".hamburger");
-  const dropdown = document.getElementById("dropdown");
-
-  hamburger.addEventListener("click", () => {
-    dropdown.classList.toggle("hidden");
-  });
-
-  window.addEventListener("click", (e) => {
-    if (!e.target.closest(".hamburger") && !e.target.closest("#dropdown")) {
-      dropdown.classList.add("hidden");
+function openCalendly() {
+  document.getElementById("dim-overlay").style.display = "block";
+  document.getElementById("calendly-frame").style.display = "block";
+  window.addEventListener("message", function (e) {
+    if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
+      closeCalendly();
     }
   });
-});
+}
+
+function closeCalendly() {
+  document.getElementById("dim-overlay").style.display = "none";
+  document.getElementById("calendly-frame").style.display = "none";
+}
