@@ -26,7 +26,10 @@ function sendMessage() {
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
-      if (data.reply?.includes("calendly.com")) openCalendly();
+
+      if (data.reply && data.reply.includes("calendly.com")) {
+        openCalendly();
+      }
     })
     .catch(() => {
       showTyping(false);
@@ -52,9 +55,11 @@ function showTyping(show) {
   }
 }
 
+// Calendly popup logic
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
   document.getElementById("calendly-frame").style.display = "block";
+
   window.addEventListener("message", function (e) {
     if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
       closeCalendly();
@@ -67,6 +72,18 @@ function closeCalendly() {
   document.getElementById("calendly-frame").style.display = "none";
 }
 
-function toggleMenu() {
-  document.getElementById("menu").classList.toggle("hidden");
-}
+// Dropdown menu logic
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.querySelector(".hamburger");
+  const dropdown = document.querySelector(".dropdown");
+
+  hamburger.addEventListener("click", () => {
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+  });
+
+  window.addEventListener("click", (e) => {
+    if (!e.target.matches(".hamburger")) {
+      dropdown.style.display = "none";
+    }
+  });
+});
