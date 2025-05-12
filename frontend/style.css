@@ -21,6 +21,9 @@ body, html {
   top: 15px;
   right: 15px;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .menu-icon {
@@ -67,46 +70,49 @@ body, html {
   right: 0;
   width: 90%;
   height: 200px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #00baff;
+  background: rgba(0, 8, 32, 0.85);
+  border: 2px solid #00baff;
   border-radius: 12px;
   padding: 10px;
   backdrop-filter: blur(8px);
+  box-shadow: 0 0 6px #00baff;
 }
 
 .chatlog {
-  max-height: 200px;
+  max-height: 140px;
   overflow-y: auto;
   color: white;
   padding-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-msg, .bot-msg {
+  padding: 8px 12px;
+  max-width: 80%;
+  border-radius: 12px;
+  word-wrap: break-word;
+  display: inline-block;
 }
 
 .user-msg {
-  text-align: right;
-  margin: 6px;
-  background: #003B73;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 14px 14px 0 14px;
-  display: inline-block;
-  max-width: 80%;
+  align-self: flex-end;
+  background-color: #00baff;
+  color: black;
 }
 
 .bot-msg {
-  text-align: left;
-  margin: 6px;
-  background: #00baff;
-  color: black;
-  padding: 8px 12px;
-  border-radius: 14px 14px 14px 0;
-  display: inline-block;
-  max-width: 80%;
+  align-self: flex-start;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid #00baff;
 }
 
 .input-row {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 input#user-input {
