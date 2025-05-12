@@ -1,6 +1,3 @@
-// Generate UUID once per session
-const threadId = crypto.randomUUID();
-
 document.getElementById("send-btn").addEventListener("click", sendMessage);
 document.getElementById("user-input").addEventListener("keypress", function (e) {
   if (e.key === "Enter") sendMessage();
@@ -21,12 +18,13 @@ function sendMessage() {
 
   appendMessage("user", message);
   inputField.value = "";
+
   showTyping(true);
 
   fetch("https://bluejay-mjpg.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, thread_id: threadId }),
+    body: JSON.stringify({ message }),
   })
     .then((res) => res.json())
     .then((data) => {
@@ -50,12 +48,14 @@ function appendMessage(sender, message) {
 }
 
 function showTyping(show) {
-  const typingIndicator = document.getElementById("typing-indicator");
-  typingIndicator.classList.toggle("hidden", !show);
+  const indicator = document.getElementById("typing-indicator");
   if (show) {
-    const chatlog = document.getElementById("chatlog");
-    chatlog.scrollTop = chatlog.scrollHeight;
+    indicator.classList.add("active");
+  } else {
+    indicator.classList.remove("active");
   }
+  const chatlog = document.getElementById("chatlog");
+  chatlog.scrollTop = chatlog.scrollHeight;
 }
 
 function openCalendly() {
