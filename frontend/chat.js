@@ -7,6 +7,12 @@ window.onload = () => {
   appendMessage("bot", "Welcome to BlueJay, what’s your name?");
 };
 
+// Toggle menu dropdown
+document.getElementById("hamburger").addEventListener("click", () => {
+  const dropdown = document.getElementById("dropdown");
+  dropdown.classList.toggle("hidden");
+});
+
 function sendMessage() {
   const inputField = document.getElementById("user-input");
   const message = inputField.value.trim();
@@ -16,7 +22,7 @@ function sendMessage() {
   inputField.value = "";
   showTyping(true);
 
-  fetch("https://bluejay-api.onrender.com/chat", {
+  fetch("https://bluejay-mjpg.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
@@ -25,9 +31,7 @@ function sendMessage() {
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
-      if (data.reply && data.reply.includes("calendly.com")) {
-        openCalendly();
-      }
+      if (data.reply && data.reply.includes("calendly.com")) openCalendly();
     })
     .catch(() => {
       showTyping(false);
@@ -45,29 +49,24 @@ function appendMessage(sender, message) {
 }
 
 function showTyping(show) {
-  document.getElementById("typing-indicator").classList.toggle("hidden", !show);
+  const typingIndicator = document.getElementById("typing-indicator");
+  typingIndicator.classList.toggle("hidden", !show);
+  if (show) {
+    const chatlog = document.getElementById("chatlog");
+    chatlog.scrollTop = chatlog.scrollHeight;
+  }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger = document.getElementById("hamburger");
-  const dropdown = document.getElementById("dropdown");
-  hamburger.addEventListener("click", () => {
-    dropdown.classList.toggle("hidden");
-  });
-
-  window.addEventListener("click", (e) => {
-    if (!e.target.matches("#hamburger")) dropdown.classList.add("hidden");
-  });
-});
 
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
+  const iframe = document.getElementById("calendly-iframe");
+  iframe.src = "https://calendly.com/askbluejay/30min?embed_domain=askbluejay.ai&embed_type=Inline";
   document.getElementById("calendly-frame").style.display = "block";
-  document.getElementById("calendly-iframe").src =
-    "https://calendly.com/askbluejay/30min?embed_domain=AskBlueJay.ai&embed_type=Inline";
 }
 
 function closeCalendly() {
   document.getElementById("dim-overlay").style.display = "none";
+  const iframe = document.getElementById("calendly-iframe");
+  iframe.src = "";
   document.getElementById("calendly-frame").style.display = "none";
 }
