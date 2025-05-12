@@ -4,17 +4,20 @@ body, html {
   font-family: system-ui, sans-serif;
   background: black;
   overflow: hidden;
-  height: 100vh;
 }
 
 .background {
   background-image: url("chat_card.png");
-  background-size: 100% 100%;
+  background-size: cover;
   background-repeat: no-repeat;
-  background-position: top center;
-  height: 100vh;
+  background-position: center;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
-  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -1;
 }
 
 .top-bar {
@@ -62,27 +65,24 @@ body, html {
 .chat-container {
   position: absolute;
   bottom: 420px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
   width: 90%;
   height: 200px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 2px solid #00baff;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid #00baff;
   border-radius: 12px;
   padding: 10px;
-  box-sizing: border-box;
   backdrop-filter: blur(8px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 .chatlog {
-  flex: 1;
+  max-height: 200px;
   overflow-y: auto;
   color: white;
-  padding-right: 4px;
-  margin-bottom: 10px;
+  padding-bottom: 10px;
 }
 
 .user-msg {
@@ -100,6 +100,7 @@ body, html {
 .input-row {
   display: flex;
   gap: 10px;
+  margin-top: 10px;
 }
 
 input#user-input {
@@ -108,14 +109,6 @@ input#user-input {
   border: none;
   border-radius: 8px;
   outline: none;
-  font-size: 16px;
-  background: white;
-  color: black;
-}
-
-input#user-input:focus {
-  outline: none;
-  background: white;
 }
 
 button#send-btn {
@@ -125,18 +118,12 @@ button#send-btn {
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: bold;
-  font-size: 16px;
 }
 
 .typing-indicator {
-  display: none;
+  display: flex;
   justify-content: left;
   margin-left: 8px;
-  margin-bottom: 4px;
-}
-
-.typing-indicator.active {
-  display: flex;
 }
 
 .bubble {
