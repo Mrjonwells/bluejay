@@ -1,77 +1,52 @@
-document.getElementById("send-btn").addEventListener("click", sendMessage);
-document.getElementById("user-input").addEventListener("keypress", function (e) {
-  if (e.key === "Enter") sendMessage();
-});
-
-window.onload = () => {
-  appendMessage("bot", "Welcome to BlueJay, what’s your name?");
-};
-
-document.getElementById("hamburger").addEventListener("click", () => {
-  document.getElementById("dropdown").classList.toggle("hidden");
-});
-
-function sendMessage() {
-  const inputField = document.getElementById("user-input");
-  const message = inputField.value.trim();
-  if (!message) return;
-
-  appendMessage("user", message);
-  inputField.value = "";
-
-  showTyping(true);
-
-  fetch("https://bluejay-mjpg.onrender.com/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      showTyping(false);
-      appendMessage("bot", data.reply || "Something went wrong.");
-      if (data.reply && data.reply.includes("calendly.com")) openCalendly();
-    })
-    .catch(() => {
-      showTyping(false);
-      appendMessage("bot", "Something went wrong.");
-    });
-}
-
-function appendMessage(sender, message) {
+document.addEventListener("DOMContentLoaded", () => {
+  const sendBtn = document.getElementById("send-btn");
+  const userInput = document.getElementById("user-input");
   const chatlog = document.getElementById("chatlog");
-  const msg = document.createElement("div");
-  msg.className = sender === "user" ? "user-msg" : "bot-msg";
+  const typingIndicator = document.getElementById("typing");
 
-  const bubble = document.createElement("div");
-  bubble.className = "chat-bubble";
-  bubble.textContent = message;
-
-  msg.appendChild(bubble);
-  chatlog.appendChild(msg);
-  chatlog.scrollTop = chatlog.scrollHeight;
-}
-
-function showTyping(show) {
-  const typingIndicator = document.getElementById("typing-indicator");
-  typingIndicator.classList.toggle("hidden", !show);
-  if (show) {
-    const chatlog = document.getElementById("chatlog");
+  function appendMessage(text, sender) {
+    const msg = document.createElement("div");
+    msg.className = sender === "user" ? "user-msg" : "bot-msg";
+    msg.innerText = text;
+    chatlog.appendChild(msg);
     chatlog.scrollTop = chatlog.scrollHeight;
   }
-}
 
-function openCalendly() {
-  document.getElementById("dim-overlay").style.display = "block";
-  document.getElementById("calendly-frame").style.display = "block";
-  window.addEventListener("message", function (e) {
-    if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
-      closeCalendly();
+  async function sendMessage() {
+    const message = userInput.value.trim();
+    if (!message) return;
+
+    appendMessage(message, "user");
+    userInput.value = "";
+    typingIndicator.classList.remove("hidden");
+
+    try {
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await response.json();
+      typingIndicator.classList.add("hidden");
+
+      if (data && data.reply) {
+        appendMessage(data.reply, "bot");
+      } else {
+        appendMessage("Something went wrong.", "bot");
+      }
+    } catch (err) {
+      typingIndicator.classList.add("hidden");
+      appendMessage("Error connecting to server.", "bot");
     }
-  });
-}
+  }
 
-function closeCalendly() {
-  document.getElementById("dim-overlay").style.display = "none";
-  document.getElementById("calendly-frame").style.display = "none";
+  sendBtn.addEventListener("click", sendMessage);
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+});
+
+function toggleMenu() {
+  document.getElementById("dropdown").classList.toggle("hidden");
 }
