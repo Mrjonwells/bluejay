@@ -17,7 +17,7 @@ function sendMessage() {
 
   showTyping(true);
 
-  fetch("https://bluejay-api.onrender.com/chat", {
+  fetch("https://bluejay-mjpg.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
@@ -26,6 +26,7 @@ function sendMessage() {
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
+
       if (data.reply && data.reply.includes("calendly.com")) {
         openCalendly();
       }
@@ -47,16 +48,25 @@ function appendMessage(sender, message) {
 
 function showTyping(show) {
   const typingIndicator = document.getElementById("typing-indicator");
-  typingIndicator.classList.toggle("active", show);
   if (show) {
-    const chatlog = document.getElementById("chatlog");
-    chatlog.scrollTop = chatlog.scrollHeight;
+    typingIndicator.classList.add("active");
+  } else {
+    typingIndicator.classList.remove("active");
   }
 }
 
+// Dropdown Menu Logic
+const menuBtn = document.getElementById("hamburger");
+const dropdown = document.getElementById("dropdown");
+menuBtn.addEventListener("click", () => {
+  dropdown.classList.toggle("hidden");
+});
+
+// Calendly popup logic
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
-  document.getElementById("calendly-frame").style.display = "block";
+  const frame = document.getElementById("calendly-frame");
+  frame.style.display = "block";
   document.getElementById("calendly-iframe").src =
     "https://calendly.com/askbluejay/30min?embed_domain=AskBlueJay.ai&embed_type=Inline";
 
@@ -69,22 +79,7 @@ function openCalendly() {
 
 function closeCalendly() {
   document.getElementById("dim-overlay").style.display = "none";
-  document.getElementById("calendly-frame").style.display = "none";
+  const frame = document.getElementById("calendly-frame");
+  frame.style.display = "none";
   document.getElementById("calendly-iframe").src = "";
 }
-
-// Menu dropdown toggle
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger = document.getElementById("hamburger");
-  const dropdown = document.getElementById("dropdown");
-
-  hamburger.addEventListener("click", () => {
-    dropdown.classList.toggle("hidden");
-  });
-
-  window.addEventListener("click", (e) => {
-    if (!dropdown.contains(e.target) && e.target !== hamburger) {
-      dropdown.classList.add("hidden");
-    }
-  });
-});
