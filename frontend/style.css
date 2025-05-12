@@ -60,7 +60,7 @@ body, html {
 
 .chat-container {
   position: absolute;
-  bottom: 150px;
+  bottom: 550px;
   left: 5%;
   width: 90%;
   background: rgba(255, 255, 255, 0.05);
