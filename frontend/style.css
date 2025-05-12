@@ -11,14 +11,14 @@ body, html {
   background-size: 110% auto;
   background-repeat: no-repeat;
   background-position: center;
-  height: 110v5;
+  height: 100vh;
   width: 100vw;
   position: relative;
 }
 
 .top-bar {
   position: absolute;
-  top: 45px;
+  top: 5px;
   right: 15px;
   z-index: 10;
 }
@@ -67,20 +67,22 @@ body, html {
   right: 0;
   width: 90%;
   height: 200px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 186, 255, 0.15);
   border: 1px solid #00baff;
   border-radius: 12px;
   padding: 10px;
   backdrop-filter: blur(8px);
+  box-shadow: 0 0 8px #00baff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
 .chatlog {
-  flex: 1;
+  max-height: 130px;
   overflow-y: auto;
   color: white;
+  padding-bottom: 5px;
 }
 
 .user-msg {
@@ -98,7 +100,6 @@ body, html {
 .input-row {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
 }
 
 input#user-input {
@@ -119,14 +120,14 @@ button#send-btn {
 }
 
 .typing-indicator {
-  display: none;
+  display: flex;
   justify-content: left;
   margin-left: 8px;
-  margin-top: 8px;
+  visibility: hidden;
 }
 
 .typing-indicator.active {
-  display: flex;
+  visibility: visible;
 }
 
 .bubble {
