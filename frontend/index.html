@@ -2,38 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>AskBlueJay.ai | Save 93% on Credit Card Processing</title>
-  <!-- %%SEO_META_TAGS%% -->
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BlueJay</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="background">
     <div class="top-bar">
-      <img src="menu-icon.png" alt="Menu" class="menu-icon" id="hamburger" />
+      <img src="menu-icon.png" alt="Menu" class="menu-icon" onclick="toggleMenu()" />
+      <div id="dropdown" class="dropdown hidden">
+        <a href="faq.json" target="_blank">FAQs</a>
+        <a href="https://calendly.com/askbluejay" target="_blank">Connect</a>
+        <a href="legal.html" target="_blank">Legal</a>
+      </div>
     </div>
-    <div class="dropdown hidden" id="dropdown">
-      <a href="faq.json" target="_blank">FAQs</a>
-      <a href="https://calendly.com/askbluejay/30min" target="_blank">Connect</a>
-      <a href="legal.html" target="_blank">Legal</a>
-    </div>
+
     <div class="chat-container">
       <div id="chatlog" class="chatlog"></div>
-      <div id="typing-indicator" class="typing-indicator hidden">
-        <div class="bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div id="typing" class="typing-indicator hidden">
+        <div class="bubble">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
       </div>
       <div class="input-row">
-        <input id="user-input" type="text" placeholder="Ask BlueJay..." autocomplete="off" />
+        <input id="user-input" type="text" placeholder="Ask BlueJay..." autocomplete="off"/>
         <button id="send-btn">Send</button>
       </div>
     </div>
-  </div>
-  <div id="dim-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9998;"></div>
-  <div id="calendly-frame" style="display:none;position:fixed;top:10%;left:5%;width:90%;height:80%;z-index:9999;border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(0,0,0,0.5);">
-    <div style="text-align:right;background:#fff;padding:5px;">
-      <button onclick="closeCalendly()" style="background:none;border:none;font-size:20px;">×</button>
-    </div>
-    <iframe id="calendly-iframe" src="" frameborder="0" width="100%" height="100%"></iframe>
   </div>
   <script src="chat.js"></script>
 </body>
