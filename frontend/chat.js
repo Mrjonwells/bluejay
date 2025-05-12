@@ -49,11 +49,7 @@ function appendMessage(sender, message) {
 
 function showTyping(show) {
   const typingIndicator = document.getElementById("typing-indicator");
-  typingIndicator.classList.toggle("hidden", !show);
-  if (show) {
-    const chatlog = document.getElementById("chatlog");
-    chatlog.scrollTop = chatlog.scrollHeight;
-  }
+  typingIndicator.classList.toggle("active", show);
 }
 
 function openCalendly() {
