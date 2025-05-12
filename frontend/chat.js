@@ -7,16 +7,6 @@ window.onload = () => {
   appendMessage("bot", "Welcome to BlueJay, what’s your name?");
 };
 
-// Handle menu
-const hamburger = document.getElementById("menu-icon");
-const dropdown = document.getElementById("dropdown");
-hamburger.addEventListener("click", () => {
-  dropdown.classList.toggle("hidden");
-});
-window.addEventListener("click", (e) => {
-  if (!e.target.matches("#menu-icon")) dropdown.classList.add("hidden");
-});
-
 function sendMessage() {
   const inputField = document.getElementById("user-input");
   const message = inputField.value.trim();
@@ -24,10 +14,9 @@ function sendMessage() {
 
   appendMessage("user", message);
   inputField.value = "";
-
   showTyping(true);
 
-  fetch("https://bluejay-api.onrender.com/chat", {
+  fetch("https://bluejay-mjpg.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
@@ -60,14 +49,15 @@ function showTyping(show) {
   const typingIndicator = document.getElementById("typing-indicator");
   typingIndicator.classList.toggle("hidden", !show);
   if (show) {
-    const chatlog = document.getElementById("chatlog");
-    chatlog.scrollTop = chatlog.scrollHeight;
+    document.getElementById("chatlog").scrollTop = document.getElementById("chatlog").scrollHeight;
   }
 }
 
+// Calendly popup logic
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
   document.getElementById("calendly-frame").style.display = "block";
+
   window.addEventListener("message", function (e) {
     if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
       closeCalendly();
@@ -79,3 +69,11 @@ function closeCalendly() {
   document.getElementById("dim-overlay").style.display = "none";
   document.getElementById("calendly-frame").style.display = "none";
 }
+
+// Dropdown menu toggle
+const menuToggle = document.getElementById("menu-toggle");
+const dropdown = document.getElementById("dropdown-menu");
+
+menuToggle.addEventListener("click", () => {
+  dropdown.style.display = dropdown.style.display === "flex" ? "none" : "flex";
+});
