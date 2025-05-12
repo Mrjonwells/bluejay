@@ -42,20 +42,23 @@ function appendMessage(sender, message) {
   const chatlog = document.getElementById("chatlog");
   const msg = document.createElement("div");
   msg.className = sender === "user" ? "user-msg" : "bot-msg";
-  msg.textContent = message;
+
+  const bubble = document.createElement("div");
+  bubble.className = "chat-bubble";
+  bubble.textContent = message;
+
+  msg.appendChild(bubble);
   chatlog.appendChild(msg);
   chatlog.scrollTop = chatlog.scrollHeight;
 }
 
 function showTyping(show) {
-  const indicator = document.getElementById("typing-indicator");
+  const typingIndicator = document.getElementById("typing-indicator");
+  typingIndicator.classList.toggle("hidden", !show);
   if (show) {
-    indicator.classList.add("active");
-  } else {
-    indicator.classList.remove("active");
+    const chatlog = document.getElementById("chatlog");
+    chatlog.scrollTop = chatlog.scrollHeight;
   }
-  const chatlog = document.getElementById("chatlog");
-  chatlog.scrollTop = chatlog.scrollHeight;
 }
 
 function openCalendly() {
