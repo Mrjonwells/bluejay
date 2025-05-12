@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>AskBlueJay.ai | Lower Card Fees with AI Payment Assistant</title>
-  <meta name="description" content="AskBlueJay.ai helps small businesses save up to 93% on payment processing. Compare Clover, Square, and Stripe with a smart, human-style AI assistant." />
+  <title>AskBlueJay.ai | Save 93% on Credit Card Processing</title>
+  <!-- %%SEO_META_TAGS%% -->
+  <meta name="description" content="AskBlueJay.ai is the smarter way to accept payments. Cut your processing fees up to 93% by switching to a fee-free cash discount program with AI-powered onboarding." />
+  <meta name="keywords" content="credit card processing, clover vs square, eliminate merchant fees, fee-free POS, AI payment assistant, best payment system for business, cash discount program, avoid stripe fees, low-cost credit card terminals, AI business assistant 2025, Clover Mini, POS savings 2025" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="menu-header">
-    <img src="menu-icon.png" alt="Menu" class="hamburger" />
-    <div class="site-name">askbluejay.ai</div>
-  </div>
-  <div class="dropdown hidden" id="dropdown">
-    <a href="faq.json" target="_blank">FAQs</a>
-    <a href="https://calendly.com/askbluejay/30min" target="_blank">Connect</a>
-    <a href="legal.html" target="_blank">Legal</a>
-  </div>
   <div class="background">
-    <div class="chat-container">
+    <div class="header">
+      <img id="menu-icon" src="menu_icon.png" alt="Menu" />
+      <div id="dropdown" class="dropdown hidden">
+        <a href="faq.json" target="_blank">FAQs</a>
+        <a href="#" onclick="openCalendly()">Connect</a>
+        <a href="legal.html" target="_blank">Legal</a>
+      </div>
+    </div>
+    <div class="chat-container chrome-outline">
       <div id="chatlog" class="chatlog"></div>
       <div id="typing-indicator" class="typing-indicator hidden">
         <div class="bubble">
@@ -33,6 +34,14 @@
       </div>
     </div>
   </div>
+  <div id="dim-overlay"></div>
+  <div id="calendly-frame">
+    <div style="text-align:right;background:#fff;padding:5px;">
+      <button onclick="closeCalendly()" style="background:none;border:none;font-size:20px;">×</button>
+    </div>
+    <iframe id="calendly-iframe" src="https://calendly.com/askbluejay/30min?embed_domain=AskBlueJay.ai&embed_type=Inline" width="100%" height="100%" frameborder="0"></iframe>
+  </div>
+  <script src="https://assets.calendly.com/assets/external/widget.js"></script>
   <script src="chat.js"></script>
 </body>
 </html>
