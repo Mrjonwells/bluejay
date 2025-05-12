@@ -26,9 +26,7 @@ function sendMessage() {
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
-      if (data.reply && data.reply.includes("calendly.com")) {
-        openCalendly();
-      }
+      if (data.reply?.includes("calendly.com")) openCalendly();
     })
     .catch(() => {
       showTyping(false);
@@ -54,12 +52,9 @@ function showTyping(show) {
   }
 }
 
-// Calendly popup logic
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
   document.getElementById("calendly-frame").style.display = "block";
-
-  // Listen for Calendly booking complete
   window.addEventListener("message", function (e) {
     if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
       closeCalendly();
@@ -72,12 +67,6 @@ function closeCalendly() {
   document.getElementById("calendly-frame").style.display = "none";
 }
 
-// Hamburger menu
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger = document.getElementById("hamburger");
-  const menu = document.getElementById("dropdown-menu");
-
-  hamburger.addEventListener("click", () => {
-    menu.classList.toggle("hidden");
-  });
-});
+function toggleMenu() {
+  document.getElementById("menu").classList.toggle("hidden");
+}
