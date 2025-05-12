@@ -4,14 +4,13 @@ body, html {
   font-family: system-ui, sans-serif;
   background: black;
   overflow: hidden;
-  touch-action: manipulation;
 }
 
 .background {
   background-image: url("chat_card.png");
   background-size: 110% auto;
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: center top;
   height: 100vh;
   width: 100vw;
   position: relative;
@@ -19,8 +18,14 @@ body, html {
 
 .top-bar {
   position: absolute;
-  top: 10px;
-  right: 15px;
+  top: 0;
+  right: 0;
+  padding: 10px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 50px;
+  width: 100%;
   z-index: 10;
 }
 
@@ -29,6 +34,7 @@ body, html {
   height: 36px;
   cursor: pointer;
   filter: drop-shadow(0 0 4px #00baff);
+  margin-right: 10px;
 }
 
 .dropdown {
@@ -36,7 +42,7 @@ body, html {
   top: 60px;
   right: 15px;
   background: rgba(0, 0, 0, 0.9);
-  border: 2px solid #00baff;
+  border: 1px solid #00baff;
   border-radius: 8px;
   padding: 10px;
   display: flex;
@@ -45,7 +51,7 @@ body, html {
 }
 
 .dropdown a {
-  color: #00baff;
+  color: white;
   padding: 8px 12px;
   text-decoration: none;
   border-bottom: 1px solid #00baff;
@@ -68,20 +74,19 @@ body, html {
   right: 0;
   width: 90%;
   height: 200px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid #00baff;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #00baff;
   border-radius: 12px;
   padding: 10px;
   backdrop-filter: blur(8px);
-  box-shadow: 0 0 12px #00baff;
-  margin-top: 20px;
+  box-shadow: 0 0 10px #00baff;
 }
 
 .chatlog {
-  max-height: 130px;
+  max-height: 150px;
   overflow-y: auto;
   color: white;
-  padding-bottom: 40px;
+  padding-bottom: 10px;
 }
 
 .user-msg {
@@ -99,10 +104,8 @@ body, html {
 .input-row {
   display: flex;
   gap: 10px;
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
+  margin-top: 10px;
+  align-items: flex-end;
 }
 
 input#user-input {
@@ -111,7 +114,7 @@ input#user-input {
   border: none;
   border-radius: 8px;
   outline: none;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 button#send-btn {
@@ -121,16 +124,13 @@ button#send-btn {
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: bold;
+  font-size: 14px;
 }
 
 .typing-indicator {
   display: none;
   justify-content: left;
   margin-left: 8px;
-}
-
-.typing-indicator.active {
-  display: flex;
 }
 
 .bubble {
