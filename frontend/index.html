@@ -7,44 +7,19 @@
   <!-- %%SEO_META_TAGS%% -->
   <meta name="description" content="AskBlueJay.ai is the smarter way to accept payments. Cut your processing fees up to 93% by switching to a fee-free cash discount program with AI-powered onboarding." />
   <meta name="keywords" content="credit card processing, clover vs square, eliminate merchant fees, fee-free POS, AI payment assistant, best payment system for business, cash discount program, avoid stripe fees, low-cost credit card terminals, AI business assistant 2025, Clover Mini, POS savings 2025" />
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "AskBlueJay.ai",
-    "alternateName": "BlueJay",
-    "url": "https://askbluejay.ai",
-    "logo": "https://askbluejay.ai/logo.png",
-    "founder": {
-      "@type": "Organization",
-      "name": "Fortified Capital LLC",
-      "foundingDate": "2025",
-      "email": "info@AskBlueJay.ai"
-    },
-    "sameAs": [
-      "https://www.linkedin.com/company/askbluejay",
-      "https://www.instagram.com/askbluejay"
-    ],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "email": "info@AskBlueJay.ai",
-      "contactType": "customer support"
-    }
-  }
-  </script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="background">
-    <div class="header-bar">
-      <div class="header-motto">AskBlueJay.ai</div>
-      <img src="menu-icon.png" alt="Menu" id="menu-toggle" />
+    <div class="menu-header">
+      <img src="menu-icon.png" id="menu-toggle" alt="Menu" class="menu-icon" />
+      <div id="dropdown-menu" class="dropdown-menu">
+        <a href="faq.json" target="_blank">FAQs</a>
+        <a href="#" onclick="openCalendly()">Connect</a>
+        <a href="legal.html" target="_blank">Legal</a>
+      </div>
     </div>
-    <div class="dropdown-menu" id="dropdown-menu">
-      <a href="faq.json" target="_blank">FAQs</a>
-      <a href="https://calendly.com/askbluejay/30min" target="_blank">Connect</a>
-      <a href="legal.html" target="_blank">Legal</a>
-    </div>
+
     <div class="chat-container">
       <div id="chatlog" class="chatlog"></div>
       <div id="typing-indicator" class="typing-indicator hidden">
