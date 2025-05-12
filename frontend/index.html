@@ -12,6 +12,7 @@
     <div class="top-bar">
       <img src="menu-icon.png" alt="Menu" class="menu-icon" id="hamburger" />
     </div>
+
     <div class="dropdown hidden" id="dropdown">
       <a href="faq.json" target="_blank">FAQs</a>
       <a href="https://calendly.com/askbluejay/30min" target="_blank">Connect</a>
@@ -21,7 +22,11 @@
     <div class="chat-container">
       <div id="chatlog" class="chatlog"></div>
       <div id="typing-indicator" class="typing-indicator hidden">
-        <div class="bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="bubble">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
       </div>
       <div class="input-row">
         <input id="user-input" type="text" placeholder="Ask BlueJay..." autocomplete="off" />
@@ -30,12 +35,11 @@
     </div>
   </div>
 
-  <div id="dim-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9998;"></div>
-  <div id="calendly-frame" style="display:none;position:fixed;top:10%;left:5%;width:90%;height:80%;z-index:9999;border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(0,0,0,0.5);">
-    <div style="text-align:right;background:#fff;padding:5px;">
-      <button onclick="closeCalendly()" style="background:none;border:none;font-size:20px;">×</button>
-    </div>
-    <iframe id="calendly-iframe" src="https://calendly.com/askbluejay/30min?embed_domain=AskBlueJay.ai&embed_type=Inline" width="100%" height="100%" frameborder="0"></iframe>
+  <div id="dim-overlay"></div>
+
+  <div id="calendly-frame">
+    <div><button onclick="closeCalendly()">×</button></div>
+    <iframe id="calendly-iframe" src="" frameborder="0"></iframe>
   </div>
 
   <script src="chat.js"></script>
