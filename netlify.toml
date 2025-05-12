@@ -1,6 +1,6 @@
 [build]
-  base = "bluejay/frontend"
-  publish = "."
+  base = "frontend"
+  publish = "./"
   command = "pip install pytrends && python ../../dev_sync_seo.py || echo 'SEO sync failed — continuing...' && npm install && npm run build"
 
 [build.environment]
