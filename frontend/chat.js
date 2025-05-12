@@ -14,19 +14,17 @@ function sendMessage() {
 
   appendMessage("user", message);
   inputField.value = "";
-
   showTyping(true);
 
-  fetch("https://bluejay-mjpg.onrender.com/chat", {
+  fetch("https://bluejay-api.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message })
   })
     .then((res) => res.json())
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
-
       if (data.reply && data.reply.includes("calendly.com")) {
         openCalendly();
       }
@@ -48,27 +46,17 @@ function appendMessage(sender, message) {
 
 function showTyping(show) {
   const typingIndicator = document.getElementById("typing-indicator");
+  typingIndicator.classList.toggle("hidden", !show);
   if (show) {
-    typingIndicator.classList.add("active");
-  } else {
-    typingIndicator.classList.remove("active");
+    const chatlog = document.getElementById("chatlog");
+    chatlog.scrollTop = chatlog.scrollHeight;
   }
 }
-
-// Dropdown Menu Logic
-const menuBtn = document.getElementById("hamburger");
-const dropdown = document.getElementById("dropdown");
-menuBtn.addEventListener("click", () => {
-  dropdown.classList.toggle("hidden");
-});
 
 // Calendly popup logic
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
-  const frame = document.getElementById("calendly-frame");
-  frame.style.display = "block";
-  document.getElementById("calendly-iframe").src =
-    "https://calendly.com/askbluejay/30min?embed_domain=AskBlueJay.ai&embed_type=Inline";
+  document.getElementById("calendly-frame").style.display = "block";
 
   window.addEventListener("message", function (e) {
     if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
@@ -79,7 +67,5 @@ function openCalendly() {
 
 function closeCalendly() {
   document.getElementById("dim-overlay").style.display = "none";
-  const frame = document.getElementById("calendly-frame");
-  frame.style.display = "none";
-  document.getElementById("calendly-iframe").src = "";
+  document.getElementById("calendly-frame").style.display = "none";
 }
