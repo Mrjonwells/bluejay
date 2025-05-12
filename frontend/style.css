@@ -8,7 +8,7 @@ body, html {
 
 .background {
   background-image: url("chat_card.png");
-  background-size: 110% auto; /* width 100%, height auto */
+  background-size: 110% auto;
   background-repeat: no-repeat;
   background-position: center;
   height: 100vh;
@@ -72,13 +72,15 @@ body, html {
   border-radius: 12px;
   padding: 10px;
   backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .chatlog {
-  max-height: 200px;
+  flex: 1;
   overflow-y: auto;
   color: white;
-  padding-bottom: 10px;
 }
 
 .user-msg {
@@ -117,9 +119,14 @@ button#send-btn {
 }
 
 .typing-indicator {
-  display: flex;
+  display: none;
   justify-content: left;
   margin-left: 8px;
+  margin-top: 8px;
+}
+
+.typing-indicator.active {
+  display: flex;
 }
 
 .bubble {
