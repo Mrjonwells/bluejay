@@ -8,7 +8,7 @@ body, html {
 
 .background {
   background-image: url("chat_card.png");
-  background-size: contain;
+  background-size: 100% 110%;
   background-repeat: no-repeat;
   background-position: center;
   height: 100vh;
@@ -19,24 +19,8 @@ body, html {
 .top-bar {
   position: absolute;
   top: 15px;
-  left: 15px;
   right: 15px;
   z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo {
-  height: 28px;
-}
-
-.motto {
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  margin-left: 8px;
-  flex-grow: 1;
 }
 
 .menu-icon {
