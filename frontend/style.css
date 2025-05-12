@@ -8,8 +8,7 @@ body, html {
 
 .background {
   background-image: url("chat_card.png");
-  background-size: 104% auto;
-  background-repeat: no-repeat;
+  background-size: cover;
   background-position: center;
   height: 100vh;
   width: 100vw;
@@ -67,7 +66,7 @@ body, html {
   right: 0;
   width: 90%;
   height: 200px;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid #00baff;
   border-radius: 12px;
   padding: 10px;
@@ -75,38 +74,38 @@ body, html {
 }
 
 .chatlog {
-  max-height: 140px;
+  max-height: 200px;
   overflow-y: auto;
   color: white;
-  padding-bottom: 8px;
-}
-
-.bot-msg {
-  text-align: left;
-  margin: 5px 0;
-  padding: 6px 12px;
-  background-color: #004e8a;
-  color: white;
-  border-radius: 10px;
-  display: inline-block;
-  max-width: 80%;
+  padding-bottom: 10px;
 }
 
 .user-msg {
   text-align: right;
-  margin: 5px 0;
-  padding: 6px 12px;
-  background-color: #00baff;
-  color: white;
-  border-radius: 10px;
+  margin: 5px;
   display: inline-block;
-  max-width: 80%;
+  background-color: #007acc; /* user blue */
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 75%;
+}
+
+.bot-msg {
+  text-align: left;
+  margin: 5px;
+  display: inline-block;
+  background-color: #00baff; /* bluejay blue */
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 75%;
 }
 
 .input-row {
   display: flex;
   gap: 10px;
-  margin-top: 6px;
+  margin-top: 10px;
 }
 
 input#user-input {
@@ -116,6 +115,7 @@ input#user-input {
   border-radius: 8px;
   outline: none;
   background: white;
+  color: black;
 }
 
 button#send-btn {
