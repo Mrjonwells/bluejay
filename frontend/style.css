@@ -109,6 +109,13 @@ input#user-input {
   border-radius: 8px;
   outline: none;
   font-size: 16px;
+  background: white;
+  color: black;
+}
+
+input#user-input:focus {
+  outline: none;
+  background: white;
 }
 
 button#send-btn {
@@ -122,10 +129,14 @@ button#send-btn {
 }
 
 .typing-indicator {
-  display: flex;
+  display: none;
   justify-content: left;
   margin-left: 8px;
   margin-bottom: 4px;
+}
+
+.typing-indicator.active {
+  display: flex;
 }
 
 .bubble {
