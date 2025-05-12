@@ -1,76 +1,86 @@
 import os
 import json
-import openai
 import redis
+import openai
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+from openai import OpenAI
 from waitress import serve
-import uuid
 
-# Load environment variables
+# Load environment
 load_dotenv()
 
-# Set up file paths
-base_dir = os.path.dirname(os.path.abspath(__file__))
-CONFIG_PATH = os.path.join(base_dir, "config", "bluejay_config.json")
-TEMPLATE_PATH = os.path.join(base_dir, "config", "conversation_template.json")
-
-# Load BlueJay's brain
-with open(CONFIG_PATH, "r") as f:
-    brain = json.load(f)
-
-# Load sales conversation template
-try:
-    with open(TEMPLATE_PATH, "r") as f:
-        conversation_template = json.load(f)
-except:
-    conversation_template = {}
-
-# Flask setup
+# Initialize Flask
 app = Flask(__name__)
 CORS(app)
 
-# API and Redis setup
-openai.api_key = os.getenv("OPENAI_API_KEY")
-redis_client = redis.from_url(os.getenv("REDIS_URL"))
+# Paths
+base_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(base_dir, "config", "bluejay_config.json")
+template_path = os.path.join(base_dir, "config", "conversation_template.json")
 
-# Helper to manage thread keys
-def redis_key(thread_id): return f"thread:{thread_id}"
+# Load BlueJay brain
+with open(config_path, "r") as f:
+    brain = json.load(f)
 
+# Load template
+try:
+    with open(template_path, "r") as tf:
+        template = json.load(tf)
+except:
+    template = {}
+
+# Redis setup
+redis_url = os.getenv("REDIS_URL")
+redis_client = redis.from_url(redis_url)
+
+# OpenAI setup
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+assistant_id = os.getenv("OPENAI_ASSISTANT_ID", "asst_bLMfZI9fO9E5jltHY8KDq9ZT")
+
+# Key builder
+def redis_key(thread_id):
+    return f"thread:{thread_id}"
+
+# Routes
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
+    data = request.get_json()
     user_input = data.get("message", "")
-    thread_id = data.get("thread_id") or str(uuid.uuid4())  # autogenerate if none
+    thread_id = data.get("thread_id", "default")
 
-    # Retrieve conversation history
-    history_json = redis_client.get(redis_key(thread_id))
-    thread_messages = json.loads(history_json) if history_json else []
+    # Load memory from Redis
+    memory_key = redis_key(thread_id)
+    history = redis_client.get(memory_key)
+    thread_messages = json.loads(history) if history else []
 
-    # Add user message
+    # Append user input to thread
     thread_messages.append({"role": "user", "content": user_input})
 
-    # Assistant call
-    response = openai.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": f"You are BlueJay, a persuasive sales assistant. Use this brain:\n{json.dumps(brain)}\nAlso use this template if helpful:\n{json.dumps(conversation_template)}"},
-            *thread_messages
-        ],
-        temperature=0.7
-    )
+    # Inject system context
+    system_prompt = {
+        "role": "system",
+        "content": f"You are BlueJay, a persuasive sales assistant. Use this brain:\n{json.dumps(brain)}\nAlso use this template:\n{json.dumps(template)}"
+    }
+    messages = [system_prompt] + thread_messages
 
-    reply = response.choices[0].message.content.strip()
-    thread_messages.append({"role": "assistant", "content": reply})
-
-    # Store updated conversation (30 min expiration)
-    redis_client.setex(redis_key(thread_id), 1800, json.dumps(thread_messages))
-
-    return jsonify({"reply": reply, "thread_id": thread_id})
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            temperature=0.7
+        )
+        reply = response.choices[0].message.content
+        thread_messages.append({"role": "assistant", "content": reply})
+        redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+        return jsonify({"reply": reply})
+    except Exception as e:
+        print("Chat error:", e)
+        return jsonify({"reply": "Something went wrong."}), 500
 
 @app.route("/")
-def ping():
+def home():
     return "BlueJay backend is live."
 
 if __name__ == "__main__":
