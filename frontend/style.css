@@ -4,7 +4,7 @@ body, html {
   font-family: system-ui, sans-serif;
   background: black;
   overflow: hidden;
-  -webkit-text-size-adjust: 100%; /* Prevent iOS input zoom */
+  touch-action: manipulation;
 }
 
 .background {
@@ -20,7 +20,7 @@ body, html {
 .top-bar {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 15px;
   z-index: 10;
 }
 
@@ -33,10 +33,10 @@ body, html {
 
 .dropdown {
   position: absolute;
-  top: 55px;
-  right: 10px;
+  top: 60px;
+  right: 15px;
   background: rgba(0, 0, 0, 0.9);
-  border: 1px solid #00baff;
+  border: 2px solid #00baff;
   border-radius: 8px;
   padding: 10px;
   display: flex;
@@ -45,7 +45,7 @@ body, html {
 }
 
 .dropdown a {
-  color: white;
+  color: #00baff;
   padding: 8px 12px;
   text-decoration: none;
   border-bottom: 1px solid #00baff;
@@ -69,18 +69,19 @@ body, html {
   width: 90%;
   height: 200px;
   background: rgba(255, 255, 255, 0.05);
-  border: 2px solid #0073e6;
+  border: 2px solid #00baff;
   border-radius: 12px;
   padding: 10px;
   backdrop-filter: blur(8px);
-  box-shadow: 0 0 8px #00baff;
+  box-shadow: 0 0 12px #00baff;
+  margin-top: 20px;
 }
 
 .chatlog {
-  max-height: 200px;
+  max-height: 130px;
   overflow-y: auto;
   color: white;
-  padding-bottom: 10px;
+  padding-bottom: 40px;
 }
 
 .user-msg {
@@ -98,7 +99,10 @@ body, html {
 .input-row {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
 }
 
 input#user-input {
@@ -117,7 +121,6 @@ button#send-btn {
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: bold;
-  font-size: 16px;
 }
 
 .typing-indicator {
