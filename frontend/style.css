@@ -76,30 +76,29 @@ body, html {
 .chatlog {
   max-height: 200px;
   overflow-y: auto;
-  color: white;
   padding-bottom: 10px;
 }
 
-.user-msg {
-  text-align: right;
+.user-msg, .bot-msg {
   margin: 5px;
-  display: inline-block;
-  background-color: #007acc; /* user blue */
-  color: white;
-  padding: 10px 14px;
+  padding: 10px;
   border-radius: 12px;
-  max-width: 75%;
+  color: white;
+  max-width: 80%;
+  display: inline-block;
+  clear: both;
+}
+
+.user-msg {
+  background-color: #0066cc;
+  float: right;
+  text-align: right;
 }
 
 .bot-msg {
+  background-color: #003366;
+  float: left;
   text-align: left;
-  margin: 5px;
-  display: inline-block;
-  background-color: #00baff; /* bluejay blue */
-  color: white;
-  padding: 10px 14px;
-  border-radius: 12px;
-  max-width: 75%;
 }
 
 .input-row {
@@ -115,7 +114,6 @@ input#user-input {
   border-radius: 8px;
   outline: none;
   background: white;
-  color: black;
 }
 
 button#send-btn {
