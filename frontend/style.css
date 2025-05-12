@@ -60,8 +60,6 @@ body, html {
 .chat-container {
   position: absolute;
   bottom: 420px;
-  margin-left: auto;
-  margin-right: auto;
   left: 5px;
   right: 5px;
   width: auto;
@@ -77,7 +75,6 @@ body, html {
 .chatlog {
   max-height: 140px;
   overflow-y: auto;
-  color: white;
   padding-bottom: 10px;
 }
 
@@ -85,7 +82,7 @@ body, html {
   text-align: right;
   margin: 5px 0;
   padding: 6px 12px;
-  background-color: #003f66;
+  background-color: #009dff; /* lighter blue */
   color: white;
   border-radius: 10px;
   display: inline-block;
@@ -96,7 +93,7 @@ body, html {
   text-align: left;
   margin: 5px 0;
   padding: 6px 12px;
-  background-color: #005fa3;
+  background-color: #005fa3; /* darker blue */
   color: white;
   border-radius: 10px;
   display: inline-block;
@@ -133,10 +130,14 @@ button#send-btn {
 }
 
 .typing-indicator {
-  display: flex;
+  display: none;
   justify-content: left;
   margin-left: 8px;
   margin-top: 5px;
+}
+
+.typing-indicator.active {
+  display: flex;
 }
 
 .bubble {
