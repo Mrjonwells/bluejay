@@ -10,17 +10,25 @@
 <body>
   <div class="background">
     <div class="top-bar">
+      <img src="logo.png" alt="Logo" class="logo" />
+      <span class="motto">Ask BlueJay. Save Big.</span>
       <img src="menu-icon.png" alt="Menu" class="menu-icon" id="hamburger" />
     </div>
+
     <div class="dropdown hidden" id="dropdown">
       <a href="faq.json" target="_blank">FAQs</a>
       <a href="https://calendly.com/askbluejay/30min" target="_blank">Connect</a>
       <a href="legal.html" target="_blank">Legal</a>
     </div>
+
     <div class="chat-container">
       <div id="chatlog" class="chatlog"></div>
       <div id="typing-indicator" class="typing-indicator hidden">
-        <div class="bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="bubble">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
       </div>
       <div class="input-row">
         <input id="user-input" type="text" placeholder="Ask BlueJay..." autocomplete="off" />
@@ -28,11 +36,13 @@
       </div>
     </div>
   </div>
+
   <div id="dim-overlay"></div>
   <div id="calendly-frame">
     <div><button onclick="closeCalendly()">×</button></div>
     <iframe id="calendly-iframe" src="" frameborder="0"></iframe>
   </div>
+
   <script src="chat.js"></script>
 </body>
 </html>
