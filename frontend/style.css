@@ -9,14 +9,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   padding: 10px 15px;
   border-bottom: 1px solid #444;
 }
 
 .hamburger {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   filter: drop-shadow(0 0 3px #00f0ff);
 }
@@ -54,4 +54,50 @@ body {
 
 .hidden {
   display: none;
+}
+
+/* Existing styles preserved */
+.chat-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #00f0ff;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  margin-top: 80px;
+}
+
+.input-row {
+  display: flex;
+  margin-top: 10px;
+}
+
+#user-input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+#send-btn {
+  padding: 10px;
+  background-color: #00f0ff;
+  color: #000;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.user-msg, .bot-msg {
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.user-msg {
+  background-color: #005577;
+  align-self: flex-end;
+}
+
+.bot-msg {
+  background-color: #222;
 }
