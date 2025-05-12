@@ -21,7 +21,7 @@ function sendMessage() {
 
   showTyping(true);
 
-  fetch("https://bluejay-api.onrender.com/chat", {
+  fetch("https://bluejay-mjpg.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
