@@ -71,19 +71,3 @@ function closeCalendly() {
   document.getElementById("dim-overlay").style.display = "none";
   document.getElementById("calendly-frame").style.display = "none";
 }
-
-// Dropdown menu logic
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger = document.querySelector(".hamburger");
-  const dropdown = document.querySelector(".dropdown");
-
-  hamburger.addEventListener("click", () => {
-    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-  });
-
-  window.addEventListener("click", (e) => {
-    if (!e.target.matches(".hamburger")) {
-      dropdown.style.display = "none";
-    }
-  });
-});
