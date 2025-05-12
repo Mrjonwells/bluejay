@@ -16,7 +16,7 @@ function sendMessage() {
   inputField.value = "";
   showTyping(true);
 
-  fetch("https://bluejay-mjpg.onrender.com/chat", {
+  fetch("https://bluejay-api.onrender.com/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
@@ -25,7 +25,6 @@ function sendMessage() {
     .then((data) => {
       showTyping(false);
       appendMessage("bot", data.reply || "Something went wrong.");
-
       if (data.reply && data.reply.includes("calendly.com")) {
         openCalendly();
       }
@@ -46,34 +45,29 @@ function appendMessage(sender, message) {
 }
 
 function showTyping(show) {
-  const typingIndicator = document.getElementById("typing-indicator");
-  typingIndicator.classList.toggle("hidden", !show);
-  if (show) {
-    document.getElementById("chatlog").scrollTop = document.getElementById("chatlog").scrollHeight;
-  }
+  document.getElementById("typing-indicator").classList.toggle("hidden", !show);
 }
 
-// Calendly popup logic
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.getElementById("hamburger");
+  const dropdown = document.getElementById("dropdown");
+  hamburger.addEventListener("click", () => {
+    dropdown.classList.toggle("hidden");
+  });
+
+  window.addEventListener("click", (e) => {
+    if (!e.target.matches("#hamburger")) dropdown.classList.add("hidden");
+  });
+});
+
 function openCalendly() {
   document.getElementById("dim-overlay").style.display = "block";
   document.getElementById("calendly-frame").style.display = "block";
-
-  window.addEventListener("message", function (e) {
-    if (e.origin.includes("calendly.com") && e.data.event === "calendly.event_scheduled") {
-      closeCalendly();
-    }
-  });
+  document.getElementById("calendly-iframe").src =
+    "https://calendly.com/askbluejay/30min?embed_domain=AskBlueJay.ai&embed_type=Inline";
 }
 
 function closeCalendly() {
   document.getElementById("dim-overlay").style.display = "none";
   document.getElementById("calendly-frame").style.display = "none";
 }
-
-// Dropdown menu toggle
-const menuToggle = document.getElementById("menu-toggle");
-const dropdown = document.getElementById("dropdown-menu");
-
-menuToggle.addEventListener("click", () => {
-  dropdown.style.display = dropdown.style.display === "flex" ? "none" : "flex";
-});
