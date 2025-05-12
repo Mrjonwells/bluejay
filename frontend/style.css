@@ -1,148 +1,93 @@
-body, html {
-  margin: 0;
-  padding: 0;
-  font-family: system-ui, sans-serif;
-  background: black;
-  overflow: hidden;
-}
+import os
+import json
+import redis
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from dotenv import load_dotenv
+from openai import OpenAI
+from waitress import serve
+import uuid
 
-.background {
-  background-image: url("chat_card.png");
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  z-index: -1;
-}
+# Load environment
+load_dotenv()
 
-.top-bar {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  z-index: 10;
-}
+# Initialize app
+app = Flask(__name__)
+CORS(app)
 
-.menu-icon {
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  filter: drop-shadow(0 0 4px #00baff);
-}
+# Paths
+base_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(base_dir, "config", "bluejay_config.json")
+template_path = os.path.join(base_dir, "config", "conversation_template.json")
 
-.dropdown {
-  position: absolute;
-  top: 60px;
-  right: 15px;
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid #00baff;
-  border-radius: 8px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  z-index: 11;
-}
+# Load brain
+with open(config_path, "r") as f:
+    brain = json.load(f)
 
-.dropdown a {
-  color: white;
-  padding: 8px 12px;
-  text-decoration: none;
-  border-bottom: 1px solid #00baff;
-}
+# Load template
+try:
+    with open(template_path, "r") as tf:
+        template = json.load(tf)
+except:
+    template = {}
 
-.dropdown a:last-child {
-  border-bottom: none;
-}
+# Redis setup
+redis_url = os.getenv("REDIS_URL")
+redis_client = redis.from_url(redis_url)
 
-.hidden {
-  display: none;
-}
+# OpenAI setup
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+assistant_id = os.getenv("OPENAI_ASSISTANT_ID", "asst_bLMfZI9fO9E5jltHY8KDq9ZT")
 
-.chat-container {
-  position: absolute;
-  bottom: 420px;
-  margin-left: auto;
-  margin-right: auto;
-  left: 0;
-  right: 0;
-  width: 90%;
-  height: 200px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid #00baff;
-  border-radius: 12px;
-  padding: 10px;
-  backdrop-filter: blur(8px);
-}
+# Helper
+def redis_key(thread_id):
+    return f"thread:{thread_id}"
 
-.chatlog {
-  max-height: 200px;
-  overflow-y: auto;
-  color: white;
-  padding-bottom: 10px;
-}
+# Generate or reuse thread ID
+def get_thread_id(request):
+    thread_id = request.json.get("thread_id")
+    if thread_id:
+        return thread_id
+    session_id = request.remote_addr or str(uuid.uuid4())
+    return f"session:{session_id}"
 
-.user-msg {
-  text-align: right;
-  margin: 5px;
-  color: #00baff;
-}
+# Chat route
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_input = request.json.get("message", "")
+    thread_id = get_thread_id(request)
+    key = redis_key(thread_id)
 
-.bot-msg {
-  text-align: left;
-  margin: 5px;
-  color: white;
-}
+    # Load memory
+    history = redis_client.get(key)
+    thread_messages = json.loads(history) if history else []
 
-.input-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
+    # Append user message
+    thread_messages.append({"role": "user", "content": user_input})
 
-input#user-input {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  outline: none;
-}
+    # System prompt
+    system = {
+        "role": "system",
+        "content": f"You are BlueJay, a persuasive assistant. Use this brain:\n{json.dumps(brain)}\nUse this flow:\n{json.dumps(template)}"
+    }
 
-button#send-btn {
-  background: #00baff;
-  border: none;
-  color: black;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: bold;
-}
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[system] + thread_messages,
+            temperature=0.7
+        )
+        reply = response.choices[0].message.content
+        thread_messages.append({"role": "assistant", "content": reply})
+        redis_client.setex(key, 1800, json.dumps(thread_messages))
+        return jsonify({"reply": reply, "thread_id": thread_id})
+    except Exception as e:
+        print("Chat error:", e)
+        return jsonify({"reply": "Something went wrong."}), 500
 
-.typing-indicator {
-  display: flex;
-  justify-content: left;
-  margin-left: 8px;
-}
+@app.route("/")
+def home():
+    return "BlueJay backend is live."
 
-.bubble {
-  display: flex;
-  gap: 4px;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  background: #00baff;
-  border-radius: 50%;
-  animation: bounce 1s infinite ease-in-out;
-}
-
-.dot:nth-child(2) { animation-delay: 0.2s; }
-.dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
+if __name__ == "__main__":
+    serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
