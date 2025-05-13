@@ -16,6 +16,13 @@ body, html {
   position: relative;
 }
 
+/* Add invisible spacer after chat to push lower content down */
+.background::after {
+  content: "";
+  display: block;
+  height: 40px; /* Adjust this as needed */
+}
+
 .menu-icon {
   position: absolute;
   top: 20px;
