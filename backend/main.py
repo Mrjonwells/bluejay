@@ -95,8 +95,16 @@ def chat():
         redis_client.delete(f"{memory_key}:submitted")
         return jsonify({"reply": "Thanks for chatting with BlueJay. Your session is now closed."})
 
+    # Load memory
     history = redis_client.get(memory_key)
     thread_messages = json.loads(history) if history else []
+
+    # Intro message logic: only if fresh thread + not already submitted
+    if not thread_messages and not redis_client.get(f"{memory_key}:submitted"):
+        reply = "Hi, I’m BlueJay, your merchant AI expert. What’s your name?"
+        thread_messages.append({"role": "assistant", "content": reply})
+        redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+        return jsonify({"reply": reply})
 
     # Append user input
     thread_messages.append({"role": "user", "content": user_input})
