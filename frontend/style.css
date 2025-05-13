@@ -16,12 +16,13 @@ html, body {
   height: 100vh;
   width: 100vw;
   position: relative;
+  overflow: hidden;
 }
 
 .background::after {
   content: "";
   display: block;
-  height: 40px;
+  height: 0;
 }
 
 .menu-icon {
@@ -60,77 +61,3 @@ html, body {
 }
 
 .hidden {
-  display: none;
-}
-
-.chat-container {
-  position: absolute;
-  top: 200px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  height: 200px;
-  background: rgba(0, 0, 0, 0.65);
-  border: 1px solid #00baff;
-  border-radius: 12px;
-  padding: 10px;
-  backdrop-filter: blur(8px);
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.chatlog {
-  flex: 1;
-  overflow-y: auto;
-  color: white;
-  padding-right: 5px;
-}
-
-.bot-msg {
-  text-align: left;
-  margin: 5px 0;
-  padding: 6px 12px;
-  background-color: #004e8a;
-  color: white;
-  border-radius: 10px;
-  display: block;
-  width: fit-content;
-}
-
-.user-msg {
-  text-align: right;
-  margin: 5px 0;
-  padding: 6px 12px;
-  background-color: #00baff;
-  color: white;
-  border-radius: 10px;
-  display: block;
-  width: fit-content;
-  margin-left: auto;
-}
-
-.input-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-input#user-input {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  outline: none;
-  background: white;
-}
-
-button#send-btn {
-  background: #00baff;
-  border: none;
-  color: black;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: bold;
-}
