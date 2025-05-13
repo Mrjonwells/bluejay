@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     typingIndicator.classList.remove("hidden");
 
     try {
-      const response = await fetch("/chat", {
+      const response = await fetch("https://bluejay-mjpg.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message })
