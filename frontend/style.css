@@ -16,7 +16,6 @@ body, html {
   position: relative;
 }
 
-/* Add invisible spacer after chat to push lower content down */
 .background::after {
   content: "";
   display: block;
@@ -62,6 +61,16 @@ body, html {
   display: none;
 }
 
+.label-tag {
+  position: absolute;
+  top: 185px;
+  left: 5%;
+  font-size: 14px;
+  color: #00baff;
+  font-weight: bold;
+  z-index: 6;
+}
+
 .chat-container {
   position: absolute;
   top: 200px;
@@ -94,8 +103,8 @@ body, html {
   background-color: #004e8a;
   color: white;
   border-radius: 10px;
-  display: inline-block;
-  max-width: 80%;
+  display: block;
+  width: fit-content;
 }
 
 .user-msg {
@@ -105,12 +114,14 @@ body, html {
   background-color: #00baff;
   color: white;
   border-radius: 10px;
-  display: inline-block;
-  max-width: 80%;
+  display: block;
+  width: fit-content;
+  margin-left: auto;
 }
 
 .input-row {
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
 }
 
