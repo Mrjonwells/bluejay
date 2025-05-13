@@ -37,6 +37,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Auto-trigger greeting when page loads
+  fetch("https://bluejay-mjpg.onrender.com/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: "" })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.reply) appendMessage(data.reply, "bot");
+  })
+  .catch(() => {
+    appendMessage("Unable to connect to BlueJay.", "bot");
+  });
+
   sendBtn.addEventListener("click", sendMessage);
   userInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendMessage();
