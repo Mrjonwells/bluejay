@@ -1,11 +1,26 @@
 {
   "introduction": {
     "assistant": "Hi, I’m BlueJay — what’s your first name?",
-    "capture": "name",
+    "capture": "first_name",
+    "next": "capture_business"
+  },
+  "capture_business": {
+    "assistant": "Great — what’s your business name?",
+    "capture": "business_name",
+    "next": "capture_phone"
+  },
+  "capture_phone": {
+    "assistant": "What’s the best phone number to reach you at?",
+    "capture": "phone",
+    "next": "capture_email"
+  },
+  "capture_email": {
+    "assistant": "And what’s a good email address to send info to?",
+    "capture": "email",
     "next": "greeting"
   },
   "greeting": {
-    "response_template": "Nice to meet you, {name}. How can I help you with your merchant processing?",
+    "response_template": "Nice to meet you, {first_name}. How can I help you with your merchant processing?",
     "paths": {
       "new_business": [
         "I'm starting a new business",
