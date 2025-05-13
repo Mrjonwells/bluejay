@@ -20,7 +20,7 @@ body, html {
 .background::after {
   content: "";
   display: block;
-  height: 40px; /* Adjust this as needed */
+  height: 40px;
 }
 
 .menu-icon {
@@ -75,13 +75,16 @@ body, html {
   padding: 10px;
   backdrop-filter: blur(8px);
   z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .chatlog {
-  max-height: 140px;
+  flex: 1;
   overflow-y: auto;
   color: white;
-  padding-bottom: 8px;
+  padding-right: 5px;
 }
 
 .bot-msg {
@@ -109,7 +112,6 @@ body, html {
 .input-row {
   display: flex;
   gap: 10px;
-  margin-top: 6px;
 }
 
 input#user-input {
@@ -133,7 +135,7 @@ button#send-btn {
 .typing-indicator {
   display: flex;
   justify-content: left;
-  margin-left: 8px;
+  margin: 4px 0 8px 8px;
 }
 
 .bubble {
