@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatlog = document.getElementById("chatlog");
   const typingIndicator = document.getElementById("typing");
 
+  let typingTimeout = null;
+
   function appendMessage(text, sender) {
     const msg = document.createElement("div");
     msg.className = sender === "user" ? "user-msg" : "bot-msg";
@@ -18,10 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     appendMessage(message, "user");
     userInput.value = "";
-    typingIndicator.classList.remove("hidden");
 
-    // Failsafe auto-hide
-    const fallback = setTimeout(() => typingIndicator.classList.add("hidden"), 15000);
+    typingIndicator.classList.remove("hidden");
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => typingIndicator.classList.add("hidden"), 15000);
 
     try {
       const response = await fetch("https://bluejay-mjpg.onrender.com/chat", {
@@ -32,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
       typingIndicator.classList.add("hidden");
-      clearTimeout(fallback);
+      clearTimeout(typingTimeout);
 
       if (data && data.reply) {
         appendMessage(data.reply, "bot");
@@ -41,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (err) {
       typingIndicator.classList.add("hidden");
-      clearTimeout(fallback);
+      clearTimeout(typingTimeout);
       appendMessage("Error connecting to server.", "bot");
     }
   }
