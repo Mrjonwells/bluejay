@@ -61,15 +61,6 @@ body, html {
   display: none;
 }
 
-.label-tag {
-  position: absolute;
-  top: 185px;
-  left: 5%;
-  font-size: 14px;
-  color: #00baff;
-  font-weight: bold;
-  z-index: 6;
-}
 
 .chat-container {
   position: absolute;
