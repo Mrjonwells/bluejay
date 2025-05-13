@@ -20,6 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
     userInput.value = "";
     typingIndicator.classList.remove("hidden");
 
+    // Failsafe auto-hide
+    const fallback = setTimeout(() => typingIndicator.classList.add("hidden"), 15000);
+
     try {
       const response = await fetch("https://bluejay-mjpg.onrender.com/chat", {
         method: "POST",
@@ -29,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
       typingIndicator.classList.add("hidden");
+      clearTimeout(fallback);
 
       if (data && data.reply) {
         appendMessage(data.reply, "bot");
@@ -37,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (err) {
       typingIndicator.classList.add("hidden");
+      clearTimeout(fallback);
       appendMessage("Error connecting to server.", "bot");
     }
   }
