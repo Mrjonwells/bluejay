@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const typingIndicator = document.getElementById("typing");
 
   let typingTimeout = null;
+  typingIndicator.classList.add("hidden"); // ensure hidden on load
 
   function appendMessage(text, sender) {
     const msg = document.createElement("div");
@@ -22,8 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
     userInput.value = "";
 
     typingIndicator.classList.remove("hidden");
-    if (typingTimeout) clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => typingIndicator.classList.add("hidden"), 15000);
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      typingIndicator.classList.add("hidden");
+    }, 15000); // fallback in case of no response
 
     try {
       const response = await fetch("https://bluejay-mjpg.onrender.com/chat", {
