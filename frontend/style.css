@@ -8,7 +8,7 @@ body, html {
 
 .background {
   background-image: url("chat_card.png");
-  background-size: 96% 99%;
+  background-size: 96% 89%;
   background-repeat: no-repeat;
   background-position: top center;
   height: 100vh;
@@ -64,7 +64,7 @@ body, html {
 
 .chat-container {
   position: absolute;
-  top: 280px;
+  top: 240px;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
