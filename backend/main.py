@@ -89,6 +89,12 @@ def chat():
     thread_id = data.get("thread_id", "default")
     memory_key = redis_key(thread_id)
 
+    # Handle end chat command
+    if user_input.strip().lower() == "end chat":
+        redis_client.delete(memory_key)
+        redis_client.delete(f"{memory_key}:submitted")
+        return jsonify({"reply": "Thanks for chatting with BlueJay. Your session is now closed."})
+
     history = redis_client.get(memory_key)
     thread_messages = json.loads(history) if history else []
 
