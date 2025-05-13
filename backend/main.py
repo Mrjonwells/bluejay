@@ -66,6 +66,7 @@ def send_to_hubspot(name, phone, email, notes):
             {"name": "firstname", "value": name},
             {"name": "phone", "value": phone},
             {"name": "email", "value": email},
+            {"name": "notes", "value": notes}
         ],
         "context": {
             "pageUri": "https://askbluejay.ai",
@@ -99,17 +100,17 @@ def chat():
     history = redis_client.get(memory_key)
     thread_messages = json.loads(history) if history else []
 
-    # Intro message logic: only if fresh thread + not already submitted
+    # Greet new users
     if not thread_messages:
-    reply = "Hi, I’m BlueJay, your merchant AI expert. What’s your name?"
-    thread_messages.append({"role": "assistant", "content": reply})
-    redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
-    return jsonify({"reply": reply})
-elif len(thread_messages) == 1 and thread_messages[0]["role"] == "assistant" and "welcome back" not in thread_messages[0]["content"].lower():
-    reply = "Welcome back — ready to pick up where we left off?"
-    thread_messages.append({"role": "assistant", "content": reply})
-    redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
-    return jsonify({"reply": reply})
+        reply = "Hi, I’m BlueJay, your merchant AI expert. What’s your name?"
+        thread_messages.append({"role": "assistant", "content": reply})
+        redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+        return jsonify({"reply": reply})
+    elif len(thread_messages) == 1 and thread_messages[0]["role"] == "assistant" and "welcome back" not in thread_messages[0]["content"].lower():
+        reply = "Welcome back — ready to pick up where we left off?"
+        thread_messages.append({"role": "assistant", "content": reply})
+        redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+        return jsonify({"reply": reply})
 
     # Append user input
     thread_messages.append({"role": "user", "content": user_input})
