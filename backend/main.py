@@ -100,11 +100,16 @@ def chat():
     thread_messages = json.loads(history) if history else []
 
     # Intro message logic: only if fresh thread + not already submitted
-    if not thread_messages and not redis_client.get(f"{memory_key}:submitted"):
-        reply = "Hi, I’m BlueJay, your merchant AI expert. What’s your name?"
-        thread_messages.append({"role": "assistant", "content": reply})
-        redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
-        return jsonify({"reply": reply})
+    if not thread_messages:
+    reply = "Hi, I’m BlueJay, your merchant AI expert. What’s your name?"
+    thread_messages.append({"role": "assistant", "content": reply})
+    redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+    return jsonify({"reply": reply})
+elif len(thread_messages) == 1 and thread_messages[0]["role"] == "assistant" and "welcome back" not in thread_messages[0]["content"].lower():
+    reply = "Welcome back — ready to pick up where we left off?"
+    thread_messages.append({"role": "assistant", "content": reply})
+    redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+    return jsonify({"reply": reply})
 
     # Append user input
     thread_messages.append({"role": "user", "content": user_input})
