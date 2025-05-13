@@ -13,6 +13,14 @@
     "Want to grab a quick time to chat?",
     "Book a call here: https://calendly.com/askbluejay/30min"
   ],
+  "early_capture_fields": ["first_name", "last_name", "business_name", "phone", "email"],
+  "field_prompt_templates": {
+    "first_name": "What’s your first name?",
+    "last_name": "And your last name?",
+    "business_name": "What’s your business name?",
+    "phone": "What’s the best phone number to reach you at?",
+    "email": "And what’s a good email address to send info to?"
+  },
   "objections": {
     "already have a system": "That’s common — want to compare savings anyway?",
     "not interested": "All good — curious if it’s the rates or something else?",
