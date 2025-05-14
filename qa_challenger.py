@@ -4,7 +4,7 @@ from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-INPUT_LOG = "interaction_log.jsonl"
+INPUT_LOG = "bluejay/backend/logs/interaction_log.jsonl"
 OUTPUT_RECS = "brain_update_recommendations.json"
 
 def load_interactions(path):
