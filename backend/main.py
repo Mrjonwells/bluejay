@@ -20,6 +20,7 @@ CORS(app)
 base_dir = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(base_dir, "config", "bluejay_config.json")
 template_path = os.path.join(base_dir, "config", "conversation_template.json")
+objection_log_path = os.path.join(base_dir, "backend", "logs", "objection_log.jsonl")
 
 # Load brain + template
 with open(config_path, "r") as f:
@@ -41,7 +42,11 @@ assistant_id = os.getenv("OPENAI_ASSISTANT_ID", "asst_bLMfZI9fO9E5jltHY8KDq9ZT")
 # HubSpot form
 HUBSPOT_FORM_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
-# Key builder
+# Objection tracking
+OBJECTION_KEYWORDS = [
+    "not interested", "already have", "too expensive", "let me think", "maybe later", "busy right now"
+]
+
 def redis_key(thread_id): return f"thread:{thread_id}"
 
 def extract_fields(messages):
@@ -114,6 +119,14 @@ def chat():
 
     # Append user input
     thread_messages.append({"role": "user", "content": user_input})
+
+    # Objection logger
+    if any(keyword in user_input.lower() for keyword in OBJECTION_KEYWORDS):
+        try:
+            with open(objection_log_path, "a") as f:
+                f.write(json.dumps({"thread_id": thread_id, "messages": thread_messages}) + "\n")
+        except Exception as e:
+            print(f"Objection log error: {e}")
 
     # System prompt
     system_prompt = {
