@@ -7,6 +7,11 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 INPUT_LOG = "bluejay/backend/logs/interaction_log.jsonl"
 OUTPUT_RECS = "brain_update_recommendations.json"
 
+# Safe fallback if log is missing
+if not os.path.exists(INPUT_LOG):
+    print(f"Log file not found at {INPUT_LOG}. Skipping QA pass.")
+    exit(0)
+
 def load_interactions(path):
     with open(path, "r") as f:
         return [json.loads(line) for line in f]
@@ -18,8 +23,14 @@ def generate_feedback(thread_id, assistant_msgs):
     recent = assistant_msgs[-3:] if len(assistant_msgs) >= 3 else assistant_msgs
 
     prompt = [
-        {"role": "system", "content": "You are a senior sales copy editor reviewing AI assistant conversations. Find vague, repetitive, or low-conversion responses. Rewrite them to be shorter, sharper, and more persuasive — like a top human rep closing a sale."},
-        {"role": "user", "content": "\n\n".join(recent)}
+        {
+            "role": "system",
+            "content": "You are a senior sales copy editor reviewing AI assistant conversations. Find vague, repetitive, or low-conversion responses. Rewrite them to be shorter, sharper, and more persuasive — like a top human rep closing a sale."
+        },
+        {
+            "role": "user",
+            "content": "\n\n".join(recent)
+        }
     ]
 
     try:
