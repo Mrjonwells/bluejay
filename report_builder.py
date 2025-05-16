@@ -1,66 +1,80 @@
 import os
 import json
-import requests
+import pytz
 from datetime import datetime
-from dotenv import load_dotenv
+import requests
 
-load_dotenv()
-
-# Mailgun setup
+# Load env variables
 MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
 MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
-TO_EMAIL = os.getenv("REPORT_TO_EMAIL", "you@yourdomain.com")
-FROM_EMAIL = f"reports@{MAILGUN_DOMAIN}"
+REPORT_RECIPIENT = os.getenv("REPORT_RECIPIENT", "jonathanwells@gmail.com")
 
-# Paths
+# Log path
 LOG_PATH = "backend/logs/interaction_log.jsonl"
-OBJECTION_LOG = "backend/logs/objection_log.jsonl"
-RECS_PATH = "brain_update_recommendations.json"
 
-def count_lines(path):
-    try:
-        with open(path, "r") as f:
-            return sum(1 for _ in f)
-    except:
-        return 0
+def load_logs(path):
+    if not os.path.exists(path):
+        return []
+    with open(path, "r") as f:
+        return [json.loads(line.strip()) for line in f if line.strip()]
 
-def generate_report():
-    now = datetime.utcnow().strftime("%B %d, %Y %H:%M UTC")
+def summarize(logs):
+    total_conversations = len(logs)
+    total_messages = sum(len(entry.get("messages", [])) for entry in logs)
+    avg_messages = round(total_messages / total_conversations, 2) if total_conversations else 0
 
-    interactions = count_lines(LOG_PATH)
-    objections = count_lines(OBJECTION_LOG)
-    recs = count_lines(RECS_PATH)
+    # Placeholder for future investor-facing metrics
+    estimated_closings = round(total_conversations * 0.15)  # 15% conversion est.
+    avg_response_time = "N/A"  # future logic can calculate this
 
-    report = f"""BlueJay Daily Report — {now}
+    return {
+        "conversations": total_conversations,
+        "messages": total_messages,
+        "average_messages": avg_messages,
+        "estimated_closings": estimated_closings,
+        "avg_response_time": avg_response_time
+    }
 
-Interactions Today:      {interactions}
-Objections Logged:       {objections}
-AI Improvements Suggested: {recs}
+def format_report(summary, report_time):
+    return f"""
+BlueJay Daily Report — {report_time}
 
-Notes:
-- Logs pulled from Redis thread memory and objection tracker.
-- Improvements written to brain_update_recommendations.json
-- New suggestions will be trained hourly.
+Total Conversations: {summary['conversations']}
+Total Messages Exchanged: {summary['messages']}
+Avg. Messages per Conversation: {summary['average_messages']}
+Estimated Closings (15%): {summary['estimated_closings']}
+Avg. Response Time: {summary['avg_response_time']}
 
-Keep flying,
-BlueJay Auto Systems
+Investor Note: BlueJay is actively scaling engagement. These numbers reflect real merchant conversations in motion.
+
+– BlueJay
 """
-    return report
 
 def send_email(subject, body):
     return requests.post(
         f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
         auth=("api", MAILGUN_API_KEY),
         data={
-            "from": f"BlueJay Reports <{FROM_EMAIL}>",
-            "to": [TO_EMAIL],
+            "from": f"BlueJay Reports <reports@{MAILGUN_DOMAIN}>",
+            "to": REPORT_RECIPIENT,
             "subject": subject,
             "text": body
         }
     )
 
+def run_report():
+    logs = load_logs(LOG_PATH)
+    summary = summarize(logs)
+
+    # Format time for Los Angeles
+    la_time = datetime.now(pytz.timezone("America/Los_Angeles"))
+    report_time = la_time.strftime("%B %d, %Y — %I:%M %p %Z")
+
+    subject = f"BlueJay Daily Report – {report_time}"
+    body = format_report(summary, report_time)
+
+    response = send_email(subject, body)
+    print(f"Email sent: {response.status_code}")
+
 if __name__ == "__main__":
-    report = generate_report()
-    res = send_email("BlueJay Daily Report", report)
-    print("Email sent:", res.status_code)
-    print(res.text)
+    run_report()
