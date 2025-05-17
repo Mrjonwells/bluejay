@@ -5,15 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AskBlueJay Blog</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: system-ui, sans-serif;
+      padding: 40px;
+    }
+    h1 {
+      color: #00baff;
+    }
+    .post-list {
+      margin-top: 30px;
+    }
+    .post-list a {
+      display: block;
+      color: #00baff;
+      margin: 10px 0;
+      text-decoration: none;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
+    }
+  </style>
 </head>
 <body>
-  <div class="blog-index">
-    <h1>AskBlueJay Blog</h1>
-    <p>Helpful posts for small business owners looking to save on payment processing.</p>
-    <ul>
-      <!-- Auto-injected blog links go here -->
-      <li><a href="blogs/2025-05-16-merchant-processing.html">Merchant Processing: What Small Businesses Need to Know</a></li>
-    </ul>
+  <h1>AskBlueJay Blog</h1>
+  <p>Insights on saving money, merchant processing, and modern tools for small businesses.</p>
+  <div class="post-list" id="post-list">
+    <!-- Blog links auto-injected here -->
   </div>
+
+  <script>
+    fetch("/blogs")
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const links = [...doc.querySelectorAll("a")]
+          .filter(link => link.href.endsWith(".html"));
+
+        const container = document.getElementById("post-list");
+        links.forEach(link => {
+          const postLink = document.createElement("a");
+          postLink.href = "/blogs/" + link.textContent;
+          postLink.textContent = link.textContent.replace(/-/g, " ").replace(".html", "");
+          container.appendChild(postLink);
+        });
+      })
+      .catch(err => {
+        document.getElementById("post-list").innerText = "No blog posts found.";
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
