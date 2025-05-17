@@ -6,9 +6,7 @@ from openai import OpenAI
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 SEO_PATH = "backend/seo/seo_config.json"
-BLOG_DIR = "frontend/blogs"
-SITEMAP_PATH = "frontend/sitemap.xml"
-BASE_URL = "https://askbluejay.ai/blogs"
+BLOG_OUTPUT_DIR = "frontend/blogs"
 
 def load_keywords():
     with open(SEO_PATH, "r") as f:
@@ -29,11 +27,12 @@ Include a short intro, body, and CTA at the end.
     return response.choices[0].message.content.strip()
 
 def save_post(title, content):
-    os.makedirs(BLOG_DIR, exist_ok=True)
     safe_title = title.lower().replace(" ", "-").replace("/", "-")
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"{date_str}-{safe_title}.html"
-    filepath = os.path.join(BLOG_DIR, filename)
+    filepath = os.path.join(BLOG_OUTPUT_DIR, filename)
+
+    formatted_content = content.replace('\n', '<br><br>')
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -48,35 +47,16 @@ def save_post(title, content):
     <h1>{title}</h1>
     <p><em>Published {date_str}</em></p>
     <div class="content">
-      {content.replace('\n', '<br><br>')}
+      {formatted_content}
     </div>
   </div>
 </body>
 </html>"""
+
+    os.makedirs(BLOG_OUTPUT_DIR, exist_ok=True)
     with open(filepath, "w") as f:
         f.write(html)
     print(f"Blog saved: {filepath}")
-    return filename
-
-def update_sitemap():
-    entries = []
-    for file in os.listdir(BLOG_DIR):
-        if file.endswith(".html"):
-            url = f"{BASE_URL}/{file}"
-            entries.append(f"""  <url>
-    <loc>{url}</loc>
-    <lastmod>{datetime.utcnow().date()}</lastmod>
-    <priority>0.5</priority>
-  </url>""")
-
-    full_sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{chr(10).join(entries)}
-</urlset>"""
-
-    with open(SITEMAP_PATH, "w") as f:
-        f.write(full_sitemap)
-    print(f"Sitemap updated with {len(entries)} blog entries.")
 
 def run():
     keywords = load_keywords()
@@ -87,7 +67,6 @@ def run():
     topic = keywords[0]
     article = generate_article(topic)
     save_post(topic.title(), article)
-    update_sitemap()
 
 if __name__ == "__main__":
     run()
