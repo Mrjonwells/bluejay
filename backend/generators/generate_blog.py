@@ -26,14 +26,32 @@ Include a short intro, body, and CTA at the end.
     )
     return response.choices[0].message.content.strip()
 
+def update_sitemap(new_url):
+    sitemap_path = "sitemap.xml"
+    if not os.path.exists(sitemap_path):
+        print("No sitemap.xml found.")
+        return
+
+    with open(sitemap_path, "r") as f:
+        lines = f.readlines()
+
+    new_entry = f"""  <url>\n    <loc>{new_url}</loc>\n    <priority>0.5</priority>\n  </url>\n"""
+    for i, line in enumerate(lines):
+        if "</urlset>" in line:
+            lines.insert(i, new_entry)
+            break
+
+    with open(sitemap_path, "w") as f:
+        f.writelines(lines)
+
+    print(f"Sitemap updated with: {new_url}")
+
 def save_post(title, content):
-    # Sanitize filename
     safe_title = title.lower().replace(" ", "-").replace("/", "-")
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"{date_str}-{safe_title}.html"
     filepath = os.path.join(BLOG_OUTPUT_DIR, filename)
 
-    # Basic HTML wrapper
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,13 +75,17 @@ def save_post(title, content):
         f.write(html)
     print(f"Blog saved: {filepath}")
 
+    # Add to sitemap
+    full_url = f"https://askbluejay.ai/blogs/{filename}"
+    update_sitemap(full_url)
+
 def run():
     keywords = load_keywords()
     if not keywords:
         print("No keywords found.")
         return
 
-    topic = keywords[0]  # Could randomize or rotate
+    topic = keywords[0]  # Rotate or randomize as needed
     article = generate_article(topic)
     save_post(topic.title(), article)
 
