@@ -32,26 +32,30 @@ def save_post(title, content):
     filename = f"{date_str}-{safe_title}.html"
     filepath = os.path.join(BLOG_OUTPUT_DIR, filename)
 
-    formatted_content = content.replace('\n', '<br><br>')
+    formatted_content = content.replace("\n", "<br><br>")
 
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{title} | AskBlueJay Blog</title>
-  <meta name="description" content="{title} - powered by AskBlueJay.ai">
-  <link rel="stylesheet" href="../style.css">
-</head>
-<body>
-  <div class="blog-post">
-    <h1>{title}</h1>
-    <p><em>Published {date_str}</em></p>
-    <div class="content">
-      {formatted_content}
-    </div>
-  </div>
-</body>
-</html>"""
+    html_parts = [
+        "<!DOCTYPE html>",
+        "<html lang=\"en\">",
+        "<head>",
+        "  <meta charset=\"UTF-8\">",
+        f"  <title>{title} | AskBlueJay Blog</title>",
+        f"  <meta name=\"description\" content=\"{title} - powered by AskBlueJay.ai\">",
+        "  <link rel=\"stylesheet\" href=\"../style.css\">",
+        "</head>",
+        "<body>",
+        "  <div class=\"blog-post\">",
+        f"    <h1>{title}</h1>",
+        f"    <p><em>Published {date_str}</em></p>",
+        "    <div class=\"content\">",
+        f"      {formatted_content}",
+        "    </div>",
+        "  </div>",
+        "</body>",
+        "</html>"
+    ]
+
+    html = "\n".join(html_parts)
 
     os.makedirs(BLOG_OUTPUT_DIR, exist_ok=True)
     with open(filepath, "w") as f:
