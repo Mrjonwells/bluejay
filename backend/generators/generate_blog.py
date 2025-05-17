@@ -59,6 +59,7 @@ def save_post(title, content):
     os.makedirs(BLOG_OUTPUT_DIR, exist_ok=True)
     with open(filepath, "w") as f:
         f.write("\n".join(html_parts))
+
     print(f"Blog saved: {filepath}")
     return filename, title
 
@@ -68,20 +69,22 @@ def update_blog_index(filename, title):
 
     if not os.path.exists(BLOG_INDEX_PATH):
         with open(BLOG_INDEX_PATH, "w") as f:
-            f.write(f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>AskBlueJay Blog</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <h1>AskBlueJay Blog</h1>
-  <ul>
-    {new_entry}
-  </ul>
-</body>
-</html>""")
+            f.write("\n".join([
+                "<!DOCTYPE html>",
+                "<html lang=\"en\">",
+                "<head>",
+                "  <meta charset=\"UTF-8\">",
+                "  <title>AskBlueJay Blog</title>",
+                "  <link rel=\"stylesheet\" href=\"style.css\">",
+                "</head>",
+                "<body>",
+                "  <h1>AskBlueJay Blog</h1>",
+                "  <ul>",
+                f"    {new_entry}",
+                "  </ul>",
+                "</body>",
+                "</html>"
+            ]))
     else:
         with open(BLOG_INDEX_PATH, "r") as f:
             lines = f.readlines()
