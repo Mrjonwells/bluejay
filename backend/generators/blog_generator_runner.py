@@ -7,6 +7,7 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 SEO_PATH = "backend/seo/seo_config.json"
 BLOG_OUTPUT_DIR = "frontend/blogs"
+BLOG_INDEX_PATH = "frontend/blog.html"
 
 def load_keywords():
     with open(SEO_PATH, "r") as f:
@@ -55,12 +56,45 @@ def save_post(title, content):
         "</html>"
     ]
 
-    html = "\n".join(html_parts)
-
     os.makedirs(BLOG_OUTPUT_DIR, exist_ok=True)
     with open(filepath, "w") as f:
-        f.write(html)
+        f.write("\n".join(html_parts))
     print(f"Blog saved: {filepath}")
+    return filename, title
+
+def update_blog_index(filename, title):
+    rel_path = f"blogs/{filename}"
+    new_entry = f'<li><a href="{rel_path}" target="_blank">{title}</a></li>\n'
+
+    if not os.path.exists(BLOG_INDEX_PATH):
+        with open(BLOG_INDEX_PATH, "w") as f:
+            f.write(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AskBlueJay Blog</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>AskBlueJay Blog</h1>
+  <ul>
+    {new_entry}
+  </ul>
+</body>
+</html>""")
+    else:
+        with open(BLOG_INDEX_PATH, "r") as f:
+            lines = f.readlines()
+
+        for i, line in enumerate(lines):
+            if "<ul>" in line:
+                lines.insert(i + 1, new_entry)
+                break
+
+        with open(BLOG_INDEX_PATH, "w") as f:
+            f.writelines(lines)
+
+    print(f"Updated blog index with: {title}")
 
 def run():
     keywords = load_keywords()
@@ -70,7 +104,8 @@ def run():
 
     topic = keywords[0]
     article = generate_article(topic)
-    save_post(topic.title(), article)
+    filename, title = save_post(topic.title(), article)
+    update_blog_index(filename, title)
 
 if __name__ == "__main__":
     run()
