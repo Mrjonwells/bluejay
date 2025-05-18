@@ -5,9 +5,11 @@ from openai import OpenAI
 
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-SEO_PATH = "../seo/seo_config.json"
-BLOG_OUTPUT_DIR = "../../frontend/blogs"
-BLOG_INDEX = "../../frontend/blog.html"
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+SEO_PATH = os.path.join(ROOT_DIR, "backend/seo/seo_config.json")
+BLOG_OUTPUT_DIR = os.path.join(ROOT_DIR, "frontend/blogs")
+BLOG_INDEX = os.path.join(ROOT_DIR, "frontend/blog.html")
+SYNC_SCRIPTS_DIR = ROOT_DIR
 
 def load_keywords():
     with open(SEO_PATH, "r") as f:
@@ -98,7 +100,7 @@ def run():
     update_blog_index([(filename, title, content, date_str)])
     print(f"Updated blog index with: {title}")
 
-    os.system("cd ../../ && python3 dev_sync_seo.py && bash sync_and_push.sh")
+    os.system(f"python3 {SYNC_SCRIPTS_DIR}/dev_sync_seo.py && bash {SYNC_SCRIPTS_DIR}/sync_and_push.sh")
 
 if __name__ == "__main__":
     run()
