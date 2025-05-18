@@ -15,4 +15,4 @@ git config --global user.email "info@askbluejay.ai"
 git commit -m "Auto-sync SEO and blog updates from BlueJay"
 
 echo "🔼 Pushing to GitHub..."
-git push https://<YOUR_GITHUB_PAT>@github.com/Mrjonwells/bluejay.git main
+git push https://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@github.com/Mrjonwells/bluejay.git main
