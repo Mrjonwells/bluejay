@@ -4,5 +4,12 @@ python dev_sync_seo.py
 
 echo "✅ Committing SEO updates..."
 git add frontend/index.html backend/seo/seo_config.json
-git commit -m "Auto-sync SEO from Google Trends"
+
+echo "📝 Adding new blog posts..."
+git add frontend/blogs/*.html frontend/blog.html
+
+echo "🚀 Committing all updates..."
+git commit -m "Auto-sync SEO and blog content $(date '+%Y-%m-%d %H:%M:%S')"
+
+echo "🔼 Pushing to GitHub..."
 git push
