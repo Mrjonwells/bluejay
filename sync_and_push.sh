@@ -6,7 +6,7 @@ git config --global user.email "bot@askbluejay.ai"
 
 # Set GitHub remote
 git remote remove origin 2>/dev/null
-git remote add origin https://<YOUR_PAT>@github.com/Mrjonwells/bluejay.git
+git remote add origin https://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@github.com/Mrjonwells/bluejay.git
 
 echo "✅ Adding blog and index files..."
 git add frontend/blogs/*.html frontend/blog.html || echo "Blog files not found."
