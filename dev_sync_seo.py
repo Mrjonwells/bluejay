@@ -1,20 +1,39 @@
-#!/bin/bash
+import json
+import os
 
-echo "🔁 Running SEO sync..."
-python3 backend/dev_sync_seo.py || echo "SEO sync failed or skipped."
+SEO_JSON = "backend/seo/seo_config.json"
+INDEX_HTML = "frontend/index.html"
+PLACEHOLDER = "<!-- %%SEO_META_TAGS%% -->"
 
-echo "✅ Pulling latest from GitHub to avoid push rejection..."
-git fetch origin main
-git reset --hard origin/main
+def load_seo_tags():
+    with open(SEO_JSON, "r") as f:
+        data = json.load(f)
+        title = data.get("title", "")
+        description = data.get("description", "")
+        keywords = ", ".join(data.get("keywords", []))
+        return f"""<title>{title}</title>
+<meta name="description" content="{description}" />
+<meta name="keywords" content="{keywords}" />"""
 
-echo "✅ Staging SEO and blog updates..."
-git add frontend/index.html backend/seo/seo_config.json 2>/dev/null || echo "index.html or SEO config not found."
-git add frontend/blogs/*.html frontend/blog.html 2>/dev/null || echo "Blog files not found."
+def inject_meta_tags():
+    if not os.path.exists(INDEX_HTML):
+        print("index.html not found.")
+        return
 
-echo "🚀 Committing all updates..."
-git config --global user.name "BlueJay"
-git config --global user.email "info@askbluejay.ai"
-git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "No changes to commit."
+    with open(INDEX_HTML, "r") as f:
+        content = f.read()
 
-echo "🔼 Pushing to GitHub..."
-git push https://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@github.com/Mrjonwells/bluejay.git main
+    if PLACEHOLDER not in content:
+        print("Placeholder not found in index.html")
+        return
+
+    new_meta = load_seo_tags()
+    updated = content.replace(PLACEHOLDER, new_meta)
+
+    with open(INDEX_HTML, "w") as f:
+        f.write(updated)
+
+    print("SEO meta tags injected into index.html")
+
+if __name__ == "__main__":
+    inject_meta_tags()
