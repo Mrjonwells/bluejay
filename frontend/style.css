@@ -3,15 +3,142 @@ html, body {
   padding: 0;
   font-family: system-ui, sans-serif;
   background: black;
-  height: 100%;
-  width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
 }
 
-body.blog-page {
-  background-color: black;
+.background {
+  background-image: url("chat_card.png");
+  background-size: 96% 86%;
+  background-repeat: no-repeat;
+  background-position: top center;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
+.background::after {
+  content: "";
+  display: block;
+  height: 40px;
+}
+
+.menu-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  filter: drop-shadow(0 0 4px #00baff);
+  z-index: 10;
+}
+
+.dropdown {
+  position: absolute;
+  top: 60px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #00baff;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  z-index: 11;
+}
+
+.dropdown a {
   color: white;
+  padding: 8px 12px;
+  text-decoration: none;
+  border-bottom: 1px solid #00baff;
+}
+
+.dropdown a:last-child {
+  border-bottom: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.chat-container {
+  position: absolute;
+  top: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 200px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid #00baff;
+  border-radius: 12px;
+  padding: 10px;
+  backdrop-filter: blur(8px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.chatlog {
+  flex: 1;
   overflow-y: auto;
+  color: white;
+  padding-right: 5px;
+}
+
+.bot-msg {
+  text-align: left;
+  margin: 5px 0;
+  padding: 6px 12px;
+  background-color: #004e8a;
+  color: white;
+  border-radius: 10px;
+  display: block;
+  width: fit-content;
+}
+
+.user-msg {
+  text-align: right;
+  margin: 5px 0;
+  padding: 6px 12px;
+  background-color: #00baff;
+  color: white;
+  border-radius: 10px;
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+}
+
+.input-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+input#user-input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  outline: none;
+  background: white;
+}
+
+button#send-btn {
+  background: #00baff;
+  border: none;
+  color: black;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* --- BLOG PAGE STYLING --- */
+body.blog-page {
+  overflow-y: auto !important;
+  background-color: black;
 }
 
 .blog-index {
@@ -24,14 +151,14 @@ body.blog-page {
 
 .blog-index h1 {
   color: #00baff;
-  font-size: 2.2em;
+  font-size: 2em;
   margin-bottom: 10px;
 }
 
 .blog-index p {
+  margin-bottom: 20px;
   font-size: 1em;
-  color: #ccc;
-  margin-bottom: 30px;
+  color: #ddd;
 }
 
 .blog-index ul {
@@ -40,14 +167,13 @@ body.blog-page {
 }
 
 .blog-index li {
-  margin: 12px 0;
+  margin: 10px 0;
 }
 
 .blog-index a {
   color: #00baff;
   font-weight: bold;
   text-decoration: none;
-  font-size: 1.1em;
 }
 
 .blog-index a:hover {
@@ -62,24 +188,26 @@ body.blog-page {
   border-radius: 12px;
   background-color: rgba(0, 0, 0, 0.85);
   color: white;
-  overflow-y: auto;
   line-height: 1.6;
-  box-shadow: 0 0 12px rgba(0, 186, 255, 0.2);
+  overflow-y: auto;
 }
 
 .blog-post h1 {
-  font-size: 2.2em;
+  font-size: 2em;
   color: #00baff;
 }
 
 .blog-post em {
   color: #aaa;
   display: block;
-  margin-top: 4px;
+  margin: 8px 0 16px;
+}
+
+.blog-post p {
   margin-bottom: 16px;
 }
 
 .blog-post br {
-  display: block;
   margin-bottom: 12px;
+  display: block;
 }
