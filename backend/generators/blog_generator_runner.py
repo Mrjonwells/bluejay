@@ -77,13 +77,14 @@ def update_blog_index(entries):
         "<ul>\n"
     )
     links = "".join([
-        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:160].strip()}...</em></li>\n"
+        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:180].strip()}...</em></li>\n"
         for e in entries
     ])
     footer = "</ul>\n</div>\n</body>\n</html>"
 
+    full_html = header + links + footer
     with open(BLOG_INDEX, "w") as f:
-        f.write(header + links + footer)
+        f.write(full_html)
 
 def run():
     keywords = load_keywords()
@@ -97,7 +98,6 @@ def run():
     update_blog_index([(filename, title, content, date_str)])
     print(f"Updated blog index with: {title}")
 
-    # Full sync from project root
     os.system("cd ../../ && python3 dev_sync_seo.py && bash sync_and_push.sh")
 
 if __name__ == "__main__":
