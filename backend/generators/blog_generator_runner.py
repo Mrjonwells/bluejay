@@ -16,9 +16,10 @@ def load_keywords():
 
 def generate_article(topic):
     prompt = f"""
-Write a 400-word blog post for small business owners on the topic: "{topic}".
-Use a helpful, persuasive tone. Mention how AskBlueJay.ai helps lower merchant processing fees.
-Include a short intro, body, and CTA at the end. Keep it tight and professional.
+Write a ~450-word blog post for small business owners on the topic: "{topic}".
+Use a helpful, persuasive tone. Mention AskBlueJay.ai and how it helps reduce merchant processing fees.
+End with a natural, human-sounding call to action like:
+"Want to see how much you could save? Chat with BlueJay now."
 """
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -94,6 +95,7 @@ def run():
     update_blog_index([(filename, title)])
     print(f"Updated blog index with: {title}")
 
+    # Push to GitHub
     os.system("bash sync_and_push.sh")
 
 if __name__ == "__main__":
