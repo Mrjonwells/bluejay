@@ -5,9 +5,9 @@ from openai import OpenAI
 
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-SEO_PATH = "../seo/seo_config.json"
-BLOG_OUTPUT_DIR = "frontend/blogs"
-BLOG_INDEX = "frontend/blog.html"
+SEO_PATH = "../../backend/seo/seo_config.json"
+BLOG_OUTPUT_DIR = "../../frontend/blogs"
+BLOG_INDEX = "../../frontend/blog.html"
 
 def load_keywords():
     with open(SEO_PATH, "r") as f:
@@ -28,13 +28,11 @@ Include a short intro, body, and CTA at the end.
     return response.choices[0].message.content.strip()
 
 def save_post(title, content):
-    # Sanitize filename
     safe_title = title.lower().replace(" ", "-").replace("/", "-")
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"{date_str}-{safe_title}.html"
     filepath = os.path.join(BLOG_OUTPUT_DIR, filename)
 
-    # HTML wrapper
     html = (
         "<!DOCTYPE html>\n"
         "<html lang=\"en\">\n"
@@ -95,7 +93,7 @@ def run():
     update_blog_index([(filename, title)])
     print(f"Updated blog index with: {title}")
 
-    # Auto push to GitHub
+    # Push to GitHub
     os.system("bash sync_and_push.sh")
 
 if __name__ == "__main__":
