@@ -7,7 +7,7 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 SEO_PATH = "backend/seo/seo_config.json"
 BLOG_OUTPUT_DIR = "frontend/blogs"
-BLOG_INDEX_PATH = "frontend/blog.html"
+BLOG_INDEX = "frontend/blog.html"
 
 def load_keywords():
     with open(SEO_PATH, "r") as f:
@@ -28,73 +28,60 @@ Include a short intro, body, and CTA at the end.
     return response.choices[0].message.content.strip()
 
 def save_post(title, content):
+    # Sanitize filename
     safe_title = title.lower().replace(" ", "-").replace("/", "-")
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"{date_str}-{safe_title}.html"
     filepath = os.path.join(BLOG_OUTPUT_DIR, filename)
 
-    formatted_content = content.replace("\n", "<br><br>")
-
-    html_parts = [
-        "<!DOCTYPE html>",
-        "<html lang=\"en\">",
-        "<head>",
-        "  <meta charset=\"UTF-8\">",
-        f"  <title>{title} | AskBlueJay Blog</title>",
-        f"  <meta name=\"description\" content=\"{title} - powered by AskBlueJay.ai\">",
-        "  <link rel=\"stylesheet\" href=\"../style.css\">",
-        "</head>",
-        "<body>",
-        "  <div class=\"blog-post\">",
-        f"    <h1>{title}</h1>",
-        f"    <p><em>Published {date_str}</em></p>",
-        "    <div class=\"content\">",
-        f"      {formatted_content}",
-        "    </div>",
-        "  </div>",
-        "</body>",
+    # HTML wrapper
+    html = (
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
+        "<head>\n"
+        f"  <meta charset=\"UTF-8\">\n"
+        f"  <title>{title} | AskBlueJay Blog</title>\n"
+        f"  <meta name=\"description\" content=\"{title} - powered by AskBlueJay.ai\">\n"
+        "  <link rel=\"stylesheet\" href=\"../style.css\">\n"
+        "</head>\n"
+        "<body>\n"
+        "  <div class=\"blog-post\">\n"
+        f"    <h1>{title}</h1>\n"
+        f"    <p><em>Published {date_str}</em></p>\n"
+        "    <div class=\"content\">\n"
+        f"      {content.replace(chr(10), '<br><br>')}\n"
+        "    </div>\n"
+        "  </div>\n"
+        "</body>\n"
         "</html>"
-    ]
+    )
 
     os.makedirs(BLOG_OUTPUT_DIR, exist_ok=True)
     with open(filepath, "w") as f:
-        f.write("\n".join(html_parts))
+        f.write(html)
     print(f"Blog saved: {filepath}")
     return filename, title
 
-def update_blog_index(filename, title):
-    rel_path = f"blogs/{filename}"
-    new_entry = f'<li><a href="{rel_path}" target="_blank">{title}</a></li>\n'
+def update_blog_index(entries):
+    header = (
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
+        "<head>\n"
+        "  <meta charset=\"UTF-8\">\n"
+        "  <title>AskBlueJay Blog</title>\n"
+        "  <link rel=\"stylesheet\" href=\"style.css\">\n"
+        "</head>\n"
+        "<body>\n"
+        "<h1>AskBlueJay Blog</h1>\n"
+        "<p>Insights on saving money, merchant processing, and modern tools for small businesses.</p>\n"
+        "<ul>\n"
+    )
+    links = "".join([f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a></li>\n" for e in entries])
+    footer = "</ul>\n</body>\n</html>"
 
-    if not os.path.exists(BLOG_INDEX_PATH):
-        with open(BLOG_INDEX_PATH, "w") as f:
-            f.write(f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>AskBlueJay Blog</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <h1>AskBlueJay Blog</h1>
-  <ul>
-    {new_entry}
-  </ul>
-</body>
-</html>""")
-    else:
-        with open(BLOG_INDEX_PATH, "r") as f:
-            lines = f.readlines()
-
-        for i, line in enumerate(lines):
-            if "<ul>" in line:
-                lines.insert(i + 1, new_entry)
-                break
-
-        with open(BLOG_INDEX_PATH, "w") as f:
-            f.writelines(lines)
-
-    print(f"Updated blog index with: {title}")
+    full_html = header + links + footer
+    with open(BLOG_INDEX, "w") as f:
+        f.write(full_html)
 
 def run():
     keywords = load_keywords()
@@ -105,7 +92,11 @@ def run():
     topic = keywords[0]
     article = generate_article(topic)
     filename, title = save_post(topic.title(), article)
-    update_blog_index(filename, title)
+    update_blog_index([(filename, title)])
+    print(f"Updated blog index with: {title}")
+
+    # Auto push to GitHub
+    os.system("bash sync_and_push.sh")
 
 if __name__ == "__main__":
     run()
