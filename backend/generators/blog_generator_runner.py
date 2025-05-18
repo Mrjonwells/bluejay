@@ -1,6 +1,5 @@
 import os
 import json
-import random
 from datetime import datetime
 from openai import OpenAI
 
@@ -16,17 +15,11 @@ def load_keywords():
     return seo.get("keywords", [])
 
 def generate_article(topic):
-    ctas = [
-        "Want to save more on every swipe? Try AskBlueJay.",
-        "Curious how much you could keep? Let’s find out together.",
-        "Let BlueJay help you cut costs — it’s free to try.",
-    ]
-    selected_cta = random.choice(ctas)
     prompt = f"""
-Write a short blog post (max 350 words) for small business owners on: "{topic}".
-Tone: helpful, clear, persuasive.
-Structure: 1 intro paragraph, 2 body sections, and a natural final CTA: "{selected_cta}"
-Avoid repeating the topic name more than twice. Make it sound human.
+Write a blog post (max 450 words) for small business owners on the topic: "{topic}".
+Use a helpful, persuasive tone. Mention how AskBlueJay.ai helps lower merchant processing fees.
+Start with a punchy intro. Close with a clear call-to-action. Avoid repetition.
+Return only the body content. We'll wrap it in HTML later.
 """
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -66,7 +59,7 @@ def save_post(title, content):
     with open(filepath, "w") as f:
         f.write(html)
     print(f"Blog saved: {filepath}")
-    return filename, title
+    return filename, title, content, date_str
 
 def update_blog_index(entries):
     header = (
@@ -83,7 +76,10 @@ def update_blog_index(entries):
         "<p>Insights on saving money, merchant processing, and modern tools for small businesses.</p>\n"
         "<ul>\n"
     )
-    links = "".join([f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a></li>\n" for e in entries])
+    links = "".join([
+        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:120]}...</em></li>\n"
+        for e in entries
+    ])
     footer = "</ul>\n</div>\n</body>\n</html>"
 
     full_html = header + links + footer
@@ -98,8 +94,8 @@ def run():
 
     topic = keywords[0]
     article = generate_article(topic)
-    filename, title = save_post(topic.title(), article)
-    update_blog_index([(filename, title)])
+    filename, title, content, date_str = save_post(topic.title(), article)
+    update_blog_index([(filename, title, content, date_str)])
     print(f"Updated blog index with: {title}")
 
     os.system("bash sync_and_push.sh")
