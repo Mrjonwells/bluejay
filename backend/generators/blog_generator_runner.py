@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from openai import OpenAI
 
+# Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 SEO_PATH = "../seo/seo_config.json"
 BLOG_OUTPUT_DIR = "../../frontend/blogs"
@@ -15,9 +16,9 @@ def load_keywords():
 
 def generate_article(topic):
     prompt = f"""
-Write a 600-word blog post for small business owners on the topic: "{topic}".
+Write a 400-word blog post for small business owners on the topic: "{topic}".
 Use a helpful, persuasive tone. Mention how AskBlueJay.ai helps lower merchant processing fees.
-Include a short intro, body, and CTA at the end.
+Include a short intro, body, and CTA at the end. Keep it tight and professional.
 """
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -60,20 +61,26 @@ def save_post(title, content):
     return filename, title
 
 def update_blog_index(entries):
-    with open(BLOG_INDEX, "r") as f:
-        html = f.read()
-
-    ul_start = html.find("<ul>")
-    ul_end = html.find("</ul>")
-    if ul_start == -1 or ul_end == -1:
-        print("Could not find <ul> section in blog index.")
-        return
-
+    header = (
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
+        "<head>\n"
+        "  <meta charset=\"UTF-8\">\n"
+        "  <title>AskBlueJay Blog</title>\n"
+        "  <link rel=\"stylesheet\" href=\"style.css\">\n"
+        "</head>\n"
+        "<body>\n"
+        "<div class=\"blog-index\">\n"
+        "<h1>AskBlueJay Blog</h1>\n"
+        "<p>Insights on saving money, merchant processing, and modern tools for small businesses.</p>\n"
+        "<ul>\n"
+    )
     links = "".join([f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a></li>\n" for e in entries])
-    new_html = html[:ul_start + 4] + "\n" + links + html[ul_end:]
+    footer = "</ul>\n</div>\n</body>\n</html>"
 
+    full_html = header + links + footer
     with open(BLOG_INDEX, "w") as f:
-        f.write(new_html)
+        f.write(full_html)
 
 def run():
     keywords = load_keywords()
@@ -86,6 +93,7 @@ def run():
     filename, title = save_post(topic.title(), article)
     update_blog_index([(filename, title)])
     print(f"Updated blog index with: {title}")
+
     os.system("bash sync_and_push.sh")
 
 if __name__ == "__main__":
