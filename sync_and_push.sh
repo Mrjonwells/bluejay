@@ -1,11 +1,11 @@
 #!/bin/bash
 
 echo "🔁 Running SEO sync..."
-python backend/generators/dev_sync_seo.py || echo "SEO sync failed or skipped."
+python backend/generators/dev_sync_seo.py || echo "SEO sync skipped or failed."
 
-echo "✅ Adding files..."
+echo "✅ Adding blog and index files..."
 git add frontend/index.html 2>/dev/null
-git add frontend/blogs/*.html frontend/blog.html 2>/dev/null
+git add frontend/blog.html frontend/blogs/*.html 2>/dev/null
 
 echo "🚀 Committing all updates..."
 git config --global user.name "BlueJay"
