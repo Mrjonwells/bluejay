@@ -7,12 +7,14 @@ INDEX_HTML = "frontend/index.html"
 def load_seo_tags():
     with open(SEO_JSON, "r") as f:
         data = json.load(f)
-        title = data.get("title", "")
+        title = data.get("title", "AskBlueJay | Lower Card Fees with AI")
         description = data.get("description", "")
-        keywords = data.get("keywords", "")
+        keywords = data.get("keywords", [])
+        keywords_str = ", ".join(keywords) if isinstance(keywords, list) else str(keywords)
+
         return f"""<title>{title}</title>
 <meta name="description" content="{description}" />
-<meta name="keywords" content="{keywords}" />"""
+<meta name="keywords" content="{keywords_str}" />"""
 
 def inject_meta_tags():
     if not os.path.exists(INDEX_HTML):
