@@ -67,24 +67,23 @@ def update_blog_index(entries):
         "<html lang=\"en\">\n"
         "<head>\n"
         "  <meta charset=\"UTF-8\">\n"
-        "  <title>AskBlueJay Blog</title>\n"
+        "  <title>BlueJay’s Blog</title>\n"
         "  <link rel=\"stylesheet\" href=\"style.css\">\n"
         "</head>\n"
         "<body>\n"
         "<div class=\"blog-index\">\n"
-        "<h1>AskBlueJay Blog</h1>\n"
+        "<h1>BlueJay’s Blog</h1>\n"
         "<p>Insights on saving money, merchant processing, and modern tools for small businesses.</p>\n"
         "<ul>\n"
     )
     links = "".join([
-        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:120].strip()}...</em></li>\n"
+        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:160].strip()}...</em></li>\n"
         for e in entries
     ])
     footer = "</ul>\n</div>\n</body>\n</html>"
 
-    full_html = header + links + footer
     with open(BLOG_INDEX, "w") as f:
-        f.write(full_html)
+        f.write(header + links + footer)
 
 def run():
     keywords = load_keywords()
@@ -98,7 +97,7 @@ def run():
     update_blog_index([(filename, title, content, date_str)])
     print(f"Updated blog index with: {title}")
 
-    # Run from root, not from inside generators
+    # Full sync from project root
     os.system("cd ../../ && python3 dev_sync_seo.py && bash sync_and_push.sh")
 
 if __name__ == "__main__":
