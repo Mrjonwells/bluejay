@@ -206,3 +206,77 @@ button#send-btn {
   text-decoration: none;
   font-weight: bold;
 }
+/* BLOG INDEX STYLES */
+.blog-index {
+  padding: 40px;
+  color: white;
+  max-width: 800px;
+  margin: auto;
+}
+
+.blog-index h1 {
+  color: #00baff;
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.blog-index p {
+  margin-bottom: 20px;
+  font-size: 1em;
+  color: #ddd;
+}
+
+.blog-index ul {
+  list-style: none;
+  padding: 0;
+}
+
+.blog-index li {
+  margin: 10px 0;
+}
+
+.blog-index a {
+  color: #00baff;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.blog-index a:hover {
+  text-decoration: underline;
+}
+
+
+/* BLOG POST STYLES */
+.blog-post {
+  max-width: 850px;
+  margin: 60px auto;
+  padding: 30px;
+  border: 1px solid #00baff;
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+
+.blog-post h1 {
+  font-size: 2.2em;
+  color: #00baff;
+}
+
+.blog-post em {
+  color: #aaa;
+  display: block;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+
+.blog-post br {
+  display: block;
+  margin-bottom: 12px;
+}
+
+body.blog-page {
+  overflow: auto;
+  background-color: black;
+}
