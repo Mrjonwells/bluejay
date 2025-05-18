@@ -77,7 +77,7 @@ def update_blog_index(entries):
         "<ul>\n"
     )
     links = "".join([
-        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:120]}...</em></li>\n"
+        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:120].strip()}...</em></li>\n"
         for e in entries
     ])
     footer = "</ul>\n</div>\n</body>\n</html>"
