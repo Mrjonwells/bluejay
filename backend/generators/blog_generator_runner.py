@@ -5,7 +5,7 @@ from openai import OpenAI
 
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-SEO_PATH = "backend/seo/seo_config.json"
+SEO_PATH = "../seo/seo_config.json"
 BLOG_OUTPUT_DIR = "frontend/blogs"
 BLOG_INDEX = "frontend/blog.html"
 
