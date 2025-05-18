@@ -1,5 +1,6 @@
 import os
 import json
+import random
 from datetime import datetime
 from openai import OpenAI
 
@@ -15,11 +16,17 @@ def load_keywords():
     return seo.get("keywords", [])
 
 def generate_article(topic):
+    ctas = [
+        "Want to save more on every swipe? Try AskBlueJay.",
+        "Curious how much you could keep? Let’s find out together.",
+        "Let BlueJay help you cut costs — it’s free to try.",
+    ]
+    selected_cta = random.choice(ctas)
     prompt = f"""
-Write a ~450-word blog post for small business owners on the topic: "{topic}".
-Use a helpful, persuasive tone. Mention AskBlueJay.ai and how it helps reduce merchant processing fees.
-End with a natural, human-sounding call to action like:
-"Want to see how much you could save? Chat with BlueJay now."
+Write a short blog post (max 350 words) for small business owners on: "{topic}".
+Tone: helpful, clear, persuasive.
+Structure: 1 intro paragraph, 2 body sections, and a natural final CTA: "{selected_cta}"
+Avoid repeating the topic name more than twice. Make it sound human.
 """
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -95,7 +102,6 @@ def run():
     update_blog_index([(filename, title)])
     print(f"Updated blog index with: {title}")
 
-    # Push to GitHub
     os.system("bash sync_and_push.sh")
 
 if __name__ == "__main__":
