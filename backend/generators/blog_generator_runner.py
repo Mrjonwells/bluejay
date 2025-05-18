@@ -40,7 +40,7 @@ def save_post(title, content):
         f"  <meta charset=\"UTF-8\">\n"
         f"  <title>{title} | AskBlueJay Blog</title>\n"
         f"  <meta name=\"description\" content=\"{title} - powered by AskBlueJay.ai\">\n"
-        "  <link rel=\"stylesheet\" href=\"../style.css\">\n"
+        "  <link rel=\"stylesheet\" href=\"/style.css\">\n"
         "</head>\n"
         "<body>\n"
         "  <div class=\"blog-post\">\n"
@@ -67,15 +67,16 @@ def update_blog_index(entries):
         "<head>\n"
         "  <meta charset=\"UTF-8\">\n"
         "  <title>AskBlueJay Blog</title>\n"
-        "  <link rel=\"stylesheet\" href=\"style.css\">\n"
+        "  <link rel=\"stylesheet\" href=\"/style.css\">\n"
         "</head>\n"
-        "<body>\n"
+        "<body class=\"blog-page\">\n"
+        "<div class=\"blog-index\">\n"
         "<h1>AskBlueJay Blog</h1>\n"
         "<p>Insights on saving money, merchant processing, and modern tools for small businesses.</p>\n"
         "<ul>\n"
     )
     links = "".join([f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a></li>\n" for e in entries])
-    footer = "</ul>\n</body>\n</html>"
+    footer = "</ul>\n</div>\n</body>\n</html>"
 
     full_html = header + links + footer
     with open(BLOG_INDEX, "w") as f:
@@ -93,7 +94,6 @@ def run():
     update_blog_index([(filename, title)])
     print(f"Updated blog index with: {title}")
 
-    # Push to GitHub
     os.system("bash sync_and_push.sh")
 
 if __name__ == "__main__":
