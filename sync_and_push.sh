@@ -7,13 +7,13 @@ echo "✅ Committing SEO updates..."
 git add frontend/index.html backend/seo/seo_config.json
 
 echo "📝 Adding new blog posts..."
-git add frontend/blogs/*.html frontend/blog.html || true
+git add frontend/blogs/*.html frontend/blog.html
 
 echo "🚀 Committing all updates..."
 git config user.email "info@askbluejay.ai"
 git config user.name "BlueJay"
-git commit -m "Auto-sync SEO and blog updates from BlueJay" || true
+git commit -m "Auto-sync SEO and blog updates"
 
 echo "🔼 Pushing to GitHub..."
-git remote add origin https://github.com/Mrjonwells/bluejay.git 2>/dev/null || true
+git remote set-url origin https://Mrjonwells:${GITHUB_PAT}@github.com/Mrjonwells/bluejay.git
 git push origin main
