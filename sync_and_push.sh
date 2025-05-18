@@ -1,15 +1,16 @@
 #!/bin/bash
 
 # Set Git identity
-git config --global user.name "BlueJay Bot"
-git config --global user.email "bot@askbluejay.ai"
+git config user.name "BlueJay Bot"
+git config user.email "bot@askbluejay.ai"
 
-# Set GitHub remote
+# Ensure remote is set
 git remote remove origin 2>/dev/null
 git remote add origin https://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@github.com/Mrjonwells/bluejay.git
 
 echo "✅ Adding blog and index files..."
-git add frontend/blogs/*.html frontend/blog.html || echo "Blog files not found."
+git add frontend/blog.html
+git add frontend/blogs/*.html || echo "Blog files not found."
 
 echo "🚀 Committing all updates..."
 git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
