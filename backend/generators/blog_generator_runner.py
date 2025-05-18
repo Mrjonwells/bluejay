@@ -98,7 +98,8 @@ def run():
     update_blog_index([(filename, title, content, date_str)])
     print(f"Updated blog index with: {title}")
 
-    os.system("bash sync_and_push.sh")
+    # Run from root, not from inside generators
+    os.system("cd ../../ && python3 dev_sync_seo.py && bash sync_and_push.sh")
 
 if __name__ == "__main__":
     run()
