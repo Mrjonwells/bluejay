@@ -135,7 +135,7 @@ button#send-btn {
   font-weight: bold;
 }
 
-/* --- BLOG PAGE STYLING --- */
+/* BLOG LANDING PAGE */
 body.blog-page {
   overflow-y: auto !important;
   background-color: black;
@@ -167,19 +167,26 @@ body.blog-page {
 }
 
 .blog-index li {
-  margin: 10px 0;
+  margin: 20px 0;
+  padding: 10px 0;
+  border-bottom: 1px solid #222;
 }
 
-.blog-index a {
+.blog-index li a {
+  font-size: 1.2em;
   color: #00baff;
   font-weight: bold;
   text-decoration: none;
 }
 
-.blog-index a:hover {
-  text-decoration: underline;
+.blog-index li em {
+  display: block;
+  font-size: 0.95em;
+  color: #aaa;
+  margin-top: 4px;
 }
 
+/* INDIVIDUAL BLOG POST PAGE */
 .blog-post {
   max-width: 850px;
   margin: 60px auto;
