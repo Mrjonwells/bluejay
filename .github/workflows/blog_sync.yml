@@ -1,0 +1,27 @@
+name: Auto Blog Sync
+
+on:
+  push:
+    paths:
+      - 'frontend/blogs/**'
+      - 'frontend/blog.html'
+  workflow_dispatch:
+
+jobs:
+  commit-blog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure Git
+        run: |
+          git config user.name "BlueJay Bot"
+          git config user.email "bluejay@askbluejay.ai"
+
+      - name: Commit and push blog updates
+        run: |
+          git add frontend/blogs/*.html frontend/blog.html || true
+          git commit -m "Auto-sync blog content from Render" || echo "No changes to commit"
+          git push
