@@ -46,30 +46,25 @@ def save_blog_file(title, body):
     with open(output_path, "w") as f:
         f.write(body)
 
-    print(f"✅ Blog saved: {output_path}")
+    print(f"Blog saved: {output_path}")
     return filename, title
 
 def update_blog_index(filename, title, hook):
     with open(BLOG_INDEX_PATH, "r") as f:
-        lines = f.readlines()
+        html = f.read()
 
-    insertion_point = next((i + 1 for i, line in enumerate(lines) if "<ul>" in line), None)
+    new_entry = f'  <li><a href="blogs/{filename}">{title}</a><br><small>{hook}</small></li>\n'
+    updated_html = html.replace("<!-- %%BLOG_INDEX_ENTRIES%% -->", new_entry + "      <!-- %%BLOG_INDEX_ENTRIES%% -->")
 
-    if insertion_point is not None:
-        entry = f'  <li><a href="blogs/{filename}">{title}</a><br><small>{hook}</small></li>\n'
-        lines.insert(insertion_point, entry)
+    with open(BLOG_INDEX_PATH, "w") as f:
+        f.write(updated_html)
 
-        with open(BLOG_INDEX_PATH, "w") as f:
-            f.writelines(lines)
-
-        print(f"✅ Updated blog index with: {title}")
-    else:
-        print("❌ <ul> tag not found in blog index.")
+    print(f"Updated blog index with: {title}")
 
 def run():
     keywords = load_keywords()
     if not keywords:
-        print("❌ No keywords found.")
+        print("No keywords found.")
         return
 
     topic = keywords[0]
