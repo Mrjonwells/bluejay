@@ -12,9 +12,11 @@ git remote remove origin 2>/dev/null
 git remote add origin https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git
 
 echo "⏪ Resetting detached HEAD (if any)..."
-git fetch origin main
 git checkout main || git checkout -b main
-git reset --hard origin/main
+git fetch origin main
+git reset --hard origin/main || echo "Remote reset failed."
+
+echo "🧼 Cleaning any local untracked files..."
 git clean -fd
 
 echo "✅ Adding blog and index files..."
