@@ -3,9 +3,10 @@ import json
 import datetime
 from pathlib import Path
 
-SEO_PATH = "backend/seo/seo_config.json"
-BLOG_OUTPUT_DIR = "frontend/blogs"
-BLOG_INDEX_PATH = "frontend/blog.html"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SEO_PATH = os.path.join(BASE_DIR, "../seo/seo_config.json")
+BLOG_OUTPUT_DIR = os.path.join(BASE_DIR, "../../frontend/blogs")
+BLOG_INDEX_PATH = os.path.join(BASE_DIR, "../../frontend/blog.html")
 
 def load_keywords():
     with open(SEO_PATH, "r") as f:
@@ -51,15 +52,22 @@ def save_blog_file(title, body):
 
 def update_blog_index(filename, title, hook):
     with open(BLOG_INDEX_PATH, "r") as f:
-        html = f.read()
+        lines = f.readlines()
 
-    new_entry = f'  <li><a href="blogs/{filename}">{title}</a><br><small>{hook}</small></li>\n'
-    updated_html = html.replace("<!-- %%BLOG_INDEX_ENTRIES%% -->", new_entry + "      <!-- %%BLOG_INDEX_ENTRIES%% -->")
+    insertion_point = None
+    for i, line in enumerate(lines):
+        if "<ul>" in line:
+            insertion_point = i + 1
+            break
 
-    with open(BLOG_INDEX_PATH, "w") as f:
-        f.write(updated_html)
+    if insertion_point is not None:
+        entry = f'  <li><a href="blogs/{filename}">{title}</a><br><small>{hook}</small></li>\n'
+        lines.insert(insertion_point, entry)
 
-    print(f"Updated blog index with: {title}")
+        with open(BLOG_INDEX_PATH, "w") as f:
+            f.writelines(lines)
+
+        print(f"Updated blog index with: {title}")
 
 def run():
     keywords = load_keywords()
