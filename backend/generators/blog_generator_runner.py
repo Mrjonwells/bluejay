@@ -1,3 +1,66 @@
+import os
+import json
+from datetime import datetime
+from openai import OpenAI
+
+# Setup
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+SEO_PATH = "../seo/seo_config.json"
+BLOG_OUTPUT_DIR = "../../frontend/blogs"
+BLOG_INDEX = "../../frontend/blog.html"
+
+def load_keywords():
+    with open(SEO_PATH, "r") as f:
+        seo = json.load(f)
+    return seo.get("keywords", [])
+
+def generate_article(topic):
+    prompt = f"""
+Write a blog post (max 450 words) for small business owners on the topic: "{topic}".
+Use a helpful, persuasive tone. Mention how AskBlueJay.ai helps lower merchant processing fees.
+Start with a punchy intro. Close with a clear call-to-action. Avoid repetition.
+Return only the body content. We'll wrap it in HTML later.
+"""
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7
+    )
+    return response.choices[0].message.content.strip()
+
+def save_post(title, content):
+    safe_title = title.lower().replace(" ", "-").replace("/", "-")
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"{date_str}-{safe_title}.html"
+    filepath = os.path.join(BLOG_OUTPUT_DIR, filename)
+
+    html = (
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
+        "<head>\n"
+        f"  <meta charset=\"UTF-8\">\n"
+        f"  <title>{title} | AskBlueJay Blog</title>\n"
+        f"  <meta name=\"description\" content=\"{title} - powered by AskBlueJay.ai\">\n"
+        "  <link rel=\"stylesheet\" href=\"../style.css\">\n"
+        "</head>\n"
+        "<body class=\"blog-page\">\n"
+        "  <div class=\"blog-post\">\n"
+        f"    <h1>{title}</h1>\n"
+        f"    <p><em>Published {date_str}</em></p>\n"
+        "    <div class=\"content\">\n"
+        f"      {content.replace(chr(10), '<br><br>')}\n"
+        "    </div>\n"
+        "  </div>\n"
+        "</body>\n"
+        "</html>"
+    )
+
+    os.makedirs(BLOG_OUTPUT_DIR, exist_ok=True)
+    with open(filepath, "w") as f:
+        f.write(html)
+    print(f"Blog saved: {filepath}")
+    return filename, title, content, date_str
+
 def update_blog_index():
     blog_dir = BLOG_OUTPUT_DIR
     blog_files = sorted(os.listdir(blog_dir), reverse=True)
@@ -9,7 +72,6 @@ def update_blog_index():
             with open(filepath, "r") as f:
                 content = f.read()
 
-            # Extract title and first sentence as summary
             title_start = content.find("<h1>") + 4
             title_end = content.find("</h1>")
             title = content[title_start:title_end].strip()
@@ -18,13 +80,9 @@ def update_blog_index():
             summary_end = content.find("</div>", summary_start)
             summary = content[summary_start:summary_end].strip().replace("<br><br>", " ")[:180]
 
-            # Extract date from filename
-            date_str = file.split("-")[0:3]
-            date_str = "-".join(date_str)
-
+            date_str = "-".join(file.split("-")[0:3])
             entries.append((file, title, summary, date_str))
 
-    # Build blog index
     header = (
         "<!DOCTYPE html>\n"
         "<html lang=\"en\">\n"
@@ -45,6 +103,24 @@ def update_blog_index():
     ])
     footer = "</ul>\n</div>\n</body>\n</html>"
 
-    full_html = header + links + footer
     with open(BLOG_INDEX, "w") as f:
-        f.write(full_html)
+        f.write(header + links + footer)
+
+def run():
+    keywords = load_keywords()
+    if not keywords:
+        print("No keywords found.")
+        return
+
+    topic = keywords[0]
+    article = generate_article(topic)
+    filename, title, content, date_str = save_post(topic.title(), article)
+
+    # Fix: Call index updater WITHOUT overwriting with just 1
+    update_blog_index()
+
+    # Sync
+    os.system("cd ../../ && python3 dev_sync_seo.py && bash sync_and_push.sh")
+
+if __name__ == "__main__":
+    run()
