@@ -3,14 +3,26 @@ import json
 import datetime
 from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SEO_PATH = os.path.join(BASE_DIR, "../seo/seo_config.json")
-BLOG_OUTPUT_DIR = os.path.join(BASE_DIR, "../../frontend/blogs")
-BLOG_INDEX_PATH = os.path.join(BASE_DIR, "../../frontend/blog.html")
+SEO_PATH = "backend/seo/seo_config.json"
+BLOG_OUTPUT_DIR = "frontend/blogs"
+BLOG_INDEX_PATH = "frontend/blog.html"
 
 def load_keywords():
     with open(SEO_PATH, "r") as f:
         return json.load(f).get("keywords", [])
+
+def rotate_keywords():
+    with open(SEO_PATH, "r+") as f:
+        data = json.load(f)
+        keywords = data.get("keywords", [])
+        if not keywords:
+            return None
+        topic = keywords.pop(0)
+        keywords.append(topic)
+        f.seek(0)
+        json.dump({"keywords": keywords}, f, indent=2)
+        f.truncate()
+        return topic
 
 def generate_blog_content(topic):
     date = datetime.datetime.now().strftime("%B %d, %Y")
@@ -28,13 +40,15 @@ def generate_blog_content(topic):
         <h1>{title}</h1>
         <p><em>Published on {date}</em></p>
         <p>{hook}</p>
-        <p>{topic} is one of the top trends in the merchant processing world right now. Businesses are using it to cut costs, improve efficiency, and gain an edge over competitors.</p>
-        <p>BlueJay is here to guide you through these changes with insights, automation, and powerful integrations.</p>
-        <p>Stay tuned for more.</p>
+        <p>{topic} is one of the fastest-evolving areas in the merchant services industry. With new tools and technologies emerging daily, it’s crucial for small businesses to stay ahead of the curve.</p>
+        <p>From AI-driven insights to automated fee reductions, {topic} enables business owners to reclaim their margins while improving the customer experience.</p>
+        <p>At BlueJay, we believe the future of payments is lean, fast, and intelligent. If you're still paying legacy processing rates, there's a better way — and it starts with understanding these modern trends.</p>
+        <p>Stay tuned for more weekly insights.</p>
       </div>
     </body>
     </html>
     """.strip()
+
     return title, hook, body
 
 def save_blog_file(title, body):
@@ -70,12 +84,11 @@ def update_blog_index(filename, title, hook):
         print(f"Updated blog index with: {title}")
 
 def run():
-    keywords = load_keywords()
-    if not keywords:
+    topic = rotate_keywords()
+    if not topic:
         print("No keywords found.")
         return
 
-    topic = keywords[0]
     title, hook, body = generate_blog_content(topic)
     filename, saved_title = save_blog_file(title, body)
     update_blog_index(filename, saved_title, hook)
