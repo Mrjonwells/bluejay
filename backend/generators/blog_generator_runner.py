@@ -6,7 +6,7 @@ from openai import OpenAI
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Absolute-safe paths from inside backend/generators
+# Absolute-safe paths
 SEO_PATH = os.path.join(os.path.dirname(__file__), "../seo/seo_config.json")
 BLOG_OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/blogs"))
 BLOG_INDEX = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/blog.html"))
@@ -17,6 +17,19 @@ def load_keywords():
     with open(SEO_PATH, "r") as f:
         seo = json.load(f)
     return seo.get("keywords", [])
+
+def rotate_keywords():
+    with open(SEO_PATH, "r+") as f:
+        seo = json.load(f)
+        keywords = seo.get("keywords", [])
+        if len(keywords) > 1:
+            first = keywords.pop(0)
+            keywords.append(first)
+            seo["keywords"] = keywords
+            f.seek(0)
+            json.dump(seo, f, indent=2)
+            f.truncate()
+            print(f"♻️ Rotating SEO topic...\nNext topic: {keywords[0]}")
 
 def generate_article(topic):
     prompt = f"""
@@ -62,6 +75,7 @@ def save_post(title, content):
     os.makedirs(BLOG_OUTPUT_DIR, exist_ok=True)
     with open(filepath, "w") as f:
         f.write(html)
+
     print(f"Blog saved: {filepath}")
     return filename, title, content, date_str
 
@@ -102,6 +116,7 @@ def run():
     print(f"Updated blog index with: {title}")
 
     os.system(f"python3 {SYNC_SEO} && bash {SYNC_PUSH}")
+    rotate_keywords()
 
 if __name__ == "__main__":
     run()
