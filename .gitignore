@@ -11,6 +11,7 @@ __pycache__/
 *.db
 *.sqlite3
 *.env
+.venv/
 
 # Netlify
 /.netlify/
@@ -38,3 +39,6 @@ backend/seo/seo_injection.html
 
 # Recommendations auto-output
 backend/config/brain_update_recommendations.json
+
+# Allow blog posts to be pushed
+!frontend/blogs/*.html
