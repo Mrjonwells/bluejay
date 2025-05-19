@@ -1,29 +1,19 @@
-#!/bin/bash
-
+# Ensure you're in repo root
 cd "$(dirname "$0")"
 
-echo "✅ Adding blog and index files..."
+# Ensure Git is on main
+git checkout main || git checkout -b main
 
-mkdir -p frontend/blogs/
-find frontend/blogs/ -name '*.html' -exec git add {} \;
-[ -f frontend/blog.html ] && git add frontend/blog.html
+# Add blog files properly from the repo root
+git add frontend/blogs/*.html frontend/blog.html || echo "No blog files to add"
 
-git config user.name "BlueJay Bot"
-git config user.email "bot@askbluejay.ai"
+# Commit if anything is staged
+git diff --cached --quiet || git commit -m "Auto-sync SEO and blog updates from BlueJay"
 
-if ! git diff --cached --quiet; then
-  echo "🚀 Committing all updates..."
-  git commit -m "Auto-sync SEO and blog updates from BlueJay"
-else
-  echo "Nothing to commit."
-fi
+# Pull latest before pushing (fast-forward safe)
+git pull origin main --rebase || echo "Pull failed (non-blocking)"
 
-# Add fallback for rebase pull issues
-echo "🔄 Pulling latest from GitHub..."
-git fetch origin main || echo "Fetch failed"
-git reset --hard origin/main || echo "Hard reset failed"
-
-echo "🔼 Pushing to GitHub..."
-git push origin main || echo "Push failed."
+# Push safely
+git push origin main || echo "Push failed"
 
 echo "✅ Sync complete."
