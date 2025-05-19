@@ -1,22 +1,21 @@
 #!/bin/bash
 
-# Set Git identity
-git config user.name "BlueJay Bot"
-git config user.email "bot@askbluejay.ai"
+# Set Git user identity
+git config --global user.email "auto@askbluejay.ai"
+git config --global user.name "BlueJay AutoBot"
 
-# Ensure remote is set
-git remote remove origin 2>/dev/null
-git remote add origin https://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@github.com/Mrjonwells/bluejay.git
+# Move to project root (assumes this script runs from /opt/render/project/src/)
+cd "$(dirname "$0")"
 
-echo "✅ Adding blog and index files..."
+# Add blog files explicitly
 git add frontend/blog.html
-git add frontend/blogs/*.html || echo "Blog files not found."
+git add frontend/blogs/*.html
 
-echo "🚀 Committing all updates..."
-git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
+# Commit changes if any
+git diff --cached --quiet || git commit -m "Auto-sync SEO and blog updates from BlueJay"
 
-echo "🔄 Pulling latest from GitHub..."
+# Pull latest from GitHub main before pushing
 git pull origin main --rebase || echo "Pull failed (non-blocking)."
 
-echo "🔼 Pushing to GitHub..."
-git push origin main || echo "Push failed."
+# Push to GitHub using token
+git push https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git main || echo "Push failed."
