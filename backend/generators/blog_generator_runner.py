@@ -5,13 +5,13 @@ from openai import OpenAI
 
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SEO_PATH = os.path.join(BASE_DIR, "..", "seo", "seo_config.json")
-BLOG_OUTPUT_DIR = os.path.join(BASE_DIR, "..", "..", "frontend", "blogs")
-BLOG_INDEX_PATH = os.path.join(BASE_DIR, "..", "..", "frontend", "blog.html")
+SEO_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "seo", "seo_config.json"))
+BLOG_OUTPUT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "frontend", "blogs"))
+BLOG_INDEX_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "frontend", "blog.html"))
 
 def load_keywords():
+    print("Loading SEO config from:", SEO_PATH)
     with open(SEO_PATH, "r") as f:
         seo = json.load(f)
     return seo.get("keywords", [])
@@ -69,31 +69,31 @@ def update_blog_index(filename, title):
 
     if not os.path.exists(BLOG_INDEX_PATH):
         with open(BLOG_INDEX_PATH, "w") as f:
-            f.write(f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>BlueJay’s Blog</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="blog-index">
-<h1>BlueJay’s Blog</h1>
-<p>Insights on saving money, merchant processing, and modern tools for small businesses.</p>
-<ul>
-{new_entry}</ul>
-</div>
-</body>
-</html>""")
+            f.write("\n".join([
+                "<!DOCTYPE html>",
+                "<html lang=\"en\">",
+                "<head>",
+                "  <meta charset=\"UTF-8\">",
+                "  <title>AskBlueJay Blog</title>",
+                "  <link rel=\"stylesheet\" href=\"style.css\">",
+                "</head>",
+                "<body>",
+                "<div class=\"blog-index\">",
+                "  <h1>AskBlueJay Blog</h1>",
+                "  <ul>",
+                f"    {new_entry}",
+                "  </ul>",
+                "</div>",
+                "</body>",
+                "</html>"
+            ]))
     else:
         with open(BLOG_INDEX_PATH, "r") as f:
             lines = f.readlines()
-
         for i, line in enumerate(lines):
             if "<ul>" in line:
                 lines.insert(i + 1, new_entry)
                 break
-
         with open(BLOG_INDEX_PATH, "w") as f:
             f.writelines(lines)
 
@@ -109,6 +109,8 @@ def run():
     article = generate_article(topic)
     filename, title = save_post(topic.title(), article)
     update_blog_index(filename, title)
+
+    os.system("bash ../../sync_and_push.sh")
 
 if __name__ == "__main__":
     run()
