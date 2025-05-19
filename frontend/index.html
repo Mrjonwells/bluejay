@@ -7,33 +7,52 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <img src="logo.png" alt="BlueJay Logo" class="logo" />
-      <div class="menu-icon">&#9776;</div>
-      <ul class="dropdown-menu">
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="https://calendly.com/askbluejay">Connect</a></li>
-        <li><a href="legal.html">Legal</a></li>
-      </ul>
-    </header>
-
-    <div class="slogan">
-      <h1>Save Smart. Scale Faster. Do More.</h1>
-    </div>
-
-    <div class="chat-card">
-      <div id="chatlog" class="chatlog"></div>
-      <div class="input-row">
-        <input id="user-input" type="text" placeholder="Ask BlueJay..." />
-        <button id="send-btn">Send</button>
+  <header>
+    <img src="frontend/bluejay_logo.png" alt="BlueJay Logo" class="logo" />
+    <nav class="dropdown">
+      <button class="dropbtn">Menu</button>
+      <div class="dropdown-content">
+        <a href="blog.html">Blog</a>
+        <a href="https://calendly.com/askbluejay">Connect</a>
+        <a href="legal.html">Legal</a>
       </div>
-    </div>
+    </nav>
+  </header>
 
-    <footer class="legal-footer">
-      BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.
-    </footer>
-  </div>
+  <section class="hero">
+    <h1>Save Smart. Scale Faster. Do More.</h1>
+    <p>The AI-powered merchant processing assistant built for small businesses.</p>
+  </section>
+
+  <section class="features">
+    <div class="feature-card">
+      <img src="frontend/icon_profit.png" alt="Profits Icon" />
+      <h3>Maximize Profits</h3>
+      <p>Eliminate 93% of card processing fees with 0% cost programs.</p>
+    </div>
+    <div class="feature-card">
+      <img src="frontend/icon_insights.png" alt="Insights Icon" />
+      <h3>Smarter Insights</h3>
+      <p>Tap into AI to track savings, switch providers, and optimize cash flow.</p>
+    </div>
+    <div class="feature-card">
+      <img src="frontend/icon_fees.png" alt="Fees Icon" />
+      <h3>Cut Fees Fast</h3>
+      <p>Switch from Stripe, Square or Clover in minutes with expert guidance.</p>
+    </div>
+  </section>
+
+  <section class="chat-container">
+    <div id="chatlog" class="chatlog"></div>
+    <div class="input-row">
+      <input id="user-input" type="text" placeholder="Ask BlueJay..." />
+      <button id="send-btn">Send</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
+  </footer>
 
   <script src="chat.js"></script>
 </body>
