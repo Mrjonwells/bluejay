@@ -46,37 +46,33 @@ def save_blog_file(title, body):
     with open(output_path, "w") as f:
         f.write(body)
 
-    print(f"Blog saved: {output_path}")
+    print(f"✅ Blog saved: {output_path}")
     return filename, title
 
 def update_blog_index(filename, title, hook):
-    index_path = BLOG_INDEX_PATH
-    with open(index_path, "r") as f:
+    with open(BLOG_INDEX_PATH, "r") as f:
         lines = f.readlines()
 
-    # Find where to insert new blog entry
-    insertion_point = None
-    for i, line in enumerate(lines):
-        if "<ul>" in line:
-            insertion_point = i + 1
-            break
+    insertion_point = next((i + 1 for i, line in enumerate(lines) if "<ul>" in line), None)
 
     if insertion_point is not None:
         entry = f'  <li><a href="blogs/{filename}">{title}</a><br><small>{hook}</small></li>\n'
         lines.insert(insertion_point, entry)
 
-        with open(index_path, "w") as f:
+        with open(BLOG_INDEX_PATH, "w") as f:
             f.writelines(lines)
 
-        print(f"Updated blog index with: {title}")
+        print(f"✅ Updated blog index with: {title}")
+    else:
+        print("❌ <ul> tag not found in blog index.")
 
 def run():
     keywords = load_keywords()
     if not keywords:
-        print("No keywords found.")
+        print("❌ No keywords found.")
         return
 
-    topic = keywords[0]  # take the first keyword
+    topic = keywords[0]
     title, hook, body = generate_blog_content(topic)
     filename, saved_title = save_blog_file(title, body)
     update_blog_index(filename, saved_title, hook)
