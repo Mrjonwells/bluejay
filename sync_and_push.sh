@@ -1,12 +1,20 @@
 #!/bin/bash
 
-echo "✅ Adding blog and index files..."
+# Set Git identity
+git config --global user.name "BlueJay Bot"
+git config --global user.email "bluejay@askbluejay.ai"
 
-# Try to stage all new/modified blog files, but don’t fail if none exist
-find frontend/blogs/ -name "*.html" -exec git add {} \; 2>/dev/null || true
-git add frontend/blog.html 2>/dev/null || true
+echo "✅ Adding blog and index files..."
+find frontend/blogs/ -type f -name "*.html" -exec git add {} \;
+git add frontend/blog.html || true
 
 echo "🚀 Committing all updates..."
-git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
+git commit -m "Auto-sync SEO and blog updates from BlueJay" || true
+
+echo "🔄 Pulling latest from GitHub..."
+git pull origin main --rebase || true
+
+echo "🔼 Pushing to GitHub..."
+git push origin main || true
 
 echo "✅ Sync complete."
