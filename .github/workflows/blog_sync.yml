@@ -1,4 +1,4 @@
-name: Sync BlueJay Blog
+name: Blog Auto Sync
 
 on:
   schedule:
@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  sync-blog:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Repo
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -18,25 +18,22 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
+      - name: Install Dependencies
+        run: pip install openai
 
-      - name: Run blog generator
-        run: python backend/generators/blog_generator_runner.py
+      - name: Run Blog Generator
+        run: python3 backend/generators/blog_generator_runner.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Set up Git config
         run: |
-          git config user.name "BlueJay Bot"
-          git config user.email "bluejay@askbluejay.ai"
+          git config --global user.email "bluejay@askbluejay.ai"
+          git config --global user.name "BlueJay Bot"
           git remote add origin https://Mrjonwells:${{ secrets.GITHUB_TOKEN }}@github.com/Mrjonwells/bluejay.git
 
-      - name: Pull latest with rebase
-        run: git pull origin main --rebase || true
-
-      - name: Commit and push changes
+      - name: Commit and Push Changes
         run: |
-          git add frontend/blog.html frontend/blogs/*.html
+          git add frontend/blogs/*.html frontend/blog.html || true
           git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "No changes to commit"
-          git push origin HEAD:main
+          git push --force origin HEAD:main
