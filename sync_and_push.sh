@@ -1,21 +1,17 @@
 #!/bin/bash
 
-# Set Git user identity
-git config --global user.email "auto@askbluejay.ai"
-git config --global user.name "BlueJay AutoBot"
+echo "🔁 Running SEO sync..."
+python3 dev_sync_seo.py || echo "SEO sync skipped or failed."
 
-# Move to project root (assumes this script runs from /opt/render/project/src/)
-cd "$(dirname "$0")"
+echo "✅ Adding blog and index files..."
+git config user.email "bluejay@askbluejay.ai"
+git config user.name "BlueJay Bot"
 
-# Add blog files explicitly
-git add frontend/blog.html
-git add frontend/blogs/*.html
+git add frontend/blog.html frontend/blogs/*.html || echo "Blog files not found."
+git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
 
-# Commit changes if any
-git diff --cached --quiet || git commit -m "Auto-sync SEO and blog updates from BlueJay"
-
-# Pull latest from GitHub main before pushing
+echo "🔄 Pulling latest from GitHub..."
 git pull origin main --rebase || echo "Pull failed (non-blocking)."
 
-# Push to GitHub using token
-git push https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git main || echo "Push failed."
+echo "🔼 Pushing to GitHub..."
+git push https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git || echo "Push failed."
