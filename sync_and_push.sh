@@ -1,26 +1,28 @@
 #!/bin/bash
 
-# Set identity permanently (safe across runs)
-git config --global user.name "BlueJay Bot"
+# Set git identity if not already set
 git config --global user.email "bluejay@askbluejay.ai"
+git config --global user.name "BlueJay Bot"
 
-# Ensure remote is configured once
-git remote get-url origin > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-  git remote add origin https://Mrjonwells:${BLUEJAY_PAT}@github.com/Mrjonwells/bluejay.git
+# Ensure we're in a git repo
+if [ ! -d .git ]; then
+  echo "Not a git repository. Exiting."
+  exit 1
 fi
 
-# Add and commit updates
+# Create blogs folder if missing
+mkdir -p frontend/blogs
+
 echo "✅ Adding blog and index files..."
-git add frontend/blogs/*.html frontend/blog.html
+git add frontend/blogs/*.html frontend/blog.html || true
 
 echo "🚀 Committing all updates..."
-git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
+git commit -m "Auto-sync SEO and blog updates from BlueJay" || true
 
 echo "🔄 Pulling latest from GitHub..."
-git pull origin main --rebase || echo "Pull failed (non-blocking)."
+git pull --rebase origin main || true
 
 echo "🔼 Pushing to GitHub..."
-git push origin main || echo "Push failed."
+git push origin main || true
 
 echo "✅ Sync complete."
