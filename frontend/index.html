@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueJay</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="background">
+    <!-- Dropdown Menu -->
+    <div class="menu-icon" onclick="toggleDropdown()">&#9776;</div>
+    <div id="dropdown" class="dropdown-menu">
+      <a href="blog.html">Blog</a>
+      <a href="https://calendly.com/askbluejay" target="_blank">Connect</a>
+      <a href="legal.html">Legal</a>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <img src="logo.png" alt="BlueJay Logo" class="logo" />
+      <h1 class="title">BlueJay</h1>
+      <p class="subtitle">Save smart. Scale faster. Do more!</p>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+      <div id="chatlog" class="chatlog"></div>
+      <div class="input-row">
+        <input id="user-input" type="text" placeholder="Ask BlueJay..." />
+        <button id="send-btn">Send</button>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div class="features">
+      <div class="feature">
+        <img src="icons/store.png" alt="Store Icon" />
+        <p>Boost your profits</p>
+      </div>
+      <div class="feature">
+        <img src="icons/insights.png" alt="Insights Icon" />
+        <p>AI-powered insights</p>
+      </div>
+      <div class="feature">
+        <img src="icons/fees.png" alt="Fees Icon" />
+        <p>Lower processing costs</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p class="legal">BlueJay and AskBlueJay ai are the property of Fortified Capital LLC. All rights reserved.</p>
+  </div>
+
+  <script src="chat.js"></script>
+</body>
+</html>
