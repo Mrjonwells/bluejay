@@ -1,29 +1,46 @@
 #!/bin/bash
-
-# Exit on any error
 set -e
 
-echo "🔁 Running SEO sync..."
-python3 dev_sync_seo.py || echo "SEO sync skipped or failed."
+echo "🔁 Syncing blog content..."
 
-echo "✅ Adding blog and index files..."
+# Ensure we're at the repo root
+cd "$(dirname "$0")"
+
+# Set Git identity (Render doesn't do this by default)
 git config user.name "BlueJay Bot"
 git config user.email "bot@askbluejay.ai"
 
-# Stage only relevant files
-git add frontend/blogs/*.html || echo "No blog posts found to add."
-git add frontend/blog.html || echo "No index file found."
+# Ensure 'origin' is set
+git remote remove origin 2>/dev/null || true
+git remote add origin https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git
 
-# Commit if there are staged changes
-if ! git diff --cached --quiet; then
-  echo "🚀 Committing all updates..."
-  git commit -m "Auto-sync SEO and blog updates from BlueJay"
+# SEO sync first
+echo "🔁 Running SEO sync..."
+if [ -f backend/dev_sync_seo.py ]; then
+  python3 backend/dev_sync_seo.py || echo "SEO sync skipped or failed."
 else
-  echo "Nothing to commit."
+  echo "SEO script not found, skipping."
 fi
 
-echo "🔄 Pulling latest from GitHub..."
-git pull origin main || echo "Pull failed (non-blocking)."
+# Stage all generated blog files and blog index
+echo "✅ Adding blog and index files..."
+git add frontend/blog.html || echo "No index file found."
+git add frontend/blogs/*.html || echo "No blog posts found to add."
 
+# Commit changes if any
+if git diff --cached --quiet; then
+  echo "Nothing to commit."
+else
+  echo "🚀 Committing all updates..."
+  git commit -m "Auto-sync SEO and blog updates from BlueJay"
+fi
+
+# Pull latest (non-blocking)
+echo "🔄 Pulling latest from GitHub..."
+git pull origin main --rebase || echo "Pull failed (non-blocking)."
+
+# Push to GitHub
 echo "🔼 Pushing to GitHub..."
-git push https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git main || echo "Push failed."
+git push origin HEAD:main || echo "Push failed."
+
+echo "✅ Sync complete."
