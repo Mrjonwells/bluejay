@@ -5,9 +5,9 @@ from openai import OpenAI
 
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-SEO_PATH = "../seo/seo_config.json"
-BLOG_OUTPUT_DIR = "../../frontend/blogs"
-BLOG_INDEX = "../../frontend/blog.html"
+SEO_PATH = "backend/seo/seo_config.json"
+BLOG_OUTPUT_DIR = "frontend/blogs"
+BLOG_INDEX_PATH = "frontend/blog.html"
 
 def load_keywords():
     with open(SEO_PATH, "r") as f:
@@ -16,7 +16,7 @@ def load_keywords():
 
 def generate_article(topic):
     prompt = f"""
-Write a blog post (max 450 words) for small business owners on the topic: "{topic}".
+Write a blog post (max 600 words) for small business owners on the topic: "{topic}".
 Use a helpful, persuasive tone. Mention how AskBlueJay.ai helps lower merchant processing fees.
 Start with a punchy intro. Close with a clear call-to-action. Avoid repetition.
 Return only the body content. We'll wrap it in HTML later.
@@ -61,28 +61,7 @@ def save_post(title, content):
     print(f"Blog saved: {filepath}")
     return filename, title, content, date_str
 
-def update_blog_index():
-    blog_dir = BLOG_OUTPUT_DIR
-    blog_files = sorted(os.listdir(blog_dir), reverse=True)
-    entries = []
-
-    for file in blog_files:
-        if file.endswith(".html"):
-            filepath = os.path.join(blog_dir, file)
-            with open(filepath, "r") as f:
-                content = f.read()
-
-            title_start = content.find("<h1>") + 4
-            title_end = content.find("</h1>")
-            title = content[title_start:title_end].strip()
-
-            summary_start = content.find("<div class=\"content\">") + 22
-            summary_end = content.find("</div>", summary_start)
-            summary = content[summary_start:summary_end].strip().replace("<br><br>", " ")[:180]
-
-            date_str = "-".join(file.split("-")[0:3])
-            entries.append((file, title, summary, date_str))
-
+def update_blog_index(entries):
     header = (
         "<!DOCTYPE html>\n"
         "<html lang=\"en\">\n"
@@ -98,13 +77,14 @@ def update_blog_index():
         "<ul>\n"
     )
     links = "".join([
-        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2]}...</em></li>\n"
+        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:180].strip()}...</em></li>\n"
         for e in entries
     ])
     footer = "</ul>\n</div>\n</body>\n</html>"
 
-    with open(BLOG_INDEX, "w") as f:
-        f.write(header + links + footer)
+    full_html = header + links + footer
+    with open(BLOG_INDEX_PATH, "w") as f:
+        f.write(full_html)
 
 def run():
     keywords = load_keywords()
@@ -115,12 +95,10 @@ def run():
     topic = keywords[0]
     article = generate_article(topic)
     filename, title, content, date_str = save_post(topic.title(), article)
+    update_blog_index([(filename, title, content, date_str)])
+    print(f"Updated blog index with: {title}")
 
-    # Fix: Call index updater WITHOUT overwriting with just 1
-    update_blog_index()
-
-    # Sync
-    os.system("cd ../../ && python3 dev_sync_seo.py && bash sync_and_push.sh")
+    os.system("bash sync_and_push.sh")
 
 if __name__ == "__main__":
     run()
