@@ -2,41 +2,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatLog = document.getElementById("chatlog");
   const userInput = document.getElementById("user-input");
   const sendBtn = document.getElementById("send-btn");
-  const menuIcon = document.querySelector(".menu-icon");
-  const dropdownMenu = document.querySelector(".dropdown-menu");
 
-  // Toggle dropdown menu
-  menuIcon.addEventListener("click", () => {
-    dropdownMenu.classList.toggle("show");
-  });
-
-  // Send message handler
-  function appendMessage(sender, text) {
-    const message = document.createElement("div");
-    message.className = sender === "user" ? "user-bubble" : "assistant-bubble";
-    message.innerText = text;
-    chatLog.appendChild(message);
+  const appendMessage = (sender, text) => {
+    const msg = document.createElement("div");
+    msg.className = sender === "user" ? "user-bubble" : "assistant-bubble";
+    msg.textContent = text;
+    chatLog.appendChild(msg);
     chatLog.scrollTop = chatLog.scrollHeight;
-  }
+  };
 
-  async function sendMessage() {
+  const sendMessage = async () => {
     const message = userInput.value.trim();
     if (!message) return;
     appendMessage("user", message);
     userInput.value = "";
 
-    appendMessage("assistant", "BlueJay is typing...");
+    appendMessage("assistant", "Thinking...");
 
-    const response = await fetch("https://bluejay-mjpg.onrender.com/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
+    try {
+      const response = await fetch("https://bluejay-mjpg.onrender.com/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
 
-    const data = await response.json();
-    chatLog.lastChild.remove(); // Remove "typing..."
-    appendMessage("assistant", data.reply);
-  }
+      const data = await response.json();
+      const botMessage = data.reply || "Sorry, something went wrong.";
+      chatLog.lastChild.remove();
+      appendMessage("assistant", botMessage);
+    } catch (err) {
+      chatLog.lastChild.remove();
+      appendMessage("assistant", "Error: Could not reach BlueJay.");
+    }
+  };
 
   sendBtn.addEventListener("click", sendMessage);
   userInput.addEventListener("keypress", (e) => {
