@@ -3,28 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BlueJay</title>
+  <title>AskBlueJay.ai</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="background">
-    <!-- Dropdown Menu -->
-    <div class="menu-icon" onclick="toggleDropdown()">&#9776;</div>
-    <div id="dropdown" class="dropdown-menu">
-      <a href="blog.html">Blog</a>
-      <a href="https://calendly.com/askbluejay" target="_blank">Connect</a>
-      <a href="legal.html">Legal</a>
-    </div>
-
-    <!-- Header -->
-    <div class="header">
+  <div class="container">
+    <header class="header">
       <img src="logo.png" alt="BlueJay Logo" class="logo" />
-      <h1 class="title">BlueJay</h1>
-      <p class="subtitle">Save smart. Scale faster. Do more!</p>
+      <div class="menu-icon">&#9776;</div>
+      <ul class="dropdown-menu">
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="https://calendly.com/askbluejay">Connect</a></li>
+        <li><a href="legal.html">Legal</a></li>
+      </ul>
+    </header>
+
+    <div class="slogan">
+      <h1>Save Smart. Scale Faster. Do More.</h1>
     </div>
 
-    <!-- Chat Container -->
-    <div class="chat-container">
+    <div class="chat-card">
       <div id="chatlog" class="chatlog"></div>
       <div class="input-row">
         <input id="user-input" type="text" placeholder="Ask BlueJay..." />
@@ -32,24 +30,9 @@
       </div>
     </div>
 
-    <!-- Features -->
-    <div class="features">
-      <div class="feature">
-        <img src="icons/store.png" alt="Store Icon" />
-        <p>Boost your profits</p>
-      </div>
-      <div class="feature">
-        <img src="icons/insights.png" alt="Insights Icon" />
-        <p>AI-powered insights</p>
-      </div>
-      <div class="feature">
-        <img src="icons/fees.png" alt="Fees Icon" />
-        <p>Lower processing costs</p>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <p class="legal">BlueJay and AskBlueJay ai are the property of Fortified Capital LLC. All rights reserved.</p>
+    <footer class="legal-footer">
+      BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.
+    </footer>
   </div>
 
   <script src="chat.js"></script>
