@@ -12,16 +12,17 @@ git remote remove origin 2>/dev/null
 git remote add origin https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git
 
 echo "⏪ Resetting detached HEAD (if any)..."
-git checkout main || git checkout -b main
 git fetch origin main
-git reset --hard origin/main || echo "Remote reset failed."
+git checkout main
+git reset --hard origin/main
 
 echo "🧼 Cleaning any local untracked files..."
 git clean -fd
 
 echo "✅ Adding blog and index files..."
-git add frontend/blog.html frontend/blogs/*.html || echo "No blog files to add."
-git diff --cached --quiet || git commit -m "Auto-sync SEO and blog updates from BlueJay"
+ls -la frontend/blogs/
+git add frontend/blog.html frontend/blogs/*.html || echo "Blog files not found."
+git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
 
 echo "🔄 Pulling latest from GitHub..."
 git pull origin main --rebase || echo "Pull failed (non-blocking)."
@@ -30,3 +31,16 @@ echo "🔼 Pushing to GitHub..."
 git push origin main || echo "Push failed."
 
 echo "✅ Blog sync complete."
+
+# Rotate topic (optional cleanup)
+if [ -f backend/seo/seo_config.json ]; then
+  echo "♻️ Rotating SEO topic..."
+  python3 -c '
+import json
+p = "backend/seo/seo_config.json"
+with open(p, "r") as f: data = json.load(f)
+if data.get("keywords"): data["keywords"] = data["keywords"][1:] + data["keywords"][:1]
+with open(p, "w") as f: json.dump(data, f, indent=2)
+print("Next topic:", data["keywords"][0])
+' || echo "Keyword rotation failed."
+fi
