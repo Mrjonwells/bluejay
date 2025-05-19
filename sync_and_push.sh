@@ -1,31 +1,42 @@
 #!/bin/bash
-set -e
+echo "==> Running blog and SEO sync..."
 
-echo "📂 Switching to main branch..."
+# Set up Git identity
+git config user.name "BlueJay Bot"
+git config user.email "ask@askbluejay.ai"
+
+# Checkout main branch
 git checkout main || git checkout -b main
 
-echo "🔄 Pulling latest from GitHub..."
-git pull --rebase --autostash origin main || echo "Non-blocking pull failure."
-
+# Clean up
 echo "🧼 Cleaning any local untracked files..."
-rm -f frontend/blogs/.txt || true
+git reset --hard
+git clean -fd
 
+# Add changes
 echo "✅ Adding blog and index files..."
-ls -l frontend/blogs || echo "No blogs directory yet"
+git add frontend/blog.html frontend/blogs/*.html 2>/dev/null || echo "No blog posts found to add."
 
-# Ensure frontend/blog.html and all blog posts are tracked
-git add frontend/blog.html || echo "No index file found."
-git add frontend/blogs/*.html || echo "No blog posts found to add."
+# Commit if needed
+if ! git diff --cached --quiet; then
+  echo "🚀 Committing all updates..."
+  git commit -m "Auto-sync SEO and blog updates from BlueJay"
+else
+  echo "Nothing to commit."
+fi
 
-echo "🚀 Committing all updates..."
-git config --global user.email "ask@askbluejay.ai"
-git config --global user.name "BlueJay Bot"
-git commit -am "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
+# Pull before push
+echo "🔄 Pulling latest from GitHub..."
+git pull origin main --rebase --autostash || git rebase --skip || echo "Pull failed (non-blocking)."
 
+# Push
 echo "🔼 Pushing to GitHub..."
-git push origin main || echo "Push failed."
+git push https://github_pat_***REDACTED***@github.com/Mrjonwells/bluejay.git main || echo "Push failed."
 
-echo "🔁 Running SEO sync..."
-python3 backend/dev_sync_seo.py || echo "SEO sync skipped or failed."
+echo "✅ Sync complete."
 
-echo "✅ Blog sync complete."
+# Rotate SEO keyword (if applicable)
+if [ -f backend/seo/seo_config.json ]; then
+  echo "♻️ Rotating SEO topic..."
+  python3 backend/seo/rotate_keyword.py
+fi
