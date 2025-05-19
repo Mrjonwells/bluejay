@@ -25,10 +25,10 @@ jobs:
         id: detect
         run: |
           git add frontend/blogs/ frontend/blog.html || true
-          git diff --cached --quiet || echo "changes_detected=true" >> $GITHUB_OUTPUT
+          git diff --cached --exit-code || echo "CHANGES_DETECTED=true" >> $GITHUB_ENV
 
       - name: Commit and push
-        if: steps.detect.outputs.changes_detected == 'true'
+        if: env.CHANGES_DETECTED == 'true'
         run: |
           git commit -m "Auto-sync SEO and blog updates from BlueJay"
           git push https://x-access-token:${{ secrets.BLUEJAY_PAT }}@github.com/${{ env.REPO_NAME }}.git
