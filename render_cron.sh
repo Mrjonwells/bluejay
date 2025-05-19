@@ -9,8 +9,8 @@ git config --global user.name "BlueJay Bot"
 # 2. Generate the blog and update the index
 python3 backend/generators/blog_generator_runner.py
 
-# 3. Check out the main branch explicitly
-git checkout main
+# 3. Check out or create main branch safely
+git checkout -B main
 
 # 4. Stage changes
 git add frontend/blogs/ frontend/blog.html
