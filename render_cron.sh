@@ -1,22 +1,23 @@
 #!/bin/bash
 
-# Git identity
+cd "$(dirname "$0")"
+
+# 1. Ensure Git identity is configured
 git config --global user.email "bluejay@askbluejay.ai"
 git config --global user.name "BlueJay Bot"
 
-# Run generator
-cd backend/generators || exit 1
-python3 blog_generator_runner.py || exit 1
-cd ../.. || exit 1
+# 2. Generate the blog and update the index
+python3 backend/generators/blog_generator_runner.py
 
-# Commit changes
-git add frontend/blogs/ frontend/blog.html || exit 1
+# 3. Check out the main branch explicitly
+git checkout main
 
+# 4. Stage changes
+git add frontend/blogs/ frontend/blog.html
+
+# 5. Only commit if there are changes
 if ! git diff --cached --quiet; then
   git commit -m "Auto-sync SEO and blog updates from BlueJay"
-  git branch -f main origin/main
-  git checkout main
-  git pull origin main --rebase
   git push https://x-access-token:${BLUEJAY_PAT}@github.com/Mrjonwells/bluejay.git main
 else
   echo "No changes to commit."
