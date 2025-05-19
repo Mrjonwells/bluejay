@@ -7,6 +7,10 @@ echo "✅ Adding blog and index files..."
 git config user.email "bluejay@askbluejay.ai"
 git config user.name "BlueJay Bot"
 
+# Ensure we're on a branch and clean state
+git checkout main || git checkout -b main
+git reset --hard
+
 git add frontend/blog.html frontend/blogs/*.html || echo "Blog files not found."
 git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
 
@@ -14,4 +18,4 @@ echo "🔄 Pulling latest from GitHub..."
 git pull origin main --rebase || echo "Pull failed (non-blocking)."
 
 echo "🔼 Pushing to GitHub..."
-git push https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git || echo "Push failed."
+git push https://$GITHUB_PAT@github.com/Mrjonwells/bluejay.git main || echo "Push failed."
