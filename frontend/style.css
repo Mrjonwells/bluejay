@@ -1,126 +1,166 @@
+/* style.css — BlueJay Facelift Version */
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #0a0a0a;
-  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0b0b0b;
+  color: white;
 }
 
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #0b1a2f;
-  padding: 10px 20px;
+  background-color: #0b0b0b;
+  padding: 20px;
 }
 
 .logo {
-  height: 60px;
+  height: 48px;
 }
 
-.dropdown {
+nav.dropdown {
   position: relative;
+  display: inline-block;
 }
 
-.dropbtn {
-  background-color: #1976d2;
-  color: white;
-  padding: 10px;
+nav .dropbtn {
+  background-color: #0b0b0b;
+  color: #00aaff;
   font-size: 16px;
   border: none;
   cursor: pointer;
 }
 
-.dropdown-content {
+nav .dropdown-content {
   display: none;
   position: absolute;
-  right: 0;
-  background-color: #1a1a1a;
+  background-color: #111;
   min-width: 160px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
   z-index: 1;
 }
 
-.dropdown-content a {
+nav .dropdown-content a {
   color: white;
   padding: 12px 16px;
   display: block;
   text-decoration: none;
 }
 
-.dropdown:hover .dropdown-content {
+nav .dropdown-content a:hover {
+  background-color: #222;
+}
+
+nav.dropdown:hover .dropdown-content {
   display: block;
 }
 
 .hero {
   text-align: center;
-  padding: 40px 20px;
-  background: linear-gradient(to bottom, #111c2e, #0a0a0a);
+  padding: 60px 20px 30px;
+}
+
+.hero h1 {
+  color: #00aaff;
+  font-size: 2rem;
+}
+
+.hero p {
+  font-size: 1rem;
+  color: #ccc;
+  margin-top: 10px;
 }
 
 .features {
   display: flex;
-  justify-content: space-around;
   flex-wrap: wrap;
-  padding: 30px 10px;
-  background-color: #121212;
+  justify-content: center;
+  gap: 30px;
+  padding: 40px 20px;
 }
 
 .feature-card {
-  width: 300px;
-  margin: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   padding: 20px;
-  background: #1e1e1e;
-  border-radius: 8px;
+  width: 280px;
   text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .feature-card img {
-  height: 60px;
+  height: 72px;
+  margin-bottom: 12px;
+}
+
+.feature-card h3 {
+  color: #00aaff;
   margin-bottom: 10px;
+}
+
+.feature-card p {
+  color: #ccc;
+  font-size: 0.95rem;
 }
 
 .chat-container {
-  background-color: #181818;
+  margin: 30px auto 20px;
+  max-width: 500px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
   padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  border-radius: 10px;
-  margin-top: 30px;
 }
 
 .chatlog {
-  height: 300px;
+  max-height: 300px;
   overflow-y: auto;
-  border: 1px solid #444;
-  padding: 10px;
   margin-bottom: 10px;
-  background: #0f0f0f;
 }
 
 .input-row {
   display: flex;
-  gap: 10px;
 }
 
-#user-input {
+.input-row input {
   flex: 1;
   padding: 10px;
-  border-radius: 6px;
-  border: none;
+  border: 1px solid #333;
+  border-radius: 8px 0 0 8px;
+  background-color: #111;
+  color: white;
 }
 
-#send-btn {
-  padding: 10px 20px;
-  background-color: #1976d2;
-  border: none;
+.input-row button {
+  background-color: #00aaff;
   color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 0 8px 8px 0;
   cursor: pointer;
-  border-radius: 6px;
+}
+
+.input-row button:hover {
+  background-color: #007acc;
 }
 
 footer {
   text-align: center;
-  font-size: 14px;
-  color: #888;
-  padding: 20px;
+  padding: 30px 10px;
+  color: #777;
+  font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .features {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
