@@ -3,14 +3,17 @@
 echo "🔁 Running SEO sync..."
 python3 dev_sync_seo.py || echo "SEO sync skipped or failed."
 
-echo "✅ Adding blog and index files..."
+echo "✅ Preparing Git config..."
 git config user.email "bluejay@askbluejay.ai"
 git config user.name "BlueJay Bot"
 
-# Ensure we're on a branch and clean state
+echo "⏪ Resetting any detached HEAD state..."
+git fetch origin main
 git checkout main || git checkout -b main
-git reset --hard
+git reset --hard origin/main
+git clean -fd
 
+echo "✅ Adding blog and index files..."
 git add frontend/blog.html frontend/blogs/*.html || echo "Blog files not found."
 git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit."
 
