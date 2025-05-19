@@ -1,22 +1,30 @@
-def update_blog_index(new_entry):
+def update_blog_index():
+    blog_dir = BLOG_OUTPUT_DIR
+    blog_files = sorted(os.listdir(blog_dir), reverse=True)
     entries = []
-    if os.path.exists(BLOG_INDEX):
-        with open(BLOG_INDEX, "r") as f:
-            lines = f.readlines()
-            for line in lines:
-                if line.strip().startswith("<li><a href=\"blogs/"):
-                    parts = line.strip().split(">")
-                    link = parts[1].split("<")[0].split("/")[-1]
-                    title = parts[2].split("<")[0]
-                    date_line = next((l for l in lines if f">{title}</a><br>" in l), "")
-                    date = date_line.split("–")[0].split("</em>")[0].strip().split()[-1]
-                    summary = date_line.split("–")[-1].split("...")[0].strip()
-                    entries.append((link, title, summary, date))
 
-    # Avoid duplication
-    entries = [e for e in entries if e[0] != new_entry[0]]
-    entries.insert(0, new_entry)
+    for file in blog_files:
+        if file.endswith(".html"):
+            filepath = os.path.join(blog_dir, file)
+            with open(filepath, "r") as f:
+                content = f.read()
 
+            # Extract title and first sentence as summary
+            title_start = content.find("<h1>") + 4
+            title_end = content.find("</h1>")
+            title = content[title_start:title_end].strip()
+
+            summary_start = content.find("<div class=\"content\">") + 22
+            summary_end = content.find("</div>", summary_start)
+            summary = content[summary_start:summary_end].strip().replace("<br><br>", " ")[:180]
+
+            # Extract date from filename
+            date_str = file.split("-")[0:3]
+            date_str = "-".join(date_str)
+
+            entries.append((file, title, summary, date_str))
+
+    # Build blog index
     header = (
         "<!DOCTYPE html>\n"
         "<html lang=\"en\">\n"
@@ -32,10 +40,11 @@ def update_blog_index(new_entry):
         "<ul>\n"
     )
     links = "".join([
-        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2][:180].strip()}...</em></li>\n"
+        f"<li><a href=\"blogs/{e[0]}\">{e[1]}</a><br><em>{e[3]} – {e[2]}...</em></li>\n"
         for e in entries
     ])
     footer = "</ul>\n</div>\n</body>\n</html>"
 
+    full_html = header + links + footer
     with open(BLOG_INDEX, "w") as f:
-        f.write(header + links + footer)
+        f.write(full_html)
