@@ -1,103 +1,74 @@
 import os
 import json
-from datetime import datetime
-from openai import OpenAI
+import datetime
+from pathlib import Path
 
-# Setup
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SEO_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "seo", "seo_config.json"))
-BLOG_OUTPUT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "frontend", "blogs"))
-BLOG_INDEX_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "frontend", "blog.html"))
+SEO_PATH = "backend/seo/seo_config.json"
+BLOG_OUTPUT_DIR = "frontend/blogs"
+BLOG_INDEX_PATH = "frontend/blog.html"
 
 def load_keywords():
-    print("Loading SEO config from:", SEO_PATH)
     with open(SEO_PATH, "r") as f:
-        seo = json.load(f)
-    return seo.get("keywords", [])
+        return json.load(f).get("keywords", [])
 
-def generate_article(topic):
-    prompt = f"""
-Write a 600-word blog post for small business owners on the topic: "{topic}".
-Use a helpful, persuasive tone. Mention how AskBlueJay.ai helps lower merchant processing fees.
-Include a short intro, body, and CTA at the end.
-"""
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
-    )
-    return response.choices[0].message.content.strip()
+def generate_blog_content(topic):
+    date = datetime.datetime.now().strftime("%B %d, %Y")
+    title = topic.title()
+    hook = f"Learn how {topic} is transforming the way businesses handle payments in 2025."
 
-def save_post(title, content):
-    safe_title = title.lower().replace(" ", "-").replace("/", "-")
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    filename = f"{date_str}-{safe_title}.html"
-    filepath = os.path.join(BLOG_OUTPUT_DIR, filename)
+    body = f"""
+    <html>
+    <head>
+      <title>{title}</title>
+      <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+      <div class="blog-post">
+        <h1>{title}</h1>
+        <p><em>Published on {date}</em></p>
+        <p>{hook}</p>
+        <p>{topic} is one of the top trends in the merchant processing world right now. Businesses are using it to cut costs, improve efficiency, and gain an edge over competitors.</p>
+        <p>BlueJay is here to guide you through these changes with insights, automation, and powerful integrations.</p>
+        <p>Stay tuned for more.</p>
+      </div>
+    </body>
+    </html>
+    """.strip()
+    return title, hook, body
 
-    formatted_content = content.replace("\n", "<br><br>")
+def save_blog_file(title, body):
+    slug = datetime.datetime.now().strftime("%Y-%m-%d") + "-" + title.lower().replace(" ", "-")
+    filename = f"{slug}.html"
+    output_path = os.path.join(BLOG_OUTPUT_DIR, filename)
 
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{title} | AskBlueJay Blog</title>
-  <meta name="description" content="{title} - powered by AskBlueJay.ai">
-  <link rel="stylesheet" href="../style.css">
-</head>
-<body>
-  <div class="blog-post">
-    <h1>{title}</h1>
-    <p><em>Published {date_str}</em></p>
-    <div class="content">
-      {formatted_content}
-    </div>
-  </div>
-</body>
-</html>"""
+    Path(BLOG_OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
-    os.makedirs(BLOG_OUTPUT_DIR, exist_ok=True)
-    with open(filepath, "w") as f:
-        f.write(html)
+    with open(output_path, "w") as f:
+        f.write(body)
 
-    print(f"Blog saved: {filepath}")
+    print(f"Blog saved: {output_path}")
     return filename, title
 
-def update_blog_index(filename, title):
-    rel_path = f"blogs/{filename}"
-    new_entry = f'<li><a href="{rel_path}" target="_blank">{title}</a></li>\n'
+def update_blog_index(filename, title, hook):
+    index_path = BLOG_INDEX_PATH
+    with open(index_path, "r") as f:
+        lines = f.readlines()
 
-    if not os.path.exists(BLOG_INDEX_PATH):
-        with open(BLOG_INDEX_PATH, "w") as f:
-            f.write("\n".join([
-                "<!DOCTYPE html>",
-                "<html lang=\"en\">",
-                "<head>",
-                "  <meta charset=\"UTF-8\">",
-                "  <title>AskBlueJay Blog</title>",
-                "  <link rel=\"stylesheet\" href=\"style.css\">",
-                "</head>",
-                "<body>",
-                "<div class=\"blog-index\">",
-                "  <h1>AskBlueJay Blog</h1>",
-                "  <ul>",
-                f"    {new_entry}",
-                "  </ul>",
-                "</div>",
-                "</body>",
-                "</html>"
-            ]))
-    else:
-        with open(BLOG_INDEX_PATH, "r") as f:
-            lines = f.readlines()
-        for i, line in enumerate(lines):
-            if "<ul>" in line:
-                lines.insert(i + 1, new_entry)
-                break
-        with open(BLOG_INDEX_PATH, "w") as f:
+    # Find where to insert new blog entry
+    insertion_point = None
+    for i, line in enumerate(lines):
+        if "<ul>" in line:
+            insertion_point = i + 1
+            break
+
+    if insertion_point is not None:
+        entry = f'  <li><a href="blogs/{filename}">{title}</a><br><small>{hook}</small></li>\n'
+        lines.insert(insertion_point, entry)
+
+        with open(index_path, "w") as f:
             f.writelines(lines)
 
-    print(f"Updated blog index with: {title}")
+        print(f"Updated blog index with: {title}")
 
 def run():
     keywords = load_keywords()
@@ -105,12 +76,10 @@ def run():
         print("No keywords found.")
         return
 
-    topic = keywords[0]
-    article = generate_article(topic)
-    filename, title = save_post(topic.title(), article)
-    update_blog_index(filename, title)
-
-    os.system("bash ../../sync_and_push.sh")
+    topic = keywords[0]  # take the first keyword
+    title, hook, body = generate_blog_content(topic)
+    filename, saved_title = save_blog_file(title, body)
+    update_blog_index(filename, saved_title, hook)
 
 if __name__ == "__main__":
     run()
