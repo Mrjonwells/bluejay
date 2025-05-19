@@ -1,39 +1,37 @@
-name: Blog Auto Sync
+name: Blog + SEO Sync
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 * * * *'  # every hour
-  workflow_dispatch:
 
 jobs:
-  sync-blog:
+  blog_sync:
     runs-on: ubuntu-latest
 
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GITHUB_PAT: ${{ secrets.BLUEJAY_PAT }}
+
     steps:
-      - name: Checkout Repo
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: pip install openai
 
-      - name: Run Blog Generator
-        run: python3 backend/generators/blog_generator_runner.py
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Run blog generator
+        run: python backend/generators/blog_generator_runner.py
 
-      - name: Set up Git config
+      - name: Commit and push
         run: |
-          git config --global user.email "bluejay@askbluejay.ai"
-          git config --global user.name "BlueJay Bot"
-          git remote add origin https://Mrjonwells:${{ secrets.GITHUB_TOKEN }}@github.com/Mrjonwells/bluejay.git
-
-      - name: Commit and Push Changes
-        run: |
-          git add frontend/blogs/*.html frontend/blog.html || true
-          git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "No changes to commit"
-          git push --force origin HEAD:main
+          git config user.name "BlueJay Bot"
+          git config user.email "bluejay@askbluejay.ai"
+          git add frontend/blog.html frontend/blogs/*.html || true
+          git commit -m "Auto-sync SEO and blog updates from BlueJay" || echo "Nothing to commit"
+          git push https://Mrjonwells:${{ secrets.BLUEJAY_PAT }}@github.com/Mrjonwells/bluejay.git HEAD:main
