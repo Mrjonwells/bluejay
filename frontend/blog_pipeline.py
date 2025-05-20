@@ -9,9 +9,9 @@ from pathlib import Path
 BLOG_DIR = Path("frontend/blogs")
 BLOG_HTML = Path("frontend/blog.html")
 LOG_PATH = Path("backend/logs/interaction_log.jsonl")
-BLOG_DIR.mkdir(parents=True, exist_ok=True)
+SHARE_JSON = Path("backend/blog_summary.json")
 
-# Setup OpenAI
+BLOG_DIR.mkdir(parents=True, exist_ok=True)
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 def extract_keywords_from_logs():
@@ -39,10 +39,11 @@ def fetch_trending_keywords():
     trend_keywords = []
 
     for topic in related.values():
-        if topic and topic["top"] is not None:
-            trend_keywords += [row["query"] for row in topic["top"].head(5).to_dict("records")]
+        if topic and topic.get("top") is not None:
+            rows = topic["top"].head(5).to_dict("records")
+            trend_keywords += [row["query"] for row in rows]
 
-    return trend_keywords[:10]
+    return trend_keywords[:10] if trend_keywords else ["merchant cash discount"]
 
 def generate_title_and_post(topic):
     prompt = f"Write a short, engaging blog post for small business owners about '{topic}', highlighting value, savings, or switching processors. Title should be compelling, and content should sound natural and educational."
@@ -123,18 +124,26 @@ def update_blog_index():
 
     print("Blog index updated.")
 
+def write_summary_for_email(title, body, topic):
+    summary = {
+        "blog_title": title,
+        "blog_topic": topic,
+        "blog_summary": body.split("\n")[0].strip()
+    }
+    with open(SHARE_JSON, "w") as f:
+        json.dump(summary, f)
+    print("Blog summary saved for email report.")
+
 def main():
     topics_from_logs = extract_keywords_from_logs()
     trends = fetch_trending_keywords()
     candidates = topics_from_logs + trends
+    topic = candidates[0] if candidates else "merchant cash discount"
 
-    if not candidates:
-        candidates = ["cash discounting for merchants"]
-
-    topic = candidates[0]
     title, body = generate_title_and_post(topic)
     save_blog_post(title, body)
     update_blog_index()
+    write_summary_for_email(title, body, topic)
 
 if __name__ == "__main__":
     main()
