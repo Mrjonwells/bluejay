@@ -9,32 +9,32 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 20px 30px;
 }
 
 .logo {
-  height: 80px;
-  width: auto;
-  margin-left: 20px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 8px #0094ff);
+  height: 90px;
+  filter: drop-shadow(0 0 10px #0094ff);
+  transition: transform 0.2s ease-in-out;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.menu-icon {
+  height: 30px;
+  filter: drop-shadow(0 0 6px #0094ff);
+  cursor: pointer;
 }
 
 .dropdown {
   position: relative;
-  margin-right: 20px;
 }
 
 .dropbtn {
-  background-color: transparent;
+  background: transparent;
   border: none;
-  cursor: pointer;
-}
-
-.dropbtn img {
-  height: 30px;
-  width: 30px;
-  filter: drop-shadow(0 0 5px #0094ff);
 }
 
 .dropdown-content {
@@ -42,37 +42,29 @@ header {
   position: absolute;
   right: 0;
   background: transparent;
-  min-width: 120px;
+  text-align: right;
   z-index: 1;
+}
+
+.dropdown-content a {
+  color: #0094ff;
+  text-decoration: none;
+  display: block;
+  padding: 8px 0;
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-.dropdown-content a {
-  color: #0094ff;
-  padding: 10px;
-  display: block;
-  text-decoration: none;
-  background: transparent;
-  border-bottom: 1px solid #222;
-}
-
 .hero {
   text-align: center;
-  padding: 40px 20px 20px;
+  padding: 20px;
 }
 
 .hero h1 {
   font-size: 2.5em;
   color: #0094ff;
-  font-weight: bold;
-}
-
-.hero p {
-  margin-top: 10px;
-  font-size: 1.1em;
 }
 
 .chat-container {
@@ -120,8 +112,8 @@ header {
   display: flex;
   justify-content: center;
   gap: 20px;
+  flex-wrap: nowrap;
   padding: 30px 20px;
-  flex-wrap: wrap;
 }
 
 .feature-card {
