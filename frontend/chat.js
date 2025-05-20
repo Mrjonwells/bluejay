@@ -3,15 +3,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const userInput = document.getElementById("user-input");
   const sendBtn = document.getElementById("send-btn");
 
-  const appendMessage = (sender, text) => {
-    const bubble = document.createElement("div");
-    bubble.className = sender === "user" ? "user-bubble" : "bot-bubble";
-    bubble.innerText = text;
-    chatLog.appendChild(bubble);
+  function appendMessage(sender, message) {
+    const msg = document.createElement("div");
+    msg.className = sender === "user" ? "user-bubble" : "assistant-bubble";
+    msg.innerText = message;
+    chatLog.appendChild(msg);
     chatLog.scrollTop = chatLog.scrollHeight;
-  };
+  }
 
-  const sendMessage = async () => {
+  async function sendMessage() {
     const message = userInput.value.trim();
     if (!message) return;
 
@@ -22,18 +22,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch("https://bluejay-mjpg.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message })
       });
-
       const data = await response.json();
-      appendMessage("bot", data.reply || "Something went wrong.");
+      appendMessage("assistant", data.reply);
     } catch (err) {
-      appendMessage("bot", "Error: couldn't reach server.");
+      appendMessage("assistant", "Sorry, something went wrong.");
     }
-  };
+  }
 
   sendBtn.addEventListener("click", sendMessage);
-  userInput.addEventListener("keydown", (e) => {
+  userInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") sendMessage();
   });
 });
