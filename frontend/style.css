@@ -14,10 +14,10 @@ header {
 }
 
 .centered-logo {
-  height: 120px;
-  margin: 0 auto;
+  height: 80px;
+  margin: 10px auto 0 auto;
   display: block;
-  filter: drop-shadow(0 0 12px #00aaff);
+  filter: drop-shadow(0 0 10px #00aaff);
 }
 
 .dropdown {
@@ -190,7 +190,7 @@ footer {
 
 @media (max-width: 768px) {
   .centered-logo {
-    height: 90px;
+    height: 70px;
   }
 
   .dropbtn {
