@@ -15,9 +15,11 @@ header {
 
 .logo {
   display: block;
-  height: 120px;
+  width: 25vw;
   max-width: 300px;
-  object-fit: contain;
+  min-width: 120px;
+  height: auto;
+  filter: drop-shadow(0 0 12px #0094ff);
   margin-top: 10px;
 }
 
@@ -159,4 +161,24 @@ footer {
   font-size: 12px;
   padding: 20px;
   color: #888;
+}
+
+/* Responsive Enhancements */
+@media screen and (max-width: 600px) {
+  .logo {
+    width: 40vw;
+  }
+
+  .hero h1 {
+    font-size: 1.8em;
+  }
+
+  .feature-card {
+    width: 90%;
+  }
+
+  .dropbtn img {
+    height: 30px;
+    width: 30px;
+  }
 }
