@@ -10,47 +10,43 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 20px 30px;
+  flex-wrap: wrap;
 }
 
 .logo {
   height: 90px;
-  filter: drop-shadow(0 0 10px #0094ff);
-  transition: transform 0.2s ease-in-out;
-}
-
-.logo:hover {
-  transform: scale(1.05);
-}
-
-.menu-icon {
-  height: 30px;
-  filter: drop-shadow(0 0 6px #0094ff);
-  cursor: pointer;
+  filter: drop-shadow(0 0 10px #00aaff);
 }
 
 .dropdown {
   position: relative;
+  margin-left: auto;
 }
 
 .dropbtn {
-  background: transparent;
+  background: url("menu-icon.png") no-repeat center;
+  background-size: 30px;
   border: none;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
 }
 
 .dropdown-content {
   display: none;
   position: absolute;
+  top: 40px;
   right: 0;
-  background: transparent;
   text-align: right;
-  z-index: 1;
+  background: transparent;
 }
 
 .dropdown-content a {
-  color: #0094ff;
+  color: #00aaff;
   text-decoration: none;
   display: block;
-  padding: 8px 0;
+  margin: 10px 0;
+  font-weight: bold;
 }
 
 .dropdown:hover .dropdown-content {
@@ -59,19 +55,25 @@ header {
 
 .hero {
   text-align: center;
-  padding: 20px;
+  padding: 30px 20px 10px;
 }
 
 .hero h1 {
   font-size: 2.5em;
-  color: #0094ff;
+  color: #00aaff;
+}
+
+.hero p {
+  font-size: 1.1em;
+  color: #ccc;
+  margin-top: 10px;
 }
 
 .chat-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px 20px;
+  padding: 20px 20px;
 }
 
 .chatlog {
@@ -82,6 +84,33 @@ header {
   border-radius: 10px;
   margin-bottom: 10px;
   min-height: 100px;
+}
+
+.assistant-bubble {
+  background-color: #1e1e1e;
+  color: #00aaff;
+  padding: 10px 14px;
+  margin: 8px;
+  border-radius: 12px 12px 12px 0;
+  max-width: 75%;
+  align-self: flex-start;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
+}
+
+.user-bubble {
+  background-color: #004466;
+  color: #ffffff;
+  padding: 10px 14px;
+  margin: 8px;
+  border-radius: 12px 12px 0 12px;
+  max-width: 75%;
+  align-self: flex-end;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+}
+
+.chatlog > div {
+  display: inline-block;
+  clear: both;
 }
 
 .input-row {
@@ -112,8 +141,8 @@ header {
   display: flex;
   justify-content: center;
   gap: 20px;
-  flex-wrap: nowrap;
   padding: 30px 20px;
+  flex-wrap: wrap;
 }
 
 .feature-card {
@@ -142,4 +171,28 @@ footer {
   font-size: 12px;
   padding: 20px;
   color: #888;
+}
+
+@media (max-width: 768px) {
+  .logo {
+    height: 70px;
+  }
+
+  .features {
+    flex-direction: row;
+    justify-content: space-evenly;
+  }
+
+  .feature-card {
+    width: 100px;
+    padding: 10px;
+  }
+
+  .feature-card h3, .feature-card p {
+    font-size: 0.8em;
+  }
+
+  .dropbtn {
+    background-size: 25px;
+  }
 }
