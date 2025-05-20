@@ -1,22 +1,36 @@
-/* Fix menu button position + size */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0d0d0d;
+  color: #eaeaea;
+}
+
 header {
-  position: relative;
-  width: 100%;
-  height: 60px;
-  padding: 10px 20px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
+  padding: 20px 30px;
+  flex-wrap: wrap;
+}
+
+.centered-logo {
+  height: 120px;
+  margin: 0 auto;
+  display: block;
+  filter: drop-shadow(0 0 12px #00aaff);
+}
+
+.dropdown {
+  position: relative;
 }
 
 .dropbtn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  margin: 0;
   width: 36px;
   height: 36px;
+  padding: 0;
 }
 
 .menu-icon {
@@ -24,60 +38,169 @@ header {
   height: auto;
 }
 
-/* Keep dropdown tight and top-aligned */
-.dropdown {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-}
-
 .dropdown-content {
+  display: none;
+  position: absolute;
+  top: 40px;
+  right: 0;
   background-color: #0d0d0d;
   border: 1px solid #00aaff;
   border-radius: 6px;
   padding: 10px;
 }
 
-/* Responsive feature cards: always horizontal on mobile */
+.dropdown-content a {
+  color: #00aaff;
+  text-decoration: none;
+  display: block;
+  margin: 8px 0;
+  font-weight: bold;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.hero {
+  text-align: center;
+  padding: 30px 20px 10px;
+}
+
+.hero h1 {
+  font-size: 2.5em;
+  color: #00aaff;
+}
+
+.hero p {
+  font-size: 1.1em;
+  color: #ccc;
+  margin-top: 10px;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 20px;
+}
+
+.chatlog {
+  width: 100%;
+  max-width: 600px;
+  background: #1e1e1e;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  min-height: 100px;
+}
+
+.assistant-bubble {
+  background-color: #1e1e1e;
+  color: #00aaff;
+  padding: 10px 14px;
+  margin: 8px;
+  border-radius: 12px 12px 12px 0;
+  max-width: 75%;
+  align-self: flex-start;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
+}
+
+.user-bubble {
+  background-color: #004466;
+  color: #ffffff;
+  padding: 10px 14px;
+  margin: 8px;
+  border-radius: 12px 12px 0 12px;
+  max-width: 75%;
+  align-self: flex-end;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+}
+
+.chatlog > div {
+  display: inline-block;
+  clear: both;
+}
+
+.input-row {
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+}
+
+#user-input {
+  flex-grow: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px 0 0 10px;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+#send-btn {
+  background-color: #0094ff;
+  color: #fff;
+  border: none;
+  padding: 0 20px;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+}
+
 .features {
   display: flex;
   justify-content: center;
-  align-items: stretch;
+  gap: 20px;
+  padding: 30px 20px;
   flex-wrap: wrap;
-  gap: 15px;
-  padding: 20px;
 }
 
 .feature-card {
-  flex: 1 1 250px;
-  max-width: 280px;
   background: #1a1a1a;
   padding: 20px;
   border-radius: 12px;
+  width: 280px;
   text-align: center;
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
-/* Optional for mobile spacing */
+.feature-card img {
+  height: 80px;
+  width: 80px;
+  margin-bottom: 15px;
+  object-fit: contain;
+}
+
+.feature-card h3 {
+  color: #0094ff;
+  margin-bottom: 10px;
+}
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  padding: 20px;
+  color: #888;
+}
+
 @media (max-width: 768px) {
+  .centered-logo {
+    height: 90px;
+  }
+
   .features {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 10px;
+    flex-direction: row;
+    justify-content: space-evenly;
   }
 
   .feature-card {
-    flex: 0 0 200px;
-    margin-right: 10px;
+    width: 100px;
+    padding: 10px;
   }
 
-  .menu-icon {
-    width: 28px;
+  .feature-card h3, .feature-card p {
+    font-size: 0.8em;
   }
 
   .dropbtn {
-    width: 30px;
-    height: 30px;
+    background-size: 25px;
   }
 }
