@@ -3,36 +3,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const userInput = document.getElementById("user-input");
   const sendBtn = document.getElementById("send-btn");
 
-  function appendMessage(sender, message) {
+  function appendMessage(sender, text) {
     const msg = document.createElement("div");
     msg.className = sender === "user" ? "user-bubble" : "assistant-bubble";
-    msg.innerText = message;
+    msg.textContent = text;
     chatLog.appendChild(msg);
     chatLog.scrollTop = chatLog.scrollHeight;
   }
 
-  async function sendMessage() {
+  sendBtn.addEventListener("click", async () => {
     const message = userInput.value.trim();
     if (!message) return;
-
     appendMessage("user", message);
     userInput.value = "";
 
     try {
-      const response = await fetch("https://bluejay-mjpg.onrender.com/chat", {
+      const res = await fetch("https://bluejay-mjpg.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message })
       });
-      const data = await response.json();
+      const data = await res.json();
       appendMessage("assistant", data.reply);
     } catch (err) {
-      appendMessage("assistant", "Sorry, something went wrong.");
+      appendMessage("assistant", "Something went wrong.");
     }
-  }
+  });
 
-  sendBtn.addEventListener("click", sendMessage);
-  userInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
+  userInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") sendBtn.click();
   });
 });
