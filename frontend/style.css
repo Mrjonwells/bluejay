@@ -9,7 +9,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 30px;
+  padding: 10px 20px;
   flex-wrap: wrap;
 }
 
@@ -61,20 +61,29 @@ header {
   display: block;
 }
 
+/* Motto area with animation */
 .hero {
   text-align: center;
-  padding: 30px 20px 10px;
+  margin-top: -10px;
+  padding: 0 20px 20px;
+  animation: fadeIn 1.2s ease-in-out;
 }
 
 .hero h1 {
-  font-size: 2.5em;
+  font-size: 2.2em;
   color: #00aaff;
+  margin-bottom: 6px;
 }
 
 .hero p {
-  font-size: 1.1em;
-  color: #ccc;
-  margin-top: 10px;
+  font-size: 1em;
+  color: #cceeff;
+  margin-top: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .chat-container {
@@ -190,7 +199,7 @@ footer {
 
 @media (max-width: 768px) {
   .centered-logo {
-    height: 70px;
+    height: 300px;
   }
 
   .dropbtn {
