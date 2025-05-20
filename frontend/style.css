@@ -5,6 +5,7 @@ body {
   color: #eaeaea;
 }
 
+/* HEADER & NAVIGATION */
 header {
   display: flex;
   justify-content: space-between;
@@ -15,14 +16,13 @@ header {
 .logo {
   height: 80px;
   width: auto;
-  filter: drop-shadow(0 0 8px #0094ff);
+  filter: drop-shadow(0 0 5px #0094ff);
 }
 
 .menu-icon {
-  width: 38px;
-  height: 38px;
-  cursor: pointer;
-  filter: drop-shadow(0 0 6px #0094ff);
+  height: 32px;
+  width: 32px;
+  filter: drop-shadow(0 0 4px #0094ff);
 }
 
 .dropdown {
@@ -39,75 +39,53 @@ header {
   display: none;
   position: absolute;
   right: 0;
-  background-color: #111;
+  background-color: #1a1a1a;
   border: 1px solid #0094ff;
-  border-radius: 6px;
+  box-shadow: 0 0 10px #0094ff;
   min-width: 140px;
-  box-shadow: 0 0 15px #0094ff;
-  z-index: 2;
+  z-index: 1;
+  border-radius: 6px;
+}
+
+.dropdown-content a {
+  color: #eaeaea;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #262626;
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-.dropdown-content a {
-  color: #fff;
-  padding: 12px 16px;
-  display: block;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.dropdown-content a:hover {
-  background-color: #0094ff;
-  color: #000;
-}
-
+/* HERO */
 .hero {
   text-align: center;
-  padding: 40px 20px 20px;
+  padding: 30px 20px 10px;
 }
 
 .hero h1 {
   font-size: 2.5em;
   color: #0094ff;
+  margin: 0;
 }
 
-.features {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 30px 20px;
-  flex-wrap: wrap;
+.hero p {
+  font-size: 1.1em;
+  color: #ccc;
+  margin-top: 10px;
 }
 
-.feature-card {
-  background: #1a1a1a;
-  padding: 20px;
-  border-radius: 12px;
-  width: 280px;
-  text-align: center;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
-.feature-card img {
-  height: 80px;
-  width: 80px;
-  margin-bottom: 15px;
-  object-fit: contain;
-}
-
-.feature-card h3 {
-  color: #0094ff;
-  margin-bottom: 10px;
-}
-
+/* CHAT BOX */
 .chat-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px 20px;
+  padding: 20px;
 }
 
 .chatlog {
@@ -144,6 +122,37 @@ header {
   cursor: pointer;
 }
 
+/* FEATURES */
+.features {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 30px 20px;
+  flex-wrap: nowrap;
+}
+
+.feature-card {
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 12px;
+  width: 280px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.feature-card img {
+  height: 80px;
+  width: 80px;
+  margin-bottom: 15px;
+  object-fit: contain;
+}
+
+.feature-card h3 {
+  color: #0094ff;
+  margin-bottom: 10px;
+}
+
+/* FOOTER */
 footer {
   text-align: center;
   font-size: 12px;
