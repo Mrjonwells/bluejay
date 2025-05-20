@@ -14,7 +14,7 @@ header {
 }
 
 .centered-logo {
-  height: 80px;
+  height: 200px;
   margin: 10px auto 0 auto;
   display: block;
   filter: drop-shadow(0 0 10px #00aaff);
