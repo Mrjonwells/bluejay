@@ -18,6 +18,13 @@ header {
   filter: drop-shadow(0 0 10px #00aaff);
 }
 
+.centered-logo {
+  display: block;
+  margin: 0 auto 20px auto;
+  height: 120px;
+  filter: drop-shadow(0 0 12px #00aaff);
+}
+
 .dropdown {
   position: relative;
   margin-left: auto;
@@ -176,6 +183,10 @@ footer {
 @media (max-width: 768px) {
   .logo {
     height: 70px;
+  }
+
+  .centered-logo {
+    height: 90px;
   }
 
   .features {
