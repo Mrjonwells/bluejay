@@ -15,9 +15,9 @@ header {
 
 .centered-logo {
   height: 400px;
-  margin: 10px auto 0 auto;
+  margin: 3px auto 0 auto;
   display: block;
-  filter: drop-shadow(0 0 6px #00aaff);
+  filter: drop-shadow(0 0 3px #00aaff);
 }
 
 .dropdown {
