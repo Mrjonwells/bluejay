@@ -5,7 +5,6 @@ body {
   color: #eaeaea;
 }
 
-/* Header */
 header {
   display: flex;
   justify-content: space-between;
@@ -16,14 +15,9 @@ header {
 .logo {
   height: 80px;
   width: auto;
-  margin-left: 10px;
-}
-
-.menu-icon {
-  height: 30px;
-  width: 30px;
-  filter: drop-shadow(0 0 4px #00bfff);
-  cursor: pointer;
+  margin-left: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px #0094ff);
 }
 
 .dropdown {
@@ -32,58 +26,60 @@ header {
 }
 
 .dropbtn {
-  background: transparent;
+  background-color: transparent;
   border: none;
-  padding: 0;
+  cursor: pointer;
+}
+
+.dropbtn img {
+  height: 30px;
+  width: 30px;
+  filter: drop-shadow(0 0 5px #0094ff);
 }
 
 .dropdown-content {
   display: none;
   position: absolute;
   right: 0;
-  background-color: #1a1a1a;
-  min-width: 140px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+  background: transparent;
+  min-width: 120px;
   z-index: 1;
-}
-
-.dropdown-content a {
-  color: #00bfff;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dropdown-content a:hover {
-  background-color: #2a2a2a;
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-/* Hero */
+.dropdown-content a {
+  color: #0094ff;
+  padding: 10px;
+  display: block;
+  text-decoration: none;
+  background: transparent;
+  border-bottom: 1px solid #222;
+}
+
 .hero {
   text-align: center;
-  padding: 30px 20px 10px;
+  padding: 40px 20px 20px;
 }
 
 .hero h1 {
-  font-size: 2.6em;
+  font-size: 2.5em;
   color: #0094ff;
+  font-weight: bold;
 }
 
 .hero p {
+  margin-top: 10px;
   font-size: 1.1em;
-  color: #ccc;
 }
 
-/* Chat container */
 .chat-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 25px 20px;
+  padding: 30px 20px;
 }
 
 .chatlog {
@@ -120,14 +116,12 @@ header {
   cursor: pointer;
 }
 
-/* Features section */
 .features {
   display: flex;
   justify-content: center;
   gap: 20px;
   padding: 30px 20px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
 }
 
 .feature-card {
@@ -137,7 +131,6 @@ header {
   width: 280px;
   text-align: center;
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
-  flex-shrink: 0;
 }
 
 .feature-card img {
@@ -152,27 +145,9 @@ header {
   margin-bottom: 10px;
 }
 
-/* Footer */
 footer {
   text-align: center;
   font-size: 12px;
   padding: 20px;
   color: #888;
-}
-
-/* Responsive overrides */
-@media (max-width: 768px) {
-  .logo {
-    height: 60px;
-  }
-
-  .features {
-    flex-wrap: nowrap;
-    justify-content: start;
-  }
-
-  .feature-card {
-    width: 240px;
-    margin-right: 10px;
-  }
 }
