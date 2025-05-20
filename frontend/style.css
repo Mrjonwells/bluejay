@@ -5,7 +5,7 @@ body {
   color: #eaeaea;
 }
 
-/* HEADER & NAVIGATION */
+/* Header */
 header {
   display: flex;
   justify-content: space-between;
@@ -16,23 +16,25 @@ header {
 .logo {
   height: 80px;
   width: auto;
-  filter: drop-shadow(0 0 5px #0094ff);
+  margin-left: 10px;
 }
 
 .menu-icon {
-  height: 32px;
-  width: 32px;
-  filter: drop-shadow(0 0 4px #0094ff);
+  height: 30px;
+  width: 30px;
+  filter: drop-shadow(0 0 4px #00bfff);
+  cursor: pointer;
 }
 
 .dropdown {
   position: relative;
+  margin-right: 20px;
 }
 
 .dropbtn {
-  background-color: transparent;
+  background: transparent;
   border: none;
-  cursor: pointer;
+  padding: 0;
 }
 
 .dropdown-content {
@@ -40,52 +42,48 @@ header {
   position: absolute;
   right: 0;
   background-color: #1a1a1a;
-  border: 1px solid #0094ff;
-  box-shadow: 0 0 10px #0094ff;
   min-width: 140px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.6);
   z-index: 1;
-  border-radius: 6px;
 }
 
 .dropdown-content a {
-  color: #eaeaea;
+  color: #00bfff;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
 }
 
 .dropdown-content a:hover {
-  background-color: #262626;
+  background-color: #2a2a2a;
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-/* HERO */
+/* Hero */
 .hero {
   text-align: center;
   padding: 30px 20px 10px;
 }
 
 .hero h1 {
-  font-size: 2.5em;
+  font-size: 2.6em;
   color: #0094ff;
-  margin: 0;
 }
 
 .hero p {
   font-size: 1.1em;
   color: #ccc;
-  margin-top: 10px;
 }
 
-/* CHAT BOX */
+/* Chat container */
 .chat-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 25px 20px;
 }
 
 .chatlog {
@@ -122,13 +120,14 @@ header {
   cursor: pointer;
 }
 
-/* FEATURES */
+/* Features section */
 .features {
   display: flex;
   justify-content: center;
   gap: 20px;
   padding: 30px 20px;
   flex-wrap: nowrap;
+  overflow-x: auto;
 }
 
 .feature-card {
@@ -138,6 +137,7 @@ header {
   width: 280px;
   text-align: center;
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  flex-shrink: 0;
 }
 
 .feature-card img {
@@ -152,10 +152,27 @@ header {
   margin-bottom: 10px;
 }
 
-/* FOOTER */
+/* Footer */
 footer {
   text-align: center;
   font-size: 12px;
   padding: 20px;
   color: #888;
+}
+
+/* Responsive overrides */
+@media (max-width: 768px) {
+  .logo {
+    height: 60px;
+  }
+
+  .features {
+    flex-wrap: nowrap;
+    justify-content: start;
+  }
+
+  .feature-card {
+    width: 240px;
+    margin-right: 10px;
+  }
 }
