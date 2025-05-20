@@ -26,7 +26,7 @@
     "not interested": "All good — curious if it’s the rates or something else?",
     "too busy": "Got it — mind if I ask just one quick question now?",
     "too expensive": "Totally fair — want me to break it down for your setup?",
-    "need to think": "Cool — want me to email you a savings snapshot?"
+    "need to think": "Totally fair — want me to show you how cash discounting actually works?"
   },
   "urgency_triggers": [
     "Want to move this to the front of the queue?",
@@ -142,5 +142,17 @@
     "The Lean Startup – Eric Ries",
     "Thinking, Fast and Slow – Daniel Kahneman",
     "Freakonomics – Levitt & Dubner"
-  ]
+  ],
+  "cash_discount_education": {
+    "trigger_keywords": ["fees", "processing", "cash discount", "zero fee", "rate", "savings"],
+    "flow": [
+      "Let’s talk cash discounting real quick — it's how you pass the fee to the cardholder, not eat it yourself.",
+      "It’s totally legal and built into how debit and credit networks work — 100% above board.",
+      "Instead of you paying 3% on every sale, customers see a small fee when they use a card. Cash customers? No fee at all.",
+      "This saves most merchants 93% on processing fees — without raising prices.",
+      "Clover is our go-to for this. Way better support and flexibility than Square or Aloha, and way more merchant-friendly.",
+      "Want to see what this would look like in your setup?"
+    ],
+    "calendly_prompt": "Let’s book a time to walk through it together. I’ll pop up a quick link."
+  }
 }
