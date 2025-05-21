@@ -156,11 +156,11 @@ header {
   cursor: pointer;
 }
 
-/* Final features section */
+/* Features section */
 .features {
   display: flex;
   justify-content: center;
-  align-items: stretch;
+  align-items: flex-start;
   flex-wrap: nowrap;
   overflow-x: auto;
   gap: 12px;
@@ -199,10 +199,10 @@ header {
 
 .feature-card img {
   width: 100%;
-  max-width: 300px;
+  max-width: 260px;
   height: auto;
   display: block;
-  margin: 0 auto;
+  margin: 0 auto 10px auto;
   object-fit: contain;
 }
 
