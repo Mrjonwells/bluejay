@@ -1,108 +1,112 @@
 import os
-import re
+import datetime
 import markdown2
-from git import Repo, GitCommandError, InvalidGitRepositoryError
-from datetime import datetime
+from git import Repo, GitCommandError
 from pytrends.request import TrendReq
 from openai import OpenAI
+from dotenv import load_dotenv
 
-# Constants
-BLOG_FOLDER = "frontend/blogs"
+load_dotenv()
+
+BLOG_DIR = "frontend/blogs"
 INDEX_FILE = "frontend/blog.html"
-REPO_PATH = os.path.abspath(".")  # Use Git root
 GIT_REMOTE = os.getenv("GIT_REMOTE")
-GIT_TOKEN = os.getenv("BLUEJAY_PAT")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def fetch_trending_keyword():
     try:
-        pytrends = TrendReq(hl='en-US', tz=360)
-        pytrends.build_payload(kw_list=["credit card processing", "merchant services", "cash discount"], timeframe='now 7-d', geo='US')
-        trends = pytrends.related_queries()
-        return trends["credit card processing"]["top"]["query"].iloc[0]
+        pytrends = TrendReq(hl="en-US", tz=360)
+        pytrends.build_payload(["cash discount"], cat=0, timeframe="now 1-d", geo="US")
+        related = pytrends.related_queries()
+        kw = related.get("cash discount", {}).get("top", {}).get("query", [])[0]
+        return kw
     except Exception:
         print("[Fallback] Trending fetch failed: list index out of range")
-        return "Cash Discount Programs"
+        return "cash discount program"
 
-def generate_blog(topic):
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+def generate_blog(keyword):
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    prompt = f"Write a helpful and persuasive blog post about '{keyword}' for small business owners interested in reducing credit card fees using cash discount programs."
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are an SEO-optimized financial copywriter for merchant services."},
-            {"role": "user", "content": f"Write a blog post about: '{topic}' with a clear headline, intro, and a few paragraphs for small business owners."}
-        ]
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=700
     )
     return response.choices[0].message.content.strip()
 
-def save_blog(title, content):
-    slug = re.sub(r'\W+', '_', title.lower()).strip('_')
+def save_blog_file(title, content):
+    slug = "_".join(title.lower().replace(":", "").replace(",", "").split())
     filename = f"{slug}.html"
-    filepath = os.path.join(BLOG_FOLDER, filename)
+    filepath = os.path.join(BLOG_DIR, filename)
 
-    os.makedirs(BLOG_FOLDER, exist_ok=True)
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write(f"<html><head><title>{title}</title></head><body>")
-        f.write(f"<h2>{title}</h2>")
-        for para in content.split("\n"):
-            if para.strip():
-                f.write(f"<p>{para.strip()}</p>")
-        f.write("</body></html>")
-
+        f.write(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{title}</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header>
+    <a href="../index.html"><img src="../logo.png" alt="Logo" style="width: 120px;"></a>
+  </header>
+  <main>
+    <h1>{title}</h1>
+    {markdown2.markdown(content)}
+  </main>
+  <footer>
+    <p>BlueJay AI Blog. Powered by AskBlueJay.ai</p>
+  </footer>
+</body>
+</html>""")
     print(f"Blog saved to {filepath}")
     return filename
 
 def update_blog_index():
-    files = sorted(os.listdir(BLOG_FOLDER), reverse=True)
-    entries = []
-    for file in files:
+    posts = []
+    for file in sorted(os.listdir(BLOG_DIR), reverse=True):
         if file.endswith(".html"):
-            slug = file.replace(".html", "")
-            title = slug.replace("_", " ").title()
-            entries.append(f'<div><a href="blogs/{file}">{title}</a></div>')
+            path = os.path.join(BLOG_DIR, file)
+            with open(path, "r", encoding="utf-8") as f:
+                title = f.readline().strip().replace("<h1>", "").replace("</h1>", "")
+                preview = f.readline().strip()
+                posts.append((file, title, preview))
 
     with open(INDEX_FILE, "w", encoding="utf-8") as f:
-        f.write("<html><head><title>BlueJay Blog</title></head><body>")
-        f.write("<h1>BlueJay’s Blog</h1>")
-        f.writelines(entries)
-        f.write("</body></html>")
-
+        f.write("<!DOCTYPE html><html><head><title>Blog</title><link rel='stylesheet' href='style.css'></head><body><h1>BlueJay Blog</h1><ul>")
+        for file, title, preview in posts:
+            f.write(f"<li><a href='blogs/{file}'>{title}</a><br><small>{preview}</small></li>")
+        f.write("</ul></body></html>")
     print("Blog index updated")
 
 def git_commit_and_push(slug):
+    repo_path = os.getcwd()
     try:
-        repo = Repo(REPO_PATH)
-        origin = repo.remotes.origin
-    except InvalidGitRepositoryError:
-        print("[Git Error] Not a valid Git repo.")
-        return
-    except Exception as e:
-        print(f"[Git Error] Repo setup failed: {e}")
-        return
+        if not os.path.exists(os.path.join(repo_path, ".git")):
+            repo = Repo.init(repo_path)
+            repo.create_remote("origin", GIT_REMOTE)
+        else:
+            repo = Repo(repo_path)
 
-    try:
+        origin = repo.remote(name="origin")
         origin.fetch()
         repo.git.pull("origin", "main")
-    except GitCommandError as e:
-        print(f"[Git Error] during setup: {e}")
-        return
 
-    repo.git.add(".")
-    repo.index.commit(f"Add blog post: {slug}")
-    try:
+        repo.git.add(A=True)
+        repo.index.commit(f"Add blog post: {slug}")
         origin.push()
-        print("Git push successful")
     except GitCommandError as e:
         print(f"[Git Push Error] {e}")
+    except Exception as e:
+        print(f"[Git Error] Repo setup failed: {e}")
 
 def main():
     keyword = fetch_trending_keyword()
     blog = generate_blog(keyword)
-
-    lines = blog.split("\n")
-    title = lines[0].replace("Title:", "").strip()
-    content = "\n".join(lines[1:]).strip()
-
-    file_name = save_blog(title, content)
+    title = blog.split("\n")[0].replace("Title:", "").strip()
+    content = "\n".join(blog.split("\n")[1:]).strip()
+    file_name = save_blog_file(title, content)
     update_blog_index()
     git_commit_and_push(file_name.replace(".html", ""))
 
