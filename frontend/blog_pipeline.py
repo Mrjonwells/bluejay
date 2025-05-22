@@ -1,90 +1,106 @@
 import os
-import openai
 import json
 import random
 from datetime import datetime
+from openai import OpenAI
 from pytrends.request import TrendReq
-from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI()
 
-pytrends = TrendReq(hl="en-US", tz=360)
-
-BLOG_DIR = "frontend/blogs"
-INDEX_PATH = "frontend/blog.html"
+BLOG_DIR = Path("frontend/blogs/")
+INDEX_PATH = Path("frontend/blog.html")
+SUMMARY_LOG = Path("frontend/blog_summary_log.json")
 
 def fetch_trending_keywords():
+    pytrends = TrendReq()
     pytrends.build_payload(["merchant services", "credit card fees", "cash discount"], timeframe="now 7-d")
-    related = pytrends.related_queries()
-    keywords = []
 
-    for topic in related.values():
-        if topic and "top" in topic and topic["top"] is not None:
-            for item in topic["top"].head(5).to_dict("records"):
-                if "query" in item:
-                    keywords.append(item["query"])
+    try:
+        related = pytrends.related_queries()
+        keywords = []
+        for topic in related.values():
+            if topic and topic.get("top"):
+                for item in topic["top"]["query"]:
+                    keywords.append(item)
+        if not keywords:
+            raise IndexError
+        return list(set(keywords))[:10]
+    except Exception:
+        return [
+            "cash discount program",
+            "credit card fees",
+            "merchant processing",
+            "switch from Square",
+            "save on Stripe fees",
+            "Clover setup",
+            "0% processing",
+            "AI payment tools",
+            "small biz savings",
+            "tap to pay terminals"
+        ]
 
-    if not keywords:
-        print("No related keywords found — using fallback set.")
-        keywords = ["merchant services 2025", "ai credit card processing", "small business fee savings"]
+def generate_blog_post(topic):
+    prompt = f"Write a detailed blog post (3–5 paragraphs) for small business owners about '{topic}', focused on merchant processing, AI savings, or fee reduction. Use a professional, helpful tone."
 
-    return keywords
-
-def generate_blog_content(topic):
-    prompt = f"Write a helpful, engaging blog post for small business owners about '{topic}'. Use a human tone, include specific tips, and keep it under 500 words."
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are a professional blog writer for a fintech startup."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.8,
-        max_tokens=800
+        messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
 
-def summarize_blog(blog_text):
-    prompt = f"Summarize the following blog in one compelling sentence designed to hook readers:\n\n{blog_text}"
-    response = openai.ChatCompletion.create(
+def extract_summary(post):
+    prompt = f"Summarize this blog post in one powerful, human-style hook: {post}"
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-        max_tokens=100
+        messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
 
-def create_blog_file(title, content):
-    filename = title.lower().replace(" ", "-").replace(".", "") + ".html"
-    path = os.path.join(BLOG_DIR, filename)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    html = f"""<html><head><title>{title}</title></head><body><h1>{title}</h1><article>{content}</article></body></html>"""
-    with open(path, "w") as f:
-        f.write(html)
-    return filename
+def save_blog(title, content, summary):
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    slug = title.lower().replace(" ", "-").replace("’", "").replace("'", "")
+    filename = f"{date_str}-{slug}.html"
+    filepath = BLOG_DIR / filename
 
-def update_blog_index(entries):
-    entries_html = []
-    for entry in entries:
-        title = entry["title"]
-        filename = entry["filename"]
-        summary = entry["summary"]
-        entries_html.append(f'<div class="blog-entry"><a href="blogs/{filename}">{title}</a><p>{summary}</p></div>')
+    with open(filepath, "w") as f:
+        f.write(f"<h1>{title}</h1>\n<p><em>{date_str}</em></p>\n<p>{summary}</p>\n<hr>\n<p>{content}</p>")
 
-    full_html = f"""<html><head><title>BlueJay Blog</title></head><body><h1>BlueJay Blog</h1>{''.join(entries_html)}</body></html>"""
-    with open(INDEX_PATH, "w") as f:
-        f.write(full_html)
+    with open(SUMMARY_LOG, "a") as log:
+        json.dump({"date": date_str, "title": title, "summary": summary, "file": filename}, log)
+        log.write("\n")
+
+    return filename, summary
+
+def update_blog_index():
+    posts = []
+    for file in sorted(BLOG_DIR.glob("*.html"), reverse=True):
+        date_str = file.name[:10]
+        title = file.name[11:-5].replace("-", " ").title()
+        with open(file) as f:
+            lines = f.readlines()
+            summary = ""
+            for line in lines:
+                if "<p>" in line and not summary:
+                    summary = line.strip()
+            posts.append((title, date_str, summary, file.name))
+
+    with open(INDEX_PATH, "w") as idx:
+        idx.write("<html><head><title>BlueJay Blog</title></head><body>\n")
+        idx.write("<h1>BlueJay Blog</h1>\n")
+        for title, date_str, summary, fname in posts:
+            idx.write(f"<div><a href='blogs/{fname}'><strong>{title}</strong></a><br>")
+            idx.write(f"<small>{date_str}</small><br>{summary}</div><hr>\n")
+        idx.write("</body></html>")
 
 def main():
     keywords = fetch_trending_keywords()
     topic = random.choice(keywords)
-    blog_content = generate_blog_content(topic)
-    summary = summarize_blog(blog_content)
-    title = topic.title()
-
-    filename = create_blog_file(title, blog_content)
-    update_blog_index([{"title": title, "filename": filename, "summary": summary}])
-    print(f"Blog '{title}' generated successfully.")
+    blog = generate_blog_post(topic)
+    summary = extract_summary(blog)
+    filename, short_summary = save_blog(topic.title(), blog, summary)
+    update_blog_index()
+    print(f"Blog generated and saved as {filename}")
 
 if __name__ == "__main__":
     main()
