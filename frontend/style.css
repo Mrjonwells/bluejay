@@ -1,93 +1,92 @@
-import os
+import json
 import random
 from datetime import datetime
+from pathlib import Path
 from pytrends.request import TrendReq
 from openai import OpenAI
-from pathlib import Path
 
-openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+pytrends = TrendReq(hl="en-US", tz=360)
+openai = OpenAI()
 
-BLOGS_DIR = Path("frontend/blogs")
-INDEX_FILE = Path("frontend/blog.html")
+OUTPUT_DIR = Path("frontend/blogs/")
+INDEX_PATH = Path("frontend/blog.html")
+
+DEFAULT_KEYWORDS = [
+    "merchant services",
+    "credit card processing",
+    "cash discount program",
+    "interchange fees",
+    "point of sale AI",
+    "switch from Square",
+    "AI for small business",
+    "cut payment fees"
+]
 
 def fetch_trending_keywords():
-    pytrends = TrendReq(hl='en-US', tz=360)
-    kw_list = ["merchant services", "credit card fees", "cash discount"]
-    pytrends.build_payload(kw_list, timeframe="now 7-d")
-
     try:
+        pytrends.build_payload(["merchant services", "credit card fees", "cash discount"], timeframe="now 7-d")
         related = pytrends.related_queries()
-        keywords = []
-        for kw in kw_list:
-            top_data = related.get(kw, {}).get('top', {})
-            if 'query' in top_data:
-                keywords.extend(top_data['query'])
-        return keywords[:10] if keywords else ["merchant processing", "card fees", "cash discount program"]
+        all_keywords = []
+        for topic in related.values():
+            if topic and "top" in topic and topic["top"] is not None:
+                all_keywords.extend(topic["top"]["query"].tolist())
+        if not all_keywords:
+            print("⚠️ No related keywords found. Using fallback.")
+            return DEFAULT_KEYWORDS
+        print("✅ Trending keywords fetched.")
+        return all_keywords
     except Exception as e:
-        print("Pytrends failed, using defaults:", e)
-        return ["merchant processing", "card fees", "cash discount program"]
+        print(f"⚠️ Error fetching trends: {e}. Using fallback.")
+        return DEFAULT_KEYWORDS
 
-def generate_blog_post(topic):
-    system_prompt = f"You are BlueJay, a helpful and modern AI. Write a blog post about '{topic}' that helps small business owners understand it. Make it friendly, informative, and SEO optimized."
+def generate_blog_title(topic):
+    return f"{topic.title()} Trends for Small Business Merchants in {datetime.now().year}"
 
+def generate_blog_content(topic):
+    prompt = (
+        f"Write a short, engaging blog post (3-4 paragraphs) about '{topic}' "
+        "focused on small business owners, AI tools, payment processing, or merchant savings. "
+        "Include real-world tone and helpful info. No fluff."
+    )
     response = openai.chat.completions.create(
         model="gpt-4",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Write a blog post on: {topic}"}
-        ]
+        messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
 
-def create_blog_file(title, body):
-    now = datetime.now()
-    filename = f"{now.strftime('%Y-%m-%d')}-{title.lower().replace(' ', '-')}.html"
-    filepath = BLOGS_DIR / filename
-
-    BLOGS_DIR.mkdir(parents=True, exist_ok=True)
-
+def save_blog(title, content, topic):
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"{date_str}-{topic.replace(' ', '-')}.html".lower()
+    filepath = OUTPUT_DIR / filename
     with open(filepath, "w") as f:
-        f.write(f"<html><head><title>{title}</title></head><body>")
-        f.write(f"<h1>{title}</h1>\n")
-        f.write(f"<p><em>{now.strftime('%B %d, %Y')}</em></p>\n")
-        f.write(body.replace("\n", "<br>\n"))
-        f.write("</body></html>")
+        f.write(f"<html><head><title>{title}</title></head><body><h1>{title}</h1><p>{content}</p></body></html>")
+    return filename, content.split(".")[0] + "."
 
-    return filename, title, now.strftime("%B %d, %Y"), body[:160]
-
-def update_blog_index(entry):
-    filename, title, date_str, preview = entry
-    if not INDEX_FILE.exists():
-        with open(INDEX_FILE, "w") as f:
-            f.write("<html><head><title>BlueJay Blog</title></head><body><h1>BlueJay’s Blog</h1><div id='posts'>\n")
-
-    with open(INDEX_FILE, "r") as f:
-        content = f.read()
-
-    new_post_html = f"""
-<div class="blog-preview">
-  <a href="blogs/{filename}">{title}</a><br>
-  <small>{date_str}</small>
-  <p>{preview}...</p>
-</div>
-"""
-    if "<div id='posts'>" in content:
-        content = content.replace("<div id='posts'>", f"<div id='posts'>\n{new_post_html}")
+def update_index(filename, title, summary):
+    with open(INDEX_PATH, "r") as f:
+        index = f.read()
+    new_entry = f"""
+    <div class="blog-entry">
+      <a href="blogs/{filename}">{title}</a>
+      <p>{summary}</p>
+    </div>
+    """
+    if "<!-- BLOG_ENTRIES -->" in index:
+        index = index.replace("<!-- BLOG_ENTRIES -->", new_entry + "\n<!-- BLOG_ENTRIES -->")
     else:
-        content += f"\n{new_post_html}"
-
-    with open(INDEX_FILE, "w") as f:
-        f.write(content)
+        index = new_entry + "\n" + index
+    with open(INDEX_PATH, "w") as f:
+        f.write(index)
 
 def main():
     keywords = fetch_trending_keywords()
     topic = random.choice(keywords)
-    print("Generating blog on:", topic)
-
-    blog_body = generate_blog_post(topic)
-    blog_data = create_blog_file(topic.title(), blog_body)
-    update_blog_index(blog_data)
-    print("Blog created and indexed.")
+    print(f"Generating blog for topic: {topic}")
+    title = generate_blog_title(topic)
+    content = generate_blog_content(topic)
+    filename, summary = save_blog(title, content, topic)
+    update_index(filename, title, summary)
+    print(f"✅ Blog generated and saved: {filename}")
 
 if __name__ == "__main__":
     main()
