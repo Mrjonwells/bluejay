@@ -36,7 +36,6 @@ def fetch_trending_keywords():
 
 def generate_blog(topic):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
     prompt = f"""
 Write a compelling SEO-optimized blog post titled "Title: {topic.title()}". 
 Make it engaging for small business owners. Include a title line, a hook intro, and 3 short paragraphs. 
@@ -58,8 +57,12 @@ def save_blog(title, content):
     filename = sanitize_filename(title) + ".html"
     blog_path = BLOG_DIR / filename
 
+    html = "<html><head><title>{}</title></head><body><h2>{}</h2>".format(title, title)
+    html += "".join(f"<p>{line.strip()}</p>" for line in content.split("\n") if line.strip())
+    html += "</body></html>"
+
     with open(blog_path, "w") as f:
-        f.write(f"<h2>{title}</h2>\n<p>{content.replace('\n', '</p><p>')}</p>")
+        f.write(html)
 
     update_blog_index(title, filename, content)
 
@@ -89,10 +92,10 @@ def main():
 
     main_kw = keywords[0]
     blog = generate_blog(main_kw)
-    title = blog.split("\n")[0].replace("Title: ", "").strip()
+    title_line = blog.split("\n")[0].replace("Title:", "").strip()
     content = "\n".join(blog.split("\n")[1:]).strip()
-    save_blog(title, content)
-    print(f"Blog '{title}' posted as {sanitize_filename(title)}.html")
+    save_blog(title_line, content)
+    print(f"Blog '{title_line}' posted as {sanitize_filename(title_line)}.html")
 
 if __name__ == "__main__":
     main()
