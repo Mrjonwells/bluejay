@@ -1,5 +1,4 @@
-import os
-import re
+import os, re
 from datetime import datetime
 from openai import OpenAI
 from pytrends.request import TrendReq
@@ -10,7 +9,7 @@ import markdown2
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 BLUEJAY_PAT = os.getenv("BLUEJAY_PAT")
-GIT_REMOTE = os.getenv("GIT_REMOTE")  # must be full https://<PAT>@github.com/username/repo.git
+GIT_REMOTE = os.getenv("GIT_REMOTE")  # example: https://<token>@github.com/username/repo.git
 
 def get_trending_topic():
     try:
@@ -38,9 +37,7 @@ def sanitize_filename(title):
 def save_blog_to_file(title, content):
     file_name = sanitize_filename(title) + ".html"
     full_path = os.path.join("frontend/blogs", file_name)
-
-    with open(full_path, "w") as f:
-        f.write(f"""<!DOCTYPE html>
+    html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -50,9 +47,11 @@ def save_blog_to_file(title, content):
 </head>
 <body>
   <h2>{title}</h2>
-  <p>{content.replace('\n', '</p><p>')}</p>
+  <p>{content.replace(chr(10), '</p><p>')}</p>
 </body>
-</html>""")
+</html>"""
+    with open(full_path, "w") as f:
+        f.write(html_content)
     print(f"Blog saved to {full_path}")
     return file_name
 
@@ -60,12 +59,9 @@ def update_blog_index(title, slug):
     index_path = "frontend/blog.html"
     if not os.path.exists(index_path):
         open(index_path, "w").write("<html><body><h1>Blog</h1><ul></ul></body></html>")
-
     with open(index_path, "r") as f:
         content = f.read()
-
     new_entry = f'<li><a href="blogs/{slug}.html">{title}</a> — {datetime.now().strftime("%B %d, %Y")}</li>\n'
-
     content = re.sub(r"(<ul>)(.*?)(</ul>)", rf"\1{new_entry}\2\3", content, flags=re.DOTALL)
     with open(index_path, "w") as f:
         f.write(content)
@@ -76,11 +72,12 @@ def git_commit_and_push(slug):
     try:
         repo = Repo(repo_path)
     except InvalidGitRepositoryError:
-        print("[Git] Initializing repo")
+        print("[Git] Initializing new Git repo")
         repo = Repo.init(repo_path)
         repo.create_remote("origin", GIT_REMOTE)
 
-    if not repo.remotes or "origin" not in [r.name for r in repo.remotes]:
+    if "origin" not in [r.name for r in repo.remotes]:
+        print("[Git] Creating origin remote")
         repo.create_remote("origin", GIT_REMOTE)
 
     repo.git.add("--all")
