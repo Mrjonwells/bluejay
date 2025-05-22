@@ -1,87 +1,115 @@
 import os
-import json
-import requests
-from datetime import datetime
+import re
+import datetime
+import markdown2
+from dotenv import load_dotenv
 from pytrends.request import TrendReq
 from openai import OpenAI
-from dotenv import load_dotenv
 from git import Repo
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-GIT_REPO_PATH = "./"
+pytrends = TrendReq(hl='en-US', tz=360)
+
+FALLBACK_KEYWORDS = ["cash discount", "merchant services", "credit card processing"]
 BLOG_FOLDER = "frontend/blogs/"
 BLOG_INDEX = "frontend/blog.html"
-BLUEJAY_PAT = os.getenv("BLUEJAY_PAT")
-REPO_URL = "https://oauth2:" + BLUEJAY_PAT + "@github.com/mrjonwells/bluejay.git"
 
 def fetch_trending_keywords():
     try:
-        pytrends = TrendReq()
-        pytrends.build_payload(["merchant services", "credit card fees", "cash discount"], timeframe="now 7-d")
+        pytrends.build_payload(FALLBACK_KEYWORDS, timeframe="now 7-d")
         related = pytrends.related_queries()
         keywords = []
-        for key in related:
-            if related[key]["top"] is not None:
-                for item in related[key]["top"]["query"]:
-                    keywords.append(item)
-        return keywords[:3]
+        for kw in FALLBACK_KEYWORDS:
+            if kw in related and related[kw]["top"] is not None:
+                keywords.extend(related[kw]["top"]["query"].tolist()[:2])
+        return list(set(keywords)) or FALLBACK_KEYWORDS
     except Exception as e:
         print("[Fallback] Trending fetch failed:", e)
-        return ["cash discount program", "merchant processing", "credit card savings"]
+        return FALLBACK_KEYWORDS
 
-def generate_blog(keyword):
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    prompt = f"Write a 3-paragraph SEO blog post for small business owners about '{keyword}' focused on saving money on credit card processing fees. Include a catchy title."
-    response = client.chat.completions.create(
+def generate_blog(topic):
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    prompt = f"Write a helpful and engaging blog post for small business owners about: '{topic}'. Keep it SEO-optimized and informative."
+    completion = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        messages=[{"role": "system", "content": "You are a professional business blog writer."},
+                  {"role": "user", "content": prompt}],
+        max_tokens=800
     )
-    return response.choices[0].message.content.strip()
+    return completion.choices[0].message.content.strip()
+
+def slugify(text):
+    return re.sub(r"[^\w\-]", "_", text.lower().replace(" ", "_"))
 
 def save_blog(title, content):
-    safe_title = title.lower().replace(" ", "_").replace(":", "").replace("'", "")
-    filename = f"{BLOG_FOLDER}{safe_title}.html"
-    content_html = content.replace("\n", "</p><p>")
+    slug = slugify(title)
+    filename = f"{BLOG_FOLDER}{slug}.html"
+    content_paragraphs = "".join(f"<p>{line}</p>" for line in content.split("\n") if line.strip())
+
     with open(filename, "w") as f:
-        f.write("<html><head>")
-        f.write(f"<title>{title}</title>")
-        f.write("</head><body>")
-        f.write(f"<h2>{title}</h2>")
-        f.write("<p>" + content_html + "</p>")
-        f.write("</body></html>")
-    print("Blog saved to", filename)
-    return filename, title
+        f.write(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <header>
+    <a href="../index.html"><img src="../logo.png" alt="BlueJay Logo" class="centered-logo" /></a>
+  </header>
+  <main>
+    <h1>{title}</h1>
+    {content_paragraphs}
+  </main>
+  <footer>
+    <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
+  </footer>
+</body>
+</html>""")
+    return slug, filename
 
-def update_blog_index(filename, title):
-    now = datetime.now().strftime("%B %d, %Y")
-    blog_entry = f'<div class="blog-entry"><a href="{filename}">{title}</a><p>Posted {now}</p></div>\n'
+def update_blog_index(slug, title):
+    if not os.path.exists(BLOG_INDEX):
+        return
+
     with open(BLOG_INDEX, "r") as f:
-        existing = f.read()
-    new_content = existing.replace("<!-- BLOG_ENTRIES -->", f"{blog_entry}<!-- BLOG_ENTRIES -->")
-    with open(BLOG_INDEX, "w") as f:
-        f.write(new_content)
-    print("Blog index updated")
+        lines = f.readlines()
 
-def commit_and_push():
-    repo = Repo(GIT_REPO_PATH)
+    with open(BLOG_INDEX, "w") as f:
+        for line in lines:
+            if "<!-- BLOG_ENTRIES -->" in line:
+                f.write(line)
+                f.write(f"""    <div class="blog-entry">
+      <a href="blogs/{slug}.html">{title}</a><br />
+      <p class="summary">A fresh perspective from BlueJay on {title}.</p>
+    </div>\n""")
+            else:
+                f.write(line)
+
+def git_commit_and_push(slug):
+    repo = Repo(".")
     repo.git.add(A=True)
-    repo.index.commit("Auto-post blog from blog_pipeline")
-    origin = repo.remote(name="origin")
-    origin.push()
-    print("Changes pushed to GitHub")
+    repo.index.commit(f"Add blog: {slug}")
+    repo.remote(name='origin').push(env={
+        "GIT_ASKPASS": "echo",
+        "GIT_USERNAME": "BlueJay",
+        "GIT_PASSWORD": os.getenv("BLUEJAY_PAT")
+    })
 
 def main():
     keywords = fetch_trending_keywords()
     main_kw = keywords[0]
     blog = generate_blog(main_kw)
-    title_line = blog.split("\n")[0]
+    title = blog.split("\n")[0].replace("Title: ", "").strip()
     content = "\n".join(blog.split("\n")[1:]).strip()
-    filename, title = save_blog(title_line, content)
-    update_blog_index(filename, title)
-    commit_and_push()
+    slug, filepath = save_blog(title, content)
+    print("Blog saved to", filepath)
+    update_blog_index(slug, title)
+    print("Blog index updated")
+    git_commit_and_push(slug)
 
 if __name__ == "__main__":
     main()
