@@ -1,99 +1,71 @@
 import os
-import re
+from openai import OpenAI
 from datetime import datetime
 from pytrends.request import TrendReq
-from openai import OpenAI
-from pathlib import Path
-
-BLOG_DIR = Path("frontend/blogs/")
-INDEX_FILE = Path("frontend/blog.html")
 
 def fetch_trending_keywords():
-    pytrends = TrendReq()
+    pytrends = TrendReq(hl='en-US', tz=360)
     try:
-        pytrends.build_payload(["merchant services", "cash discount", "credit card processing"], timeframe="now 7-d")
+        pytrends.build_payload(["credit card processing"], cat=0, timeframe='now 1-d', geo='US', gprop='')
         related = pytrends.related_queries()
-        keywords = []
-
-        for kw in related.values():
-            if kw and "top" in kw:
-                for entry in kw["top"].to_dict("records"):
-                    if entry["query"].lower() not in keywords:
-                        keywords.append(entry["query"].lower())
-
-        return keywords[:5]
-
+        ranked = related["credit card processing"]["top"]
+        if ranked is None or ranked.empty:
+            raise IndexError("Trending fetch failed")
+        return [kw for kw in ranked['query'].tolist() if "card" in kw.lower() or "merchant" in kw.lower()]
     except Exception as e:
         print(f"[Fallback] Trending fetch failed: {e}")
-        return [
-            "cash discount program",
-            "zero fee processing",
-            "merchant service savings",
-            "switch from square",
-            "credit card surcharges"
-        ]
+        return ["cash discount", "credit card surcharges", "merchant fees"]
 
-def generate_blog(topic):
+def generate_blog(keyword):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    prompt = f"""
-Write a compelling SEO-optimized blog post titled "Title: {topic.title()}". 
-Make it engaging for small business owners. Include a title line, a hook intro, and 3 short paragraphs. 
-Use a helpful, professional tone. Don’t include markdown or HTML.
-"""
-
+    prompt = f"""Write a helpful 5-paragraph blog post for small business owners about "{keyword}" as it relates to saving money on credit card processing fees. Start with a compelling title, and close with a strategic call to action."""
+    
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=800
+        temperature=0.7
     )
     return response.choices[0].message.content.strip()
 
 def sanitize_filename(title):
-    return re.sub(r"[^\w\-]", "_", title.lower()).replace(" ", "_")
+    return ''.join(c if c.isalnum() or c in ('_', '-') else '_' for c in title.lower().replace(' ', '_')) + ".html"
 
 def save_blog(title, content):
-    BLOG_DIR.mkdir(parents=True, exist_ok=True)
-    filename = sanitize_filename(title) + ".html"
-    blog_path = BLOG_DIR / filename
+    folder = "frontend/blogs"
+    os.makedirs(folder, exist_ok=True)
+    filename = sanitize_filename(title)
+    filepath = os.path.join(folder, filename)
 
-    formatted_content = content.replace("\n", "</p><p>")
-    html = f"<html><head><title>{title}</title></head><body><h2>{title}</h2><p>{formatted_content}</p></body></html>"
+    content = "\n".join(content.split("\n")[1:]).strip()  # strip title line
+    with open(filepath, "w") as f:
+        f.write(f"""<html>
+<head><title>{title}</title></head>
+<body>
+<h2>{title}</h2>
+<p>{content.replace(chr(10), '</p><p>')}</p>
+</body>
+</html>""")
+    
+    print(f"Blog saved to {filepath}")
+    return filename, title, content[:180]
 
-    with open(blog_path, "w") as f:
-        f.write(html)
-
-    update_blog_index(title, filename, content)
-
-def update_blog_index(title, filename, content):
-    date = datetime.now().strftime("%B %d, %Y")
-    hook = content.split("\n")[0].strip()
-    block = f"""
-<div class="blog-preview">
-  <a href="blogs/{filename}">{title}</a>
-  <div class="blog-date">{date}</div>
-  <div class="blog-hook">{hook}</div>
-</div>
-"""
-
-    if not INDEX_FILE.exists():
-        with open(INDEX_FILE, "w") as f:
-            f.write("<html><head><title>BlueJay Blog</title></head><body>\n<h1>BlueJay’s Blog</h1>\n")
-
-    with open(INDEX_FILE, "a") as f:
-        f.write(block + "\n")
+def update_index(entry_list):
+    index_path = "frontend/blog.html"
+    with open(index_path, "w") as f:
+        f.write("<html><head><title>BlueJay Blog</title></head><body>")
+        f.write("<h1>BlueJay’s Blog</h1><ul>")
+        for filename, title, summary in entry_list:
+            f.write(f'<li><a href="blogs/{filename}">{title}</a><br><small>{summary}...</small></li><br>')
+        f.write("</ul></body></html>")
+    print("Blog index updated")
 
 def main():
     keywords = fetch_trending_keywords()
-    if not keywords:
-        print("No keywords found.")
-        return
-
     main_kw = keywords[0]
     blog = generate_blog(main_kw)
-    title_line = blog.split("\n")[0].replace("Title:", "").strip()
-    content = "\n".join(blog.split("\n")[1:]).strip()
-    save_blog(title_line, content)
-    print(f"Blog '{title_line}' posted as {sanitize_filename(title_line)}.html")
+    title = blog.split("\n")[0].replace("Title:", "").strip()
+    filename, title, summary = save_blog(title, blog)
+    update_index([(filename, title, summary)])
 
 if __name__ == "__main__":
     main()
