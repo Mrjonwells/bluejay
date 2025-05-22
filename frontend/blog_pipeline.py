@@ -59,7 +59,7 @@ def update_blog_index(slug, title):
 
 def git_commit_and_push():
     token = os.getenv("BLUEJAY_PAT")
-    repo_url = f"https://{token}@github.com/yourusername/bluejay.git"
+    repo_url = f"https://{token}@github.com/Mrjonwells/bluejay.git"
     os.system("git config --global user.name 'bluejay-bot'")
     os.system("git config --global user.email 'noreply@askbluejay.ai'")
     os.system("git add frontend/blogs/*.html frontend/blog.html")
