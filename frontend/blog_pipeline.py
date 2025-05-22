@@ -71,7 +71,7 @@ def main():
     blog = generate_blog(main_kw)
 
     title_line = blog.split("\n")[0]
-    title = title_line.strip("# ").strip()
+title = title_line.replace("Title:", "").strip("# ").strip()
     content = "\n".join(blog.split("\n")[1:]).strip()
 
     filename, preview = save_blog_file(title, content)
