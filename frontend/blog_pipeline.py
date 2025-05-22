@@ -71,17 +71,9 @@ def git_commit_and_push(slug):
         origin = repo.create_remote("origin", url=REPO_URL)
 
     try:
-        repo.git.checkout("main")
-    except GitCommandError as e:
-        print(f"[Git Checkout Error] {e}")
-
-    try:
         repo.git.add(A=True)
         repo.index.commit(f"Add blog: {slug}")
-        try:
-            origin.push(refspec="main:main", set_upstream=True)
-        except GitCommandError:
-            repo.git.push("--set-upstream", "origin", "main")
+        origin.push(force=True)
     except GitCommandError as e:
         print(f"[Git Push Error] {e}")
 
