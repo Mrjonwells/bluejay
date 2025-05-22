@@ -44,13 +44,13 @@ def generate_blog(keyword):
 def save_blog(title, content):
     safe_title = title.lower().replace(" ", "_").replace(":", "").replace("'", "")
     filename = f"{BLOG_FOLDER}{safe_title}.html"
+    content_html = content.replace("\n", "</p><p>")
     with open(filename, "w") as f:
         f.write("<html><head>")
         f.write(f"<title>{title}</title>")
         f.write("</head><body>")
         f.write(f"<h2>{title}</h2>")
-        content_html = content.replace("\n", "</p><p>")
-        f.write(f"<p>{content_html}</p>")
+        f.write("<p>" + content_html + "</p>")
         f.write("</body></html>")
     print("Blog saved to", filename)
     return filename, title
