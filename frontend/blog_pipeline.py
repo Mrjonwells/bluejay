@@ -74,24 +74,23 @@ def git_commit_and_push(slug):
     except InvalidGitRepositoryError:
         print("[Git] Initializing new Git repo")
         subprocess.run(["git", "init"], cwd=repo_path)
-        subprocess.run(["git", "remote", "add", "origin", GIT_REMOTE], cwd=repo_path)
-        subprocess.run(["git", "config", "user.name", "BlueJay Bot"], cwd=repo_path)
-        subprocess.run(["git", "config", "user.email", "bot@askbluejay.ai"], cwd=repo_path)
-        subprocess.run(["git", "add", "."], cwd=repo_path)
-        subprocess.run(["git", "commit", "-m", "Initial commit"], cwd=repo_path)
-        subprocess.run(["git", "branch", "-M", "main"], cwd=repo_path)
-        subprocess.run(["git", "push", "-u", "origin", "main"], cwd=repo_path)
-        return
+
+    subprocess.run(["git", "remote", "remove", "origin"], cwd=repo_path, stderr=subprocess.DEVNULL)
+    subprocess.run(["git", "remote", "add", "origin", GIT_REMOTE], cwd=repo_path)
+    subprocess.run(["git", "config", "--global", "user.name", "BlueJay Bot"], cwd=repo_path)
+    subprocess.run(["git", "config", "--global", "user.email", "bot@askbluejay.ai"], cwd=repo_path)
 
     try:
-        subprocess.run(["git", "config", "user.name", "BlueJay Bot"], cwd=repo_path)
-        subprocess.run(["git", "config", "user.email", "bot@askbluejay.ai"], cwd=repo_path)
         subprocess.run(["git", "pull", "origin", "main", "--rebase"], cwd=repo_path)
-        subprocess.run(["git", "add", "."], cwd=repo_path)
-        subprocess.run(["git", "commit", "-m", f"Auto-blog update: {slug}"], cwd=repo_path)
+    except Exception as e:
+        print("[Git Pull Error]", e)
+
+    subprocess.run(["git", "add", "."], cwd=repo_path)
+    subprocess.run(["git", "commit", "-m", f"Auto-blog update: {slug}"], cwd=repo_path)
+    try:
         subprocess.run(["git", "push", "origin", "main"], cwd=repo_path)
         print("[Git Push] Blog committed and pushed.")
-    except GitCommandError as e:
+    except Exception as e:
         print("[Git Push Error]", e)
 
 def main():
