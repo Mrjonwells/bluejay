@@ -1,53 +1,48 @@
 import os
 import re
-import datetime
 import markdown2
-from dotenv import load_dotenv
-from pytrends.request import TrendReq
+from datetime import datetime
 from openai import OpenAI
+from pytrends.request import TrendReq
 from git import Repo
 
-load_dotenv()
-
-pytrends = TrendReq(hl='en-US', tz=360)
-
-FALLBACK_KEYWORDS = ["cash discount", "merchant services", "credit card processing"]
 BLOG_FOLDER = "frontend/blogs/"
 BLOG_INDEX = "frontend/blog.html"
 
 def fetch_trending_keywords():
+    pytrends = TrendReq()
     try:
-        pytrends.build_payload(FALLBACK_KEYWORDS, timeframe="now 7-d")
+        pytrends.build_payload(["cash discount", "merchant services"], timeframe="now 7-d")
         related = pytrends.related_queries()
-        keywords = []
-        for kw in FALLBACK_KEYWORDS:
-            if kw in related and related[kw]["top"] is not None:
-                keywords.extend(related[kw]["top"]["query"].tolist()[:2])
-        return list(set(keywords)) or FALLBACK_KEYWORDS
+        suggestions = []
+        for kw_data in related.values():
+            try:
+                for item in kw_data['top']['query']:
+                    suggestions.append(item)
+            except Exception:
+                continue
+        return suggestions if suggestions else []
     except Exception as e:
-        print("[Fallback] Trending fetch failed:", e)
-        return FALLBACK_KEYWORDS
+        print(f"[Fallback] Trending fetch failed: {e}")
+        return []
 
 def generate_blog(topic):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    prompt = f"Write a helpful and engaging blog post for small business owners about: '{topic}'. Keep it SEO-optimized and informative."
-    completion = client.chat.completions.create(
+    prompt = f"Write a blog post for small business owners about: {topic}. Focus on practical merchant services advice and cash discounting."
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "system", "content": "You are a professional business blog writer."},
-                  {"role": "user", "content": prompt}],
-        max_tokens=800
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7
     )
-    return completion.choices[0].message.content.strip()
+    return response.choices[0].message.content.strip()
 
-def slugify(text):
-    return re.sub(r"[^\w\-]", "_", text.lower().replace(" ", "_"))
+def save_blog(title, body):
+    slug = re.sub(r'\W+', '_', title.lower()).strip("_")
+    filename = f"{slug}.html"
+    filepath = os.path.join(BLOG_FOLDER, filename)
+    content = "\n".join(body.split("\n")[1:]).strip()
 
-def save_blog(title, content):
-    slug = slugify(title)
-    filename = f"{BLOG_FOLDER}{slug}.html"
-    content_paragraphs = "".join(f"<p>{line}</p>" for line in content.split("\n") if line.strip())
-
-    with open(filename, "w") as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,54 +55,58 @@ def save_blog(title, content):
   <header>
     <a href="../index.html"><img src="../logo.png" alt="BlueJay Logo" class="centered-logo" /></a>
   </header>
-  <main>
+  <main class="blog-post">
     <h1>{title}</h1>
-    {content_paragraphs}
+    <p><em>{datetime.now().strftime("%B %d, %Y")}</em></p>
+    <p>{content.replace(chr(10), '</p><p>')}</p>
   </main>
-  <footer>
-    <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
-  </footer>
 </body>
 </html>""")
-    return slug, filename
+    return slug, title, content
 
-def update_blog_index(slug, title):
-    if not os.path.exists(BLOG_INDEX):
-        return
+def update_blog_index(slug, title, summary):
+    try:
+        with open(BLOG_INDEX, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        lines = ["<!DOCTYPE html>\n<html>\n<head>\n<title>Blog</title>\n</head>\n<body>\n<h1>BlueJay Blog</h1>\n<ul>\n"]
 
-    with open(BLOG_INDEX, "r") as f:
-        lines = f.readlines()
+    # Remove previous entry with same slug
+    lines = [line for line in lines if slug not in line]
 
-    with open(BLOG_INDEX, "w") as f:
-        for line in lines:
-            if "<!-- BLOG_ENTRIES -->" in line:
-                f.write(line)
-                f.write(f"""    <div class="blog-entry">
-      <a href="blogs/{slug}.html">{title}</a><br />
-      <p class="summary">A fresh perspective from BlueJay on {title}.</p>
-    </div>\n""")
-            else:
-                f.write(line)
+    new_entry = f'<li><a href="blogs/{slug}.html">{title}</a><br><small>{summary[:140]}...</small></li>\n'
+
+    if "</ul>" not in lines:
+        lines.append("<ul>\n")
+        lines.append(new_entry)
+        lines.append("</ul>\n</body>\n</html>")
+    else:
+        index = lines.index("</ul>\n")
+        lines.insert(index, new_entry)
+
+    with open(BLOG_INDEX, "w", encoding="utf-8") as f:
+        f.writelines(lines)
 
 def git_commit_and_push(slug):
-    repo = Repo(".")
+    repo = Repo(os.getcwd())
+    if 'origin' not in [r.name for r in repo.remotes]:
+        repo.create_remote('origin', 'https://github.com/Mrjonwells/bluejay.git')
     repo.git.add(A=True)
-    repo.index.commit(f"Add blog: {slug}")
+    repo.index.commit(f"Add new blog post: {slug}")
     repo.remote(name='origin').push(env={
-        "GIT_ASKPASS": "echo",
-        "GIT_USERNAME": "BlueJay",
-        "GIT_PASSWORD": os.getenv("BLUEJAY_PAT")
+        'GIT_ASKPASS': 'echo',
+        'GIT_USERNAME': 'BlueJay',
+        'GIT_TOKEN': os.getenv("BLUEJAY_PAT")
     })
 
 def main():
     keywords = fetch_trending_keywords()
-    main_kw = keywords[0]
+    main_kw = keywords[0] if keywords else "Cash Discount Programs for Small Businesses"
     blog = generate_blog(main_kw)
-    title = blog.split("\n")[0].replace("Title: ", "").strip()
-    content = "\n".join(blog.split("\n")[1:]).strip()
-    slug, filepath = save_blog(title, content)
-    print("Blog saved to", filepath)
-    update_blog_index(slug, title)
+    title = blog.split("\n")[0].replace("Title:", "").strip()
+    slug, clean_title, content = save_blog(title, blog)
+    update_blog_index(slug, clean_title, content)
+    print(f"Blog saved to {BLOG_FOLDER}{slug}.html")
     print("Blog index updated")
     git_commit_and_push(slug)
 
