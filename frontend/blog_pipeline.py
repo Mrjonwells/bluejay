@@ -1,83 +1,86 @@
 import os
-import datetime
+import re
 import markdown2
-from git import Repo, GitCommandError
-from pytrends.request import TrendReq
+from datetime import datetime
 from openai import OpenAI
-from dotenv import load_dotenv
+from pytrends.request import TrendReq
+from git import Repo, GitCommandError
 
-load_dotenv()
-
-BLOG_DIR = "frontend/blogs"
-INDEX_FILE = "frontend/blog.html"
-GIT_REMOTE = os.getenv("GIT_REMOTE")
+GIT_REMOTE = os.getenv("GIT_REMOTE_URL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def fetch_trending_keyword():
     try:
-        pytrends = TrendReq(hl="en-US", tz=360)
-        pytrends.build_payload(["cash discount"], cat=0, timeframe="now 1-d", geo="US")
-        related = pytrends.related_queries()
-        kw = related.get("cash discount", {}).get("top", {}).get("query", [])[0]
-        return kw
-    except Exception:
-        print("[Fallback] Trending fetch failed: list index out of range")
-        return "cash discount program"
+        pytrends = TrendReq()
+        pytrends.build_payload(["merchant processing"], timeframe="now 1-d")
+        trends = pytrends.related_queries()
+        kw = next(iter(trends))
+        return trends[kw]["top"]["query"][0]
+    except Exception as e:
+        print("[Fallback] Trending fetch failed:", str(e))
+        return "cash discount program for small businesses"
 
-def generate_blog(keyword):
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    prompt = f"Write a helpful and persuasive blog post about '{keyword}' for small business owners interested in reducing credit card fees using cash discount programs."
+def generate_blog(topic):
+    prompt = f"""Write an SEO-optimized blog post for small business owners about: "{topic}". 
+Make it informative, persuasive, and 3-5 paragraphs long. Include a clear title and strong call to action."""
+
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=700
+        temperature=0.7
     )
-    return response.choices[0].message.content.strip()
 
-def save_blog_file(title, content):
-    slug = "_".join(title.lower().replace(":", "").replace(",", "").split())
+    return response.choices[0].message.content
+
+def save_blog(title, body):
+    slug = re.sub(r"[^\w]+", "_", title.lower()).strip("_")
     filename = f"{slug}.html"
-    filepath = os.path.join(BLOG_DIR, filename)
+    full_path = os.path.join("frontend/blogs", filename)
 
-    with open(filepath, "w", encoding="utf-8") as f:
+    body_html = markdown2.markdown(body)
+    with open(full_path, "w", encoding="utf-8") as f:
         f.write(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title}</title>
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <header>
-    <a href="../index.html"><img src="../logo.png" alt="Logo" style="width: 120px;"></a>
-  </header>
-  <main>
+  <header><a href="../blog.html" class="back-link">← Back to Blog Index</a></header>
+  <main class="blog-post">
     <h1>{title}</h1>
-    {markdown2.markdown(content)}
+    {body_html}
   </main>
-  <footer>
-    <p>BlueJay AI Blog. Powered by AskBlueJay.ai</p>
-  </footer>
 </body>
 </html>""")
-    print(f"Blog saved to {filepath}")
+    print(f"Blog saved to {full_path}")
     return filename
 
-def update_blog_index():
-    posts = []
-    for file in sorted(os.listdir(BLOG_DIR), reverse=True):
-        if file.endswith(".html"):
-            path = os.path.join(BLOG_DIR, file)
-            with open(path, "r", encoding="utf-8") as f:
-                title = f.readline().strip().replace("<h1>", "").replace("</h1>", "")
-                preview = f.readline().strip()
-                posts.append((file, title, preview))
-
-    with open(INDEX_FILE, "w", encoding="utf-8") as f:
-        f.write("<!DOCTYPE html><html><head><title>Blog</title><link rel='stylesheet' href='style.css'></head><body><h1>BlueJay Blog</h1><ul>")
-        for file, title, preview in posts:
-            f.write(f"<li><a href='blogs/{file}'>{title}</a><br><small>{preview}</small></li>")
-        f.write("</ul></body></html>")
+def update_index():
+    blog_dir = "frontend/blogs"
+    posts = sorted([f for f in os.listdir(blog_dir) if f.endswith(".html")])
+    index_path = "frontend/blog.html"
+    with open(index_path, "w", encoding="utf-8") as f:
+        f.write("""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueJay Blog</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header><a href="index.html" class="back-link">← Back to Home</a></header>
+  <main class="blog-index">
+    <h1>BlueJay Blog</h1>
+""")
+        for post in posts:
+            title = post.replace("_", " ").replace(".html", "").title()
+            f.write(f'<div class="blog-preview"><a href="blogs/{post}">{title}</a></div>\n')
+        f.write("</main></body></html>")
     print("Blog index updated")
 
 def git_commit_and_push(slug):
@@ -85,14 +88,18 @@ def git_commit_and_push(slug):
     try:
         if not os.path.exists(os.path.join(repo_path, ".git")):
             repo = Repo.init(repo_path)
-            repo.create_remote("origin", GIT_REMOTE)
+            if "origin" not in [r.name for r in repo.remotes]:
+                repo.create_remote("origin", GIT_REMOTE)
         else:
             repo = Repo(repo_path)
 
-        origin = repo.remote(name="origin")
+        origin = [r for r in repo.remotes if r.name == "origin"]
+        if not origin:
+            raise Exception("Remote 'origin' was not found.")
+        origin = origin[0]
+
         origin.fetch()
         repo.git.pull("origin", "main")
-
         repo.git.add(A=True)
         repo.index.commit(f"Add blog post: {slug}")
         origin.push()
@@ -102,12 +109,12 @@ def git_commit_and_push(slug):
         print(f"[Git Error] Repo setup failed: {e}")
 
 def main():
-    keyword = fetch_trending_keyword()
-    blog = generate_blog(keyword)
-    title = blog.split("\n")[0].replace("Title:", "").strip()
-    content = "\n".join(blog.split("\n")[1:]).strip()
-    file_name = save_blog_file(title, content)
-    update_blog_index()
+    topic = fetch_trending_keyword()
+    blog = generate_blog(topic)
+    title = blog.splitlines()[0].replace("Title:", "").strip()
+    content = "\n".join(blog.splitlines()[1:]).strip()
+    file_name = save_blog(title, content)
+    update_index()
     git_commit_and_push(file_name.replace(".html", ""))
 
 if __name__ == "__main__":
