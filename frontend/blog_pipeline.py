@@ -1,71 +1,121 @@
 import os
-from openai import OpenAI
+import time
+import json
+import re
 from datetime import datetime
 from pytrends.request import TrendReq
+from openai import OpenAI
+import subprocess
+
+# ENV setup
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GIT_USER = os.getenv("GIT_USER", "bluejay-bot")
+GIT_EMAIL = os.getenv("GIT_EMAIL", "bluejay@askbluejay.ai")
 
 def fetch_trending_keywords():
-    pytrends = TrendReq(hl='en-US', tz=360)
+    pytrends = TrendReq()
     try:
-        pytrends.build_payload(["credit card processing"], cat=0, timeframe='now 1-d', geo='US', gprop='')
+        pytrends.build_payload(["merchant services"], timeframe="now 7-d")
         related = pytrends.related_queries()
-        ranked = related["credit card processing"]["top"]
-        if ranked is None or ranked.empty:
-            raise IndexError("Trending fetch failed")
-        return [kw for kw in ranked['query'].tolist() if "card" in kw.lower() or "merchant" in kw.lower()]
+        for kw in related.values():
+            try:
+                return kw['top']['query'][0]
+            except:
+                continue
     except Exception as e:
-        print(f"[Fallback] Trending fetch failed: {e}")
-        return ["cash discount", "credit card surcharges", "merchant fees"]
+        print("[Fallback] Trending fetch failed:", str(e))
+    return "cash discount program"
 
-def generate_blog(keyword):
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    prompt = f"""Write a helpful 5-paragraph blog post for small business owners about "{keyword}" as it relates to saving money on credit card processing fees. Start with a compelling title, and close with a strategic call to action."""
-    
+def generate_blog(topic):
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    prompt = f"Write a short SEO-optimized blog post for small business owners about: {topic}. Include a compelling title and 2-3 paragraphs."
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
 
-def sanitize_filename(title):
-    return ''.join(c if c.isalnum() or c in ('_', '-') else '_' for c in title.lower().replace(' ', '_')) + ".html"
-
 def save_blog(title, content):
-    folder = "frontend/blogs"
-    os.makedirs(folder, exist_ok=True)
-    filename = sanitize_filename(title)
-    filepath = os.path.join(folder, filename)
+    slug = re.sub(r'\W+', '_', title.lower()).strip("_")
+    filename = f"{slug}.html"
+    filepath = os.path.join("frontend", "blogs", filename)
 
-    content = "\n".join(content.split("\n")[1:]).strip()  # strip title line
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
     with open(filepath, "w") as f:
-        f.write(f"""<html>
-<head><title>{title}</title></head>
+        f.write(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
 <body>
-<h2>{title}</h2>
-<p>{content.replace(chr(10), '</p><p>')}</p>
+  <header>
+    <a href="../index.html"><img src="../logo.png" class="centered-logo" alt="BlueJay Logo" /></a>
+  </header>
+  <main class="blog-post">
+    <h1>{title}</h1>
+    <p>{content.replace('\n', '</p><p>')}</p>
+  </main>
+  <footer>
+    <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
+  </footer>
 </body>
 </html>""")
-    
-    print(f"Blog saved to {filepath}")
-    return filename, title, content[:180]
+    return filename
 
-def update_index(entry_list):
-    index_path = "frontend/blog.html"
+def update_blog_index():
+    blog_dir = os.path.join("frontend", "blogs")
+    index_path = os.path.join("frontend", "blog.html")
+
+    blog_links = []
+    for fname in sorted(os.listdir(blog_dir), reverse=True):
+        if fname.endswith(".html"):
+            title = fname.replace("_", " ").replace(".html", "").title()
+            blog_links.append(f'<div class="blog-entry"><a href="blogs/{fname}">{title}</a></div>')
+
     with open(index_path, "w") as f:
-        f.write("<html><head><title>BlueJay Blog</title></head><body>")
-        f.write("<h1>BlueJay’s Blog</h1><ul>")
-        for filename, title, summary in entry_list:
-            f.write(f'<li><a href="blogs/{filename}">{title}</a><br><small>{summary}...</small></li><br>')
-        f.write("</ul></body></html>")
-    print("Blog index updated")
+        f.write(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueJay Blog</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <a href="index.html"><img src="logo.png" class="centered-logo" alt="BlueJay Logo" /></a>
+  </header>
+  <main class="blog-index">
+    <h1>BlueJay’s Blog</h1>
+    {''.join(blog_links)}
+  </main>
+  <footer>
+    <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
+  </footer>
+</body>
+</html>""")
+
+def git_commit_push():
+    subprocess.run(["git", "config", "--global", "user.name", GIT_USER])
+    subprocess.run(["git", "config", "--global", "user.email", GIT_EMAIL])
+    subprocess.run(["git", "add", "frontend/blogs"])
+    subprocess.run(["git", "add", "frontend/blog.html"])
+    subprocess.run(["git", "commit", "-m", "Automated blog update"])
+    subprocess.run(["git", "push"])
 
 def main():
-    keywords = fetch_trending_keywords()
-    main_kw = keywords[0]
-    blog = generate_blog(main_kw)
-    title = blog.split("\n")[0].replace("Title:", "").strip()
-    filename, title, summary = save_blog(title, blog)
-    update_index([(filename, title, summary)])
+    topic = fetch_trending_keywords()
+    blog = generate_blog(topic)
+    title_line, content = blog.split("\n", 1)
+    title = title_line.strip("Title: ").strip()
+    filename = save_blog(title, content.strip())
+    print(f"Blog saved to frontend/blogs/{filename}")
+    update_blog_index()
+    git_commit_push()
+    print("Blog index updated and changes pushed to GitHub.")
 
 if __name__ == "__main__":
     main()
