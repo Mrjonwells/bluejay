@@ -1,92 +1,233 @@
-import json
-import random
-from datetime import datetime
-from pathlib import Path
-from pytrends.request import TrendReq
-from openai import OpenAI
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0d0d0d;
+  color: #eaeaea;
+}
 
-pytrends = TrendReq(hl="en-US", tz=360)
-openai = OpenAI()
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  flex-wrap: wrap;
+}
 
-OUTPUT_DIR = Path("frontend/blogs/")
-INDEX_PATH = Path("frontend/blog.html")
+.centered-logo {
+  height: 400px;
+  margin: 3px auto 0 auto;
+  display: block;
+  filter: drop-shadow(0 0 3px #00aaff);
+}
 
-DEFAULT_KEYWORDS = [
-    "merchant services",
-    "credit card processing",
-    "cash discount program",
-    "interchange fees",
-    "point of sale AI",
-    "switch from Square",
-    "AI for small business",
-    "cut payment fees"
-]
+.dropdown {
+  position: relative;
+}
 
-def fetch_trending_keywords():
-    try:
-        pytrends.build_payload(["merchant services", "credit card fees", "cash discount"], timeframe="now 7-d")
-        related = pytrends.related_queries()
-        all_keywords = []
-        for topic in related.values():
-            if topic and "top" in topic and topic["top"] is not None:
-                all_keywords.extend(topic["top"]["query"].tolist())
-        if not all_keywords:
-            print("⚠️ No related keywords found. Using fallback.")
-            return DEFAULT_KEYWORDS
-        print("✅ Trending keywords fetched.")
-        return all_keywords
-    except Exception as e:
-        print(f"⚠️ Error fetching trends: {e}. Using fallback.")
-        return DEFAULT_KEYWORDS
+.dropbtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
 
-def generate_blog_title(topic):
-    return f"{topic.title()} Trends for Small Business Merchants in {datetime.now().year}"
+.menu-icon {
+  width: 100%;
+  height: auto;
+}
 
-def generate_blog_content(topic):
-    prompt = (
-        f"Write a short, engaging blog post (3-4 paragraphs) about '{topic}' "
-        "focused on small business owners, AI tools, payment processing, or merchant savings. "
-        "Include real-world tone and helpful info. No fluff."
-    )
-    response = openai.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content.strip()
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background-color: #0d0d0d;
+  border: 1px solid #00aaff;
+  border-radius: 6px;
+  padding: 10px;
+}
 
-def save_blog(title, content, topic):
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    filename = f"{date_str}-{topic.replace(' ', '-')}.html".lower()
-    filepath = OUTPUT_DIR / filename
-    with open(filepath, "w") as f:
-        f.write(f"<html><head><title>{title}</title></head><body><h1>{title}</h1><p>{content}</p></body></html>")
-    return filename, content.split(".")[0] + "."
+.dropdown-content a {
+  color: #00aaff;
+  text-decoration: none;
+  display: block;
+  margin: 8px 0;
+  font-weight: bold;
+}
 
-def update_index(filename, title, summary):
-    with open(INDEX_PATH, "r") as f:
-        index = f.read()
-    new_entry = f"""
-    <div class="blog-entry">
-      <a href="blogs/{filename}">{title}</a>
-      <p>{summary}</p>
-    </div>
-    """
-    if "<!-- BLOG_ENTRIES -->" in index:
-        index = index.replace("<!-- BLOG_ENTRIES -->", new_entry + "\n<!-- BLOG_ENTRIES -->")
-    else:
-        index = new_entry + "\n" + index
-    with open(INDEX_PATH, "w") as f:
-        f.write(index)
+.dropdown:hover .dropdown-content {
+  display: block;
+}
 
-def main():
-    keywords = fetch_trending_keywords()
-    topic = random.choice(keywords)
-    print(f"Generating blog for topic: {topic}")
-    title = generate_blog_title(topic)
-    content = generate_blog_content(topic)
-    filename, summary = save_blog(title, content, topic)
-    update_index(filename, title, summary)
-    print(f"✅ Blog generated and saved: {filename}")
+.hero {
+  text-align: center;
+  margin-top: -10px;
+  padding: 0 20px 20px;
+  animation: fadeIn 1.2s ease-in-out;
+}
 
-if __name__ == "__main__":
-    main()
+.hero h1 {
+  font-size: 2.2em;
+  color: #00aaff;
+  margin-bottom: 6px;
+}
+
+.hero p {
+  font-size: 1em;
+  color: #cceeff;
+  margin-top: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.chatlog {
+  width: 100%;
+  max-width: 600px;
+  height: 300px;
+  overflow-y: auto;
+  background: #1e1e1e;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.assistant-bubble {
+  background-color: #1e1e1e;
+  color: #00aaff;
+  padding: 10px 14px;
+  margin: 8px;
+  border-radius: 20px 20px 20px 4px;
+  max-width: 75%;
+  align-self: flex-start;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
+  display: block;
+}
+
+.user-bubble {
+  background: transparent;
+  color: #ffffff;
+  padding: 10px 14px;
+  margin: 8px;
+  border: 2px solid #ffffff33;
+  border-radius: 20px 20px 4px 20px;
+  max-width: 75%;
+  align-self: flex-end;
+  display: block;
+}
+
+.chatlog > div {
+  display: block;
+  width: 100%;
+}
+
+.input-row {
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+}
+
+#user-input {
+  flex-grow: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px 0 0 10px;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+#send-btn {
+  background-color: #0094ff;
+  color: #fff;
+  border: none;
+  padding: 0 20px;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+}
+
+/* Features section */
+.features {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 20px;
+  padding: 20px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.feature-card {
+  flex: 0 0 300px;
+  max-width: 300px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  text-align: center;
+  scroll-snap-align: center;
+  animation: flyIn 0.6s ease forwards;
+  opacity: 0;
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.2s; }
+.feature-card:nth-child(2) { animation-delay: 0.4s; }
+.feature-card:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes flyIn {
+  from {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.feature-card img {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  display: block;
+  margin: 0 auto 10px auto;
+  object-fit: contain;
+  filter: none;
+}
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  padding: 20px;
+  color: #888;
+}
+
+@media (max-width: 768px) {
+  .centered-logo {
+    height: 300px;
+  }
+
+  .dropbtn {
+    background-size: 25px;
+  }
+
+  .menu-icon {
+    width: 28px;
+  }
+
+  .feature-card {
+    flex: 0 0 80%;
+    max-width: 80%;
+  }
+}
