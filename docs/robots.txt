@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://askbluejay.ai/sitemap.xml
