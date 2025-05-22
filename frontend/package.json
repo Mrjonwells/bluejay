@@ -1,7 +1,0 @@
-{
-  "name": "bluejay-frontend",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "echo 'No frontend build step required'"
-  }
-}
