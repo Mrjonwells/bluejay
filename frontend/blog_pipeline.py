@@ -1,67 +1,93 @@
 import os
-from datetime import datetime
+import re
+import markdown2
+from git import Repo, GitCommandError
 from openai import OpenAI
 from pytrends.request import TrendReq
-from git import Repo, GitCommandError
-from dotenv import load_dotenv
-
-load_dotenv()
-
-SEO_TOPICS = [
-    "cash discount program", "credit card processing", "small business fees",
-    "merchant processing", "save on transaction fees", "dual pricing strategy"
-]
 
 REPO_URL = "https://github.com/Mrjonwells/bluejay.git"
-BLOG_DIR = "frontend/blogs"
+BLOG_DIR = "frontend/blogs/"
 BLOG_INDEX = "frontend/blog.html"
 
 def fetch_trending_keywords():
     pytrends = TrendReq(hl='en-US', tz=360)
     try:
-        pytrends.build_payload(["merchant services"], cat=0, timeframe='now 7-d', geo='US', gprop='')
+        pytrends.build_payload(['merchant processing'], cat=0, timeframe='now 1-d', geo='US')
         related = pytrends.related_queries()
-        trends = related['merchant services']['top']
-        return [row['query'] for row in trends.head(5).to_dict('records')] if trends is not None else []
+        keywords = related['merchant processing']['top']
+        if keywords is None:
+            raise IndexError("No related keywords returned.")
+        return [kw['query'] for kw in keywords[:5]]
     except Exception as e:
         print(f"[Fallback] Trending fetch failed: {e}")
-        return SEO_TOPICS
+        return [
+            "cash discount program",
+            "credit card processing fees",
+            "merchant services",
+            "small business savings",
+            "no fee processing"
+        ]
 
 def generate_blog(keyword):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    prompt = f"Write a blog post for small business owners about '{keyword}' in the context of saving money using cash discount programs. Make it persuasive, simple, and actionable."
+    prompt = f"Write an SEO-optimized blog post for small business owners about '{keyword}'. Include a title and helpful content."
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
+        messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
 
-def save_blog(title, content, filename):
-    with open(os.path.join(BLOG_DIR, filename), "w") as f:
-        f.write("<html><head>")
-        f.write(f"<title>{title}</title>")
-        f.write('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
-        f.write("</head><body style='background-color:#0d0d0d;color:#eaeaea;font-family:sans-serif;padding:20px;'>")
-        f.write(f"<h2>{title}</h2>")
-        f.write("<p>" + content.replace("\n", "</p><p>") + "</p>")
-        f.write("</body></html>")
-    print(f"Blog saved to {os.path.join(BLOG_DIR, filename)}")
+def save_blog_to_file(title, content, slug):
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <header>
+    <img src="../logo.png" alt="BlueJay Logo" class="centered-logo" />
+  </header>
+  <section class="hero">
+    <h1>{title}</h1>
+  </section>
+  <section class="chat-container">
+    <div class="chatlog">
+      {markdown2.markdown(content)}
+    </div>
+  </section>
+</body>
+</html>
+"""
+    filepath = os.path.join(BLOG_DIR, slug + ".html")
+    with open(filepath, "w") as f:
+        f.write(html_content)
+    print(f"Blog saved to {filepath}")
+    return filepath
 
-def update_index(title, filename):
+def update_blog_index(slug, title, summary):
+    entry = f"""<div class="blog-preview">
+  <a href="blogs/{slug}.html"><strong>{title}</strong></a>
+  <p>{summary}</p>
+</div>\n"""
     with open(BLOG_INDEX, "r") as f:
-        lines = f.readlines()
+        existing = f.read()
+    if entry not in existing:
+        with open(BLOG_INDEX, "a") as f:
+            f.write(entry)
+        print("Blog index updated")
 
-    insert_index = next(i for i, line in enumerate(lines) if "</main>" in line)
-    summary = f"{title.split(':')[0]} — Learn how small businesses can save on fees."
-    date = datetime.now().strftime("%Y-%m-%d")
-    entry = f'  <div class="blog-preview"><a href="blogs/{filename}">{title}</a><br/><small>{date}</small><p>{summary}</p></div>\n'
+def extract_title_and_summary(blog):
+    lines = blog.split("\n")
+    title = lines[0].replace("Title:", "").strip() if lines[0].lower().startswith("title:") else "Untitled"
+    content = "\n".join(lines[1:]).strip()
+    summary = content[:180] + "..." if len(content) > 180 else content
+    return title, content, summary
 
-    lines.insert(insert_index, entry)
-
-    with open(BLOG_INDEX, "w") as f:
-        f.writelines(lines)
-    print("Blog index updated")
+def slugify(text):
+    return re.sub(r'\W+', '_', text.lower()).strip('_')
 
 def git_commit_and_push(slug):
     repo = Repo(os.getcwd())
@@ -71,23 +97,22 @@ def git_commit_and_push(slug):
         origin = repo.create_remote("origin", url=REPO_URL)
 
     try:
+        if repo.head.is_detached:
+            repo.git.checkout("-B", "main")
         repo.git.add(A=True)
         repo.index.commit(f"Add blog: {slug}")
-        origin.push(force=True)
+        repo.git.push("--set-upstream", "origin", "main")
     except GitCommandError as e:
         print(f"[Git Push Error] {e}")
 
 def main():
     keywords = fetch_trending_keywords()
-    main_kw = keywords[0] if keywords else "cash discounting"
+    main_kw = keywords[0]
     blog = generate_blog(main_kw)
-    title = blog.split("\n")[0].replace("Title: ", "").strip()
-    content = "\n".join(blog.split("\n")[1:]).strip()
-    slug = title.lower().replace(" ", "_").replace(":", "").replace(",", "")
-    filename = f"{slug}.html"
-
-    save_blog(title, content, filename)
-    update_index(title, filename)
+    title, content, summary = extract_title_and_summary(blog)
+    slug = slugify(title)
+    save_blog_to_file(title, content, slug)
+    update_blog_index(slug, title, summary)
     git_commit_and_push(slug)
 
 if __name__ == "__main__":
