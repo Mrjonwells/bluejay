@@ -1,117 +1,108 @@
 import os
 import re
+import time
 import markdown2
 from git import Repo, GitCommandError
-from datetime import datetime
 from openai import OpenAI
 from pytrends.request import TrendReq
+from datetime import datetime
 
-# Setup
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-GIT_TOKEN = os.getenv("BLUEJAY_PAT")
-REPO_URL = f"https://{GIT_TOKEN}@github.com/Mrjonwells/bluejay.git"
-BLOG_DIR = "frontend/blogs/"
-INDEX_FILE = "frontend/blog.html"
-
-client = OpenAI(api_key=OPENAI_API_KEY)
-pytrends = TrendReq(hl="en-US", tz=360)
-
+pytrends = TrendReq()
 
 def fetch_trending_keywords():
     try:
-        pytrends.build_payload(["credit card processing"], cat=0, timeframe="now 7-d", geo="", gprop="")
+        pytrends.build_payload(kw_list=["cash discount", "merchant services", "credit card processing"])
         related = pytrends.related_queries()
-        top_keywords = related.get("credit card processing", {}).get("top", {}).get("query", [])
-        return [k for k in top_keywords if isinstance(k, str)]
+        keywords = []
+        for data in related.values():
+            if data and data.get("top") is not None:
+                for entry in data["top"].to_dict("records"):
+                    keywords.append(entry["query"])
+        return keywords[:5]
     except Exception as e:
         print(f"[Fallback] Trending fetch failed: {e}")
         return [
             "cash discount program",
-            "merchant processing fees",
-            "credit card surcharges",
-            "small business payment solutions",
-            "card processing savings"
+            "lower credit card fees",
+            "eliminate merchant fees",
+            "merchant processing AI",
+            "reduce processing costs"
         ]
 
-
 def generate_blog(topic):
-    system_prompt = (
-        "You are a professional blog writer for AskBlueJay.ai, focused on helping small businesses save money on "
-        "credit card fees using cash discount programs and advanced merchant processing strategies. Write in a clean, "
-        "clear tone that resonates with small business owners. Include a compelling title and intro."
-    )
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    prompt = f"Write a persuasive, informative blog post about '{topic}' for small business owners. Explain benefits, practical examples, and conclude with a strong call to action to explore cash discount programs."
+
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Write a blog post about: {topic}"}
-        ],
-        temperature=0.7
+        messages=[{"role": "user", "content": prompt}]
     )
-    return response.choices[0].message.content
+    return response.choices[0].message.content.strip()
 
+def slugify(title):
+    return re.sub(r'\W+', '_', title.strip().lower())
 
-def save_blog_to_file(title, content):
-    slug = re.sub(r"[^\w]+", "_", title.lower()).strip("_")
-    filename = os.path.join(BLOG_DIR, f"{slug}.html")
-
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n")
-        f.write(f"<meta charset=\"UTF-8\">\n<title>{title}</title>\n")
-        f.write("<link rel=\"stylesheet\" href=\"../style.css\">\n</head>\n<body>\n")
-        f.write(f"<article class='blog-post'>\n<h1>{title}</h1>\n")
-        f.write(f"{markdown2.markdown(content)}")
-        f.write("\n</article>\n</body>\n</html>")
-
-    print(f"Blog saved to {filename}")
+def save_blog(title, content):
+    slug = slugify(title)
+    filename = f"{slug}.html"
+    filepath = f"frontend/blogs/{filename}"
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write("<html><head><meta charset='UTF-8'><title>{}</title></head><body>".format(title))
+        f.write(f"<h2>{title}</h2>\n<p>{content.replace(chr(10), '</p><p>')}</p>")
+        f.write("</body></html>")
+    print(f"Blog saved to {filepath}")
     return slug
 
+def update_blog_index(slug, title):
+    index_path = "frontend/blog.html"
+    with open(index_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
 
-def update_blog_index(title, slug):
-    post_url = f"blogs/{slug}.html"
-    today = datetime.now().strftime("%B %d, %Y")
-    entry = f'<div class="blog-preview"><a href="{post_url}">{title}</a><p>{today}</p></div>\n'
+    timestamp = datetime.now().strftime("%Y-%m-%d")
+    insert_line = f'<div class="blog-entry"><a href="blogs/{slug}.html">{title}</a><p>{timestamp}</p></div>\n'
 
-    with open(INDEX_FILE, "r+", encoding="utf-8") as index_file:
-        content = index_file.read()
-        updated = re.sub(r"(<!-- BLOG_ENTRIES_START -->)", rf"\1\n{entry}", content)
-        index_file.seek(0)
-        index_file.write(updated)
-        index_file.truncate()
+    new_lines = []
+    inserted = False
+    for line in lines:
+        new_lines.append(line)
+        if "<div class=\"blog-list\">" in line and not inserted:
+            new_lines.append(insert_line)
+            inserted = True
+
+    with open(index_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
 
     print("Blog index updated")
 
-
-def git_commit_and_push(slug):
-    repo = Repo(os.getcwd())
+def git_commit_and_push(filename):
     try:
+        repo = Repo(os.getcwd())
+        repo.git.add(update=True)
+        repo.index.add([f"frontend/blogs/{filename}", "frontend/blog.html"])
+        repo.index.commit(f"Add blog post: {filename}")
+
+        # Ensure 'main' is checked out and tracking origin
+        repo.git.checkout("main")
+        repo.git.branch("--set-upstream-to=origin/main", "main")
+
         origin = repo.remote(name="origin")
-    except ValueError:
-        origin = repo.create_remote("origin", url=REPO_URL)
-
-    if repo.head.is_detached:
-        repo.git.checkout("-B", "main")
-
-    try:
-        repo.git.add(A=True)
-        repo.index.commit(f"Add blog: {slug}")
-        repo.git.push("--set-upstream", "origin", "main")
+        origin.push()
     except GitCommandError as e:
         print(f"[Git Push Error] {e}")
-
+    except Exception as e:
+        print(f"[Git Error] {e}")
 
 def main():
     keywords = fetch_trending_keywords()
     main_kw = keywords[0] if keywords else "cash discount program"
+
     blog = generate_blog(main_kw)
-
-    title = blog.split("\n")[0].replace("Title: ", "").strip()
+    title_line = blog.splitlines()[0]
+    title = title_line.replace("Title:", "").strip() if title_line.lower().startswith("title:") else main_kw.title()
     content = "\n".join(blog.split("\n")[1:]).strip()
-
-    slug = save_blog_to_file(title, content)
-    update_blog_index(title, slug)
-    git_commit_and_push(slug)
-
+    slug = save_blog(title, content)
+    update_blog_index(slug, title)
+    git_commit_and_push(f"{slug}.html")
 
 if __name__ == "__main__":
     main()
