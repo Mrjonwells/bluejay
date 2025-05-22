@@ -1,140 +1,113 @@
 import os
-import re
-import time
-import requests
 from datetime import datetime
+from pathlib import Path
+import markdown2
 from pytrends.request import TrendReq
 from openai import OpenAI
 from git import Repo
-from dotenv import load_dotenv
 
-load_dotenv()
+# Constants
+BLOG_FOLDER = Path(__file__).parent / "blogs"
+INDEX_FILE = Path(__file__).parent / "blog.html"
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-BLOG_DIR = "frontend/blogs"
-INDEX_FILE = "frontend/blog.html"
-REPO_PATH = os.getcwd()
-GITHUB_PAT = os.getenv("BLUEJAY_PAT")
-REPO_URL = "https://github.com/Mrjonwells/bluejay.git"
+# Ensure blog folder exists
+BLOG_FOLDER.mkdir(exist_ok=True)
 
 def fetch_trending_keywords():
     try:
-        pytrends = TrendReq(hl='en-US', tz=360)
-        pytrends.build_payload(['credit card processing'], cat=0, timeframe='now 7-d', geo='', gprop='')
+        pytrends = TrendReq()
+        pytrends.build_payload(["credit card processing"], timeframe='now 1-d')
         related = pytrends.related_queries()
-        kw_list = list(related['credit card processing']['top']['query'])[:5]
-        return kw_list
-    except Exception as e:
-        print(f"[Fallback] Trending fetch failed: {e}")
-        return [
-            "cash discount processing",
-            "credit card fee savings",
-            "how to cut merchant fees",
-            "merchant cash discount programs",
-            "eliminate credit card fees"
-        ]
-
-def slugify(title):
-    return re.sub(r'[\W_]+', '_', title.lower()).strip("_")
+        return list(related.values())[0]['top']['query'].tolist()
+    except Exception:
+        print("[Fallback] Trending fetch failed: list index out of range")
+        return ["cash discount", "merchant processing", "small business savings"]
 
 def generate_blog(topic):
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    prompt = f"Write a blog post (~400 words) for small business owners about '{topic}' with a compelling title. Focus on saving money via credit card processing cash discount programs. Start with the title on the first line."
-
+    prompt = f"Write a helpful SEO blog post for small business owners about '{topic}' focusing on saving money using a cash discount program. Include title and 2-3 paragraphs."
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
-
     return response.choices[0].message.content.strip()
 
 def save_blog(title, content):
-    slug = slugify(title)
-    filename = os.path.join(BLOG_DIR, f"{slug}.html")
+    safe_title = title.lower().replace(" ", "_").replace(":", "").replace("'", "")
+    filename = f"{safe_title}.html"
+    path = BLOG_FOLDER / filename
 
-    html_content = (
-        "<!DOCTYPE html>\n"
-        "<html>\n"
-        "<head>\n"
-        "  <meta charset=\"UTF-8\">\n"
-        f"  <title>{title}</title>\n"
-        "</head>\n"
-        "<body>\n"
-        f"  <h2>{title}</h2>\n"
-        f"  <p>{content.replace(chr(10), '</p><p>')}</p>\n"
-        "</body>\n"
-        "</html>"
+    html = (
+        "<html><head>"
+        f"<title>{title}</title>"
+        "</head><body>"
+        f"<h2>{title}</h2>"
+        + "".join(f"<p>{line}</p>" for line in content.split("\n") if line.strip())
+        + "</body></html>"
     )
 
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(html_content)
+    with open(path, "w") as f:
+        f.write(html)
 
-    print(f"Blog saved to {filename}")
-    return slug
+    print(f"Blog saved to {path}")
+    return filename
 
-def update_blog_index():
-    entries = []
-    for file in sorted(os.listdir(BLOG_DIR), reverse=True):
-        if file.endswith(".html"):
-            path = os.path.join(BLOG_DIR, file)
-            with open(path, "r", encoding="utf-8") as f:
-                title_line = f.readline()
-                title = re.sub(r"<.*?>", "", title_line)
-                hook = f.readline().strip()
-                entries.append(f'<div class="blog-entry"><a href="blogs/{file}">{title}</a><p>{hook}</p></div>')
+def update_index(new_file, title):
+    lines = []
+    if INDEX_FILE.exists():
+        with open(INDEX_FILE) as f:
+            lines = f.readlines()
 
-    index_html = (
-        "<!DOCTYPE html>\n"
-        "<html lang=\"en\">\n"
-        "<head>\n"
-        "  <meta charset=\"UTF-8\">\n"
-        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-        "  <title>BlueJay Blog</title>\n"
-        "  <link rel=\"stylesheet\" href=\"style.css\" />\n"
-        "</head>\n"
-        "<body>\n"
-        "  <header><h1>BlueJay’s Blog</h1></header>\n"
-        "  <section class=\"blog-list\">\n"
-        f"{''.join(entries)}\n"
-        "  </section>\n"
-        "</body>\n"
-        "</html>"
-    )
+    now = datetime.now().strftime("%B %d, %Y")
+    new_entry = f'<div><a href="blogs/{new_file}">{title}</a><br><small>{now}</small></div>\n'
 
-    with open(INDEX_FILE, "w", encoding="utf-8") as f:
-        f.write(index_html)
+    # Preserve header if exists, then add
+    header = "<!DOCTYPE html>\n<html>\n<head><title>BlueJay Blog</title></head>\n<body>\n"
+    footer = "</body></html>\n"
+    body = [line for line in lines if "<body>" in line or "<div>" in line]
+
+    with open(INDEX_FILE, "w") as f:
+        f.write(header)
+        for line in body:
+            f.write(line)
+        f.write(new_entry)
+        f.write(footer)
+
     print("Blog index updated")
 
 def git_commit_and_push(slug):
-    try:
-        repo = Repo(REPO_PATH)
-        origin = repo.remotes.origin
+    repo_path = Path(__file__).resolve().parent
+    repo = Repo(repo_path)
 
-        # Ensure tracking setup
-        if repo.head.is_detached:
-            print("Repo is in detached HEAD state. Skipping push.")
+    if 'origin' not in [remote.name for remote in repo.remotes]:
+        origin_url = os.getenv("GIT_REMOTE_URL")
+        if not origin_url:
+            print("[Git Error] Missing GIT_REMOTE_URL in environment.")
             return
+        repo.create_remote('origin', origin_url)
 
-        if repo.active_branch.tracking_branch() is None:
-            repo.git.branch('--set-upstream-to=origin/main', 'main')
+    try:
+        repo.git.pull('origin', 'main')
+    except Exception as e:
+        print(f"[Git Error] during setup: {e}")
 
-        repo.git.add(A=True)
-        repo.index.commit(f"Add blog post: {slug}")
-        origin.push()
-        print("Pushed to GitHub")
+    repo.git.add('--all')
+    repo.index.commit(f"Add new blog post: {slug}")
+    try:
+        repo.remote(name='origin').push()
     except Exception as e:
         print(f"[Git Push Error] {e}")
 
 def main():
     keywords = fetch_trending_keywords()
-    main_kw = keywords[0] if keywords else "cash discount processing"
-    blog = generate_blog(main_kw)
-
+    topic = keywords[0] if keywords else "cash discount program"
+    blog = generate_blog(topic)
     title = blog.split("\n")[0].replace("Title:", "").strip()
     content = "\n".join(blog.split("\n")[1:]).strip()
 
-    slug = save_blog(title, content)
-    update_blog_index()
-    git_commit_and_push(slug)
+    file_name = save_blog(title, content)
+    update_index(file_name, title)
+    git_commit_and_push(file_name.replace(".html", ""))
 
 if __name__ == "__main__":
     main()
