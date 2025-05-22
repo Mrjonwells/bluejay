@@ -1,100 +1,139 @@
 import os
+import re
 import time
-import markdown2
-from git import Repo, GitCommandError
+import requests
+from datetime import datetime
 from pytrends.request import TrendReq
 from openai import OpenAI
+from git import Repo
 from dotenv import load_dotenv
 
 load_dotenv()
 
-BLOG_DIR = "frontend/blogs/"
+BLOG_DIR = "frontend/blogs"
 INDEX_FILE = "frontend/blog.html"
-REPO_DIR = os.getcwd()
-GIT_TOKEN = os.getenv("BLUEJAY_PAT")
-REPO_URL = f"https://{GIT_TOKEN}@github.com/Mrjonwells/bluejay.git"
+REPO_PATH = os.getcwd()
+GITHUB_PAT = os.getenv("BLUEJAY_PAT")
+REPO_URL = "https://github.com/Mrjonwells/bluejay.git"
 
 def fetch_trending_keywords():
-    pytrends = TrendReq()
     try:
-        pytrends.build_payload(["merchant processing"])
+        pytrends = TrendReq(hl='en-US', tz=360)
+        pytrends.build_payload(['credit card processing'], cat=0, timeframe='now 7-d', geo='', gprop='')
         related = pytrends.related_queries()
-        kw_list = list(related.values())[0]["top"]
-        return [kw["query"] for kw in kw_list if "query" in kw]
+        kw_list = list(related['credit card processing']['top']['query'])[:5]
+        return kw_list
     except Exception as e:
-        print("[Fallback] Trending fetch failed:", str(e))
-        return ["cash discount program", "merchant services", "credit card processing"]
+        print(f"[Fallback] Trending fetch failed: {e}")
+        return [
+            "cash discount processing",
+            "credit card fee savings",
+            "how to cut merchant fees",
+            "merchant cash discount programs",
+            "eliminate credit card fees"
+        ]
 
-def generate_blog(keyword):
+def slugify(title):
+    return re.sub(r'[\W_]+', '_', title.lower()).strip("_")
+
+def generate_blog(topic):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    prompt = f"Write a helpful SEO-optimized blog post about '{keyword}' for small business owners interested in saving money on credit card processing. Include a hook, value, and call to action."
+    prompt = f"Write a blog post (~400 words) for small business owners about '{topic}' with a compelling title. Focus on saving money via credit card processing cash discount programs. Start with the title on the first line."
 
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        messages=[{"role": "user", "content": prompt}]
     )
 
-    blog = response.choices[0].message.content.strip()
-    title = blog.split("\n")[0].replace("Title: ", "").strip()
-    content = "\n".join(blog.split("\n")[1:]).strip()
-    return title, content
+    return response.choices[0].message.content.strip()
 
-def save_blog(title, content, slug):
-    filename = f"{BLOG_DIR}{slug}.html"
-    os.makedirs(BLOG_DIR, exist_ok=True)
-    formatted_content = content.replace("\n", "</p><p>")
-    with open(filename, "w") as f:
-        f.write(f"""<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>{title}</title></head>
-<body>
-<h2>{title}</h2>
-<p>{formatted_content}</p>
-</body>
-</html>""")
+def save_blog(title, content):
+    slug = slugify(title)
+    filename = os.path.join(BLOG_DIR, f"{slug}.html")
+
+    html_content = (
+        "<!DOCTYPE html>\n"
+        "<html>\n"
+        "<head>\n"
+        "  <meta charset=\"UTF-8\">\n"
+        f"  <title>{title}</title>\n"
+        "</head>\n"
+        "<body>\n"
+        f"  <h2>{title}</h2>\n"
+        f"  <p>{content.replace(chr(10), '</p><p>')}</p>\n"
+        "</body>\n"
+        "</html>"
+    )
+
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(html_content)
+
     print(f"Blog saved to {filename}")
+    return slug
 
-def update_blog_index(title, slug):
-    entry = f'<div class="blog-entry"><a href="blogs/{slug}.html">{title}</a></div>\n'
-    if not os.path.exists(INDEX_FILE):
-        with open(INDEX_FILE, "w") as f:
-            f.write("<html><body>\n")
-    with open(INDEX_FILE, "r+") as f:
-        lines = f.readlines()
-        if entry not in lines:
-            f.seek(0, 0)
-            f.write(entry + "".join(lines))
+def update_blog_index():
+    entries = []
+    for file in sorted(os.listdir(BLOG_DIR), reverse=True):
+        if file.endswith(".html"):
+            path = os.path.join(BLOG_DIR, file)
+            with open(path, "r", encoding="utf-8") as f:
+                title_line = f.readline()
+                title = re.sub(r"<.*?>", "", title_line)
+                hook = f.readline().strip()
+                entries.append(f'<div class="blog-entry"><a href="blogs/{file}">{title}</a><p>{hook}</p></div>')
+
+    index_html = (
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
+        "<head>\n"
+        "  <meta charset=\"UTF-8\">\n"
+        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+        "  <title>BlueJay Blog</title>\n"
+        "  <link rel=\"stylesheet\" href=\"style.css\" />\n"
+        "</head>\n"
+        "<body>\n"
+        "  <header><h1>BlueJay’s Blog</h1></header>\n"
+        "  <section class=\"blog-list\">\n"
+        f"{''.join(entries)}\n"
+        "  </section>\n"
+        "</body>\n"
+        "</html>"
+    )
+
+    with open(INDEX_FILE, "w", encoding="utf-8") as f:
+        f.write(index_html)
     print("Blog index updated")
 
-def slugify(title):
-    return title.lower().replace(" ", "_").replace(":", "").replace("-", "_").replace("__", "_")
-
 def git_commit_and_push(slug):
-    repo = Repo(REPO_DIR)
     try:
-        repo.git.fetch()
-        repo.git.checkout("main")
-        repo.git.pull("origin", "main")
-        repo.git.branch("--set-upstream-to=origin/main", "main")
-    except GitCommandError as e:
-        print("[Git Error] during setup:", e)
+        repo = Repo(REPO_PATH)
+        origin = repo.remotes.origin
 
-    repo.git.add("--all")
-    repo.index.commit(f"Add blog post: {slug}")
-    try:
-        repo.remote(name='origin').push()
-        print("Blog successfully pushed to GitHub.")
-    except GitCommandError as e:
-        print("[Git Push Error]", e)
+        # Ensure tracking setup
+        if repo.head.is_detached:
+            print("Repo is in detached HEAD state. Skipping push.")
+            return
+
+        if repo.active_branch.tracking_branch() is None:
+            repo.git.branch('--set-upstream-to=origin/main', 'main')
+
+        repo.git.add(A=True)
+        repo.index.commit(f"Add blog post: {slug}")
+        origin.push()
+        print("Pushed to GitHub")
+    except Exception as e:
+        print(f"[Git Push Error] {e}")
 
 def main():
     keywords = fetch_trending_keywords()
-    main_kw = keywords[0]
-    title, content = generate_blog(main_kw)
-    slug = slugify(title)
-    save_blog(title, content, slug)
-    update_blog_index(title, slug)
+    main_kw = keywords[0] if keywords else "cash discount processing"
+    blog = generate_blog(main_kw)
+
+    title = blog.split("\n")[0].replace("Title:", "").strip()
+    content = "\n".join(blog.split("\n")[1:]).strip()
+
+    slug = save_blog(title, content)
+    update_blog_index()
     git_commit_and_push(slug)
 
 if __name__ == "__main__":
