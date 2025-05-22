@@ -1,106 +1,87 @@
+# blog_pipeline.py
+
 import os
 import json
-import random
 from datetime import datetime
-from openai import OpenAI
 from pytrends.request import TrendReq
+from openai import OpenAI
 from pathlib import Path
 
-client = OpenAI()
-
-BLOG_DIR = Path("frontend/blogs/")
-INDEX_PATH = Path("frontend/blog.html")
-SUMMARY_LOG = Path("frontend/blog_summary_log.json")
+BLOG_DIR = Path("frontend/blogs")
+SEO_FILE = Path("frontend/seo_config.json")
+SUMMARY_FILE = Path("frontend/blog_summary.json")
 
 def fetch_trending_keywords():
     pytrends = TrendReq()
-    pytrends.build_payload(["merchant services", "credit card fees", "cash discount"], timeframe="now 7-d")
-
     try:
+        pytrends.build_payload(["merchant services", "cash discount", "credit card fees"], timeframe="now 7-d")
         related = pytrends.related_queries()
+
         keywords = []
         for topic in related.values():
-            if topic and topic.get("top"):
-                for item in topic["top"]["query"]:
-                    keywords.append(item)
+            top = topic.get("top", {})
+            if "query" in top:
+                keywords.extend(top["query"])
+
         if not keywords:
-            raise IndexError
+            raise ValueError("No trending keywords returned by Google.")
+
         return list(set(keywords))[:10]
-    except Exception:
+
+    except Exception as e:
+        print(f"[Fallback] Trending fetch failed: {e}")
         return [
             "cash discount program",
-            "credit card fees",
-            "merchant processing",
+            "AI merchant tools",
+            "credit card fee savings",
             "switch from Square",
-            "save on Stripe fees",
-            "Clover setup",
             "0% processing",
-            "AI payment tools",
-            "small biz savings",
-            "tap to pay terminals"
+            "Clover migration",
+            "tap to pay savings",
+            "Stripe alternative",
+            "merchant rate cut",
+            "BlueJay AI assistant"
         ]
 
-def generate_blog_post(topic):
-    prompt = f"Write a detailed blog post (3–5 paragraphs) for small business owners about '{topic}', focused on merchant processing, AI savings, or fee reduction. Use a professional, helpful tone."
-
+def generate_blog(keyword):
+    prompt = f"Write an engaging blog post about '{keyword}' targeting small business owners. Explain how modern AI tools and cash discount processing can save them money. Include a hook, 2-3 paragraph body, and clear takeaway."
+    client = OpenAI()
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=700
     )
     return response.choices[0].message.content.strip()
 
-def extract_summary(post):
-    prompt = f"Summarize this blog post in one powerful, human-style hook: {post}"
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content.strip()
-
-def save_blog(title, content, summary):
+def save_blog(title, content):
     date_str = datetime.now().strftime("%Y-%m-%d")
-    slug = title.lower().replace(" ", "-").replace("’", "").replace("'", "")
-    filename = f"{date_str}-{slug}.html"
-    filepath = BLOG_DIR / filename
+    slug = title.lower().replace(" ", "-").replace("'", "").replace(",", "")
+    filename = f"{date_str}-{slug}.md"
+    path = BLOG_DIR / filename
+    path.write_text(content)
 
-    with open(filepath, "w") as f:
-        f.write(f"<h1>{title}</h1>\n<p><em>{date_str}</em></p>\n<p>{summary}</p>\n<hr>\n<p>{content}</p>")
+    with open(SUMMARY_FILE, "w") as f:
+        json.dump({"title": title, "date": date_str, "summary": content[:200]}, f)
 
-    with open(SUMMARY_LOG, "a") as log:
-        json.dump({"date": date_str, "title": title, "summary": summary, "file": filename}, log)
-        log.write("\n")
+    print(f"Blog saved to {path}")
+    return filename
 
-    return filename, summary
-
-def update_blog_index():
-    posts = []
-    for file in sorted(BLOG_DIR.glob("*.html"), reverse=True):
-        date_str = file.name[:10]
-        title = file.name[11:-5].replace("-", " ").title()
-        with open(file) as f:
-            lines = f.readlines()
-            summary = ""
-            for line in lines:
-                if "<p>" in line and not summary:
-                    summary = line.strip()
-            posts.append((title, date_str, summary, file.name))
-
-    with open(INDEX_PATH, "w") as idx:
-        idx.write("<html><head><title>BlueJay Blog</title></head><body>\n")
-        idx.write("<h1>BlueJay Blog</h1>\n")
-        for title, date_str, summary, fname in posts:
-            idx.write(f"<div><a href='blogs/{fname}'><strong>{title}</strong></a><br>")
-            idx.write(f"<small>{date_str}</small><br>{summary}</div><hr>\n")
-        idx.write("</body></html>")
+def update_seo_config(keywords):
+    seo_data = {"keywords": keywords}
+    with open(SEO_FILE, "w") as f:
+        json.dump(seo_data, f)
+    print("SEO config updated.")
 
 def main():
     keywords = fetch_trending_keywords()
-    topic = random.choice(keywords)
-    blog = generate_blog_post(topic)
-    summary = extract_summary(blog)
-    filename, short_summary = save_blog(topic.title(), blog, summary)
-    update_blog_index()
-    print(f"Blog generated and saved as {filename}")
+    if not keywords:
+        print("No keywords found. Exiting.")
+        return
+
+    main_kw = keywords[0]
+    blog = generate_blog(main_kw)
+    save_blog(main_kw.title(), blog)
+    update_seo_config(keywords)
 
 if __name__ == "__main__":
     main()
