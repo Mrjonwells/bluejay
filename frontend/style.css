@@ -19,13 +19,13 @@ def fetch_trending_keywords():
         related = pytrends.related_queries()
         keywords = []
         for kw in kw_list:
-            results = related.get(kw, {}).get('top', {}).get('query', [])
-            if results:
-                keywords.extend(results)
-        return keywords[:10] if keywords else ["merchant processing", "surcharge programs", "card fees"]
+            top_data = related.get(kw, {}).get('top', {})
+            if 'query' in top_data:
+                keywords.extend(top_data['query'])
+        return keywords[:10] if keywords else ["merchant processing", "card fees", "cash discount program"]
     except Exception as e:
-        print("Failed to fetch related queries:", e)
-        return ["merchant processing", "surcharge programs", "card fees"]
+        print("Pytrends failed, using defaults:", e)
+        return ["merchant processing", "card fees", "cash discount program"]
 
 def generate_blog_post(topic):
     system_prompt = f"You are BlueJay, a helpful and modern AI. Write a blog post about '{topic}' that helps small business owners understand it. Make it friendly, informative, and SEO optimized."
