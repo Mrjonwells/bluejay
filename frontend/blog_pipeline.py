@@ -1,149 +1,119 @@
 import os
 import json
-import openai
+import time
+import random
 from datetime import datetime
-from pytrends.request import TrendReq
 from pathlib import Path
+from pytrends.request import TrendReq
+from openai import OpenAI
+from dotenv import load_dotenv
 
-# Setup paths
-BLOG_DIR = Path("frontend/blogs")
-BLOG_HTML = Path("frontend/blog.html")
-LOG_PATH = Path("backend/logs/interaction_log.jsonl")
-SHARE_JSON = Path("backend/blog_summary.json")
+load_dotenv()
 
-BLOG_DIR.mkdir(parents=True, exist_ok=True)
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+# Setup
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+    "Mozilla/5.0 (X11; Linux x86_64)"
+]
 
-def extract_keywords_from_logs():
-    keywords = {}
-    if not LOG_PATH.exists():
-        return []
+pytrends = TrendReq(
+    hl='en-US',
+    tz=360,
+    timeout=(10, 25),
+    retries=3,
+    backoff_factor=0.5,
+    user_agent=random.choice(USER_AGENTS)
+)
 
-    with open(LOG_PATH, "r") as f:
-        for line in f:
-            try:
-                entry = json.loads(line)
-                text = (entry.get("user", "") + " " + entry.get("assistant", "")).lower()
-                for word in ["cash discount", "merchant", "clover", "fees", "savings", "square", "switching"]:
-                    if word in text:
-                        keywords[word] = keywords.get(word, 0) + 1
-            except:
-                continue
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-    return sorted(keywords, key=keywords.get, reverse=True)[:5]
+BLOG_DIR = Path("frontend/blogs/")
+BLOG_INDEX = Path("frontend/blog.html")
+
+SEO_KEYWORDS = ["merchant services", "credit card fees", "cash discount"]
 
 def fetch_trending_keywords():
-    pytrends = TrendReq()
-    pytrends.build_payload(["merchant services", "credit card fees", "cash discount"], timeframe="now 7-d")
-    related = pytrends.related_queries()
-    trend_keywords = []
+    all_keywords = []
+    for keyword in SEO_KEYWORDS:
+        try:
+            pytrends.build_payload([keyword], timeframe="now 7-d")
+            related = pytrends.related_queries()
+            time.sleep(1.5)  # throttle
+            if keyword in related:
+                top = related[keyword].get("top")
+                if top is not None:
+                    terms = [x["query"] for x in top[:3]]
+                    all_keywords.extend(terms)
+        except Exception as e:
+            print(f"Trend fetch failed for '{keyword}': {e}")
+    return list(set(all_keywords))[:5]
 
-    for topic in related.values():
-        if topic and topic.get("top") is not None:
-            rows = topic["top"].head(5).to_dict("records")
-            trend_keywords += [row["query"] for row in rows]
+def generate_blog(topic):
+    print(f"Generating blog for topic: {topic}")
+    prompt = f"Write a helpful blog post about '{topic}' for small business owners, focused on merchant processing, savings, and AI help. Include a catchy title and summary first."
 
-    return trend_keywords[:10] if trend_keywords else ["merchant cash discount"]
-
-def generate_title_and_post(topic):
-    prompt = f"Write a short, engaging blog post for small business owners about '{topic}', highlighting value, savings, or switching processors. Title should be compelling, and content should sound natural and educational."
-
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are a helpful blog assistant writing for a merchant payment company called BlueJay."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.9
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7,
     )
 
-    full_text = response.choices[0].message["content"].strip()
-    title = full_text.split("\n")[0].replace("#", "").strip()
-    body = "\n".join(full_text.split("\n")[1:]).strip()
-
-    return title, body
+    return response.choices[0].message.content.strip()
 
 def save_blog_post(title, body):
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    slug = "-".join(title.lower().split())[:40]
-    filename = f"{date_str}_{slug}.md"
-    path = BLOG_DIR / filename
+    safe_title = title.replace(" ", "_").replace("/", "-").lower()
+    filename = f"{datetime.now().strftime('%Y-%m-%d')}_{safe_title}.html"
+    filepath = BLOG_DIR / filename
 
-    with open(path, "w") as f:
-        f.write(f"# {title}\n\n{body}")
+    html_content = f"""<html><head><title>{title}</title></head>
+    <body><h1>{title}</h1><div>{body.replace('\n', '<br>')}</div></body></html>"""
 
-    print(f"Blog saved: {filename}")
-    return filename, title, body
+    BLOG_DIR.mkdir(parents=True, exist_ok=True)
+    with open(filepath, "w") as f:
+        f.write(html_content)
 
-def extract_title_and_summary(md_path):
-    with open(md_path, "r") as f:
-        lines = f.readlines()
+    print(f"Saved: {filepath}")
+    return filename, title, body[:150]
 
-    title = "Untitled"
-    summary = ""
+def update_blog_index(entries):
+    index_lines = [
+        "<html><head><title>BlueJay’s Blog</title></head><body>",
+        "<h1>BlueJay’s Blog</h1><div style='font-family:sans-serif;'>"
+    ]
+    for filename, title, snippet in entries:
+        index_lines.append(f"<p><a href='blogs/{filename}'><strong>{title}</strong></a><br>{snippet}...</p>")
+    index_lines.append("</div></body></html>")
 
-    for line in lines:
-        if line.startswith("# "):
-            title = line.strip("# ").strip()
-        elif line.strip():
-            summary = line.strip()
-            break
-
-    return title, summary
-
-def update_blog_index():
-    blog_entries = []
-
-    for md_file in sorted(BLOG_DIR.glob("*.md"), reverse=True):
-        title, summary = extract_title_and_summary(md_file)
-        filename = md_file.name.replace(".md", ".html")
-        blog_entries.append(f"""
-        <div class="blog-entry">
-          <a href="blogs/{filename}">{title}</a>
-          <p>{summary}</p>
-        </div>
-        """)
-
-    html = f"""
-    <html>
-    <head>
-      <title>BlueJay Blog</title>
-      <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-      <h1>BlueJay’s Blog</h1>
-      <div class="blog-list">
-        {''.join(blog_entries)}
-      </div>
-    </body>
-    </html>
-    """
-
-    with open(BLOG_HTML, "w") as f:
-        f.write(html.strip())
-
-    print("Blog index updated.")
-
-def write_summary_for_email(title, body, topic):
-    summary = {
-        "blog_title": title,
-        "blog_topic": topic,
-        "blog_summary": body.split("\n")[0].strip()
-    }
-    with open(SHARE_JSON, "w") as f:
-        json.dump(summary, f)
-    print("Blog summary saved for email report.")
+    with open(BLOG_INDEX, "w") as idx:
+        idx.write("\n".join(index_lines))
 
 def main():
-    topics_from_logs = extract_keywords_from_logs()
+    print("Blog pipeline started.")
     trends = fetch_trending_keywords()
-    candidates = topics_from_logs + trends
-    topic = candidates[0] if candidates else "merchant cash discount"
+    if not trends:
+        print("No trending topics found.")
+        return
 
-    title, body = generate_title_and_post(topic)
-    save_blog_post(title, body)
-    update_blog_index()
-    write_summary_for_email(title, body, topic)
+    entries = []
+    for topic in trends:
+        try:
+            blog = generate_blog(topic)
+            lines = blog.split("\n")
+            title = lines[0].strip("# ").strip()
+            body = "\n".join(lines[1:]).strip()
+            entry = save_blog_post(title, body)
+            entries.append(entry)
+            time.sleep(2)
+        except Exception as e:
+            print(f"Blog generation failed for '{topic}': {e}")
+
+    if entries:
+        update_blog_index(entries)
+        print("Blog index updated.")
+    else:
+        print("No new blog entries saved.")
 
 if __name__ == "__main__":
     main()
