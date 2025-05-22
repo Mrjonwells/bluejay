@@ -1,6 +1,5 @@
 import os
 import re
-import json
 from datetime import datetime
 from pytrends.request import TrendReq
 from openai import OpenAI
@@ -57,9 +56,8 @@ def save_blog(title, content):
     filename = sanitize_filename(title) + ".html"
     blog_path = BLOG_DIR / filename
 
-    html = "<html><head><title>{}</title></head><body><h2>{}</h2>".format(title, title)
-    html += "".join(f"<p>{line.strip()}</p>" for line in content.split("\n") if line.strip())
-    html += "</body></html>"
+    formatted_content = content.replace("\n", "</p><p>")
+    html = f"<html><head><title>{title}</title></head><body><h2>{title}</h2><p>{formatted_content}</p></body></html>"
 
     with open(blog_path, "w") as f:
         f.write(html)
