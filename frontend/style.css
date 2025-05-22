@@ -159,24 +159,21 @@ header {
 /* Features section */
 .features {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
-  flex-wrap: nowrap;
-  overflow-x: auto;
   gap: 20px;
   padding: 20px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
 }
 
 .feature-card {
-  flex: 0 0 300px;
+  flex: 1 1 30%;
   max-width: 300px;
   background: transparent;
   padding: 0;
   border-radius: 0;
   text-align: center;
-  scroll-snap-align: center;
+  box-shadow: none;
   animation: flyIn 0.6s ease forwards;
   opacity: 0;
 }
@@ -187,11 +184,11 @@ header {
 
 @keyframes flyIn {
   from {
-    transform: translateX(-40px);
+    transform: translateY(20px);
     opacity: 0;
   }
   to {
-    transform: translateX(0);
+    transform: translateY(0);
     opacity: 1;
   }
 }
@@ -227,7 +224,7 @@ footer {
   }
 
   .feature-card {
-    flex: 0 0 80%;
-    max-width: 80%;
+    flex: 1 1 90%;
+    max-width: 90%;
   }
 }
