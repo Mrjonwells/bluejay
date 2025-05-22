@@ -1,123 +1,112 @@
 import os
-import re
-import datetime
-from openai import OpenAI
-from pytrends.request import TrendReq
-from git import Repo, GitCommandError
+import time
 import markdown2
+import subprocess
+from git import Repo
+from pytrends.request import TrendReq
+from openai import OpenAI
+from dotenv import load_dotenv
 
-BLOG_DIR = "frontend/blogs/"
-BLOG_INDEX = "frontend/blog.html"
-REPO_PATH = os.getcwd()
+load_dotenv()
+
 REPO_URL = "https://github.com/Mrjonwells/bluejay.git"
-BLUEJAY_PAT = os.getenv("BLUEJAY_PAT")
+LOCAL_REPO_PATH = "/tmp/bluejay"
+BLOG_FOLDER = os.path.join(LOCAL_REPO_PATH, "frontend", "blogs")
+INDEX_FILE = os.path.join(LOCAL_REPO_PATH, "frontend", "blog.html")
 
 def fetch_trending_keywords():
-    pytrends = TrendReq()
     try:
-        pytrends.build_payload(["merchant processing"])
+        pytrends = TrendReq()
+        pytrends.build_payload(["cash discount", "merchant services"], timeframe="now 7-d")
         related = pytrends.related_queries()
-        keyword_data = related["merchant processing"]["top"]
-        return [row["query"] for row in keyword_data.to_dict("records")][:5]
+        kw_list = list(related.values())[0]['top']
+        return [x['query'] for x in kw_list[:5]]
     except Exception as e:
-        print("[Fallback] Trending fetch failed:", str(e))
+        print("[Fallback] Trending fetch failed:", e)
         return [
-            "cash discount programs",
+            "cash discount program",
+            "merchant processing fees",
             "save on credit card fees",
-            "merchant processing AI",
-            "cut payment processing costs",
-            "point of sale savings"
+            "small business payments",
+            "credit card processing AI"
         ]
 
 def generate_blog(keyword):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    prompt = f"Write a short blog post (3-5 paragraphs) for small business owners about '{keyword}', highlighting how cash discount programs help them save money on credit card processing fees. Make it clear, persuasive, and SEO-optimized with a compelling title."
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=800
+        messages=[
+            {"role": "system", "content": "You are a blog writer for small businesses focused on payments and savings."},
+            {"role": "user", "content": f"Write a blog post about '{keyword}' that explains its benefits to small business owners in 3-4 paragraphs with a helpful tone. Include a catchy title."}
+        ]
     )
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content
 
-def slugify(title):
-    return re.sub(r"\W+", "_", title.lower())
-
-def save_blog(title, body, slug):
-    content = "\n".join(body.split("\n")[1:]).strip()
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title}</title>
-  <link rel="stylesheet" href="../style.css" />
-</head>
-<body>
-  <header>
-    <a href="../index.html"><img src="../logo.png" alt="BlueJay Logo" class="centered-logo" /></a>
-  </header>
-  <section class="blog-post">
-    <h1>{title}</h1>
-    <p class="date">{datetime.date.today().strftime("%B %d, %Y")}</p>
-    <p>{markdown2.markdown(content)}</p>
-  </section>
-  <footer>
-    <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
-  </footer>
-</body>
-</html>"""
-
-    path = os.path.join(BLOG_DIR, f"{slug}.html")
-    with open(path, "w") as f:
+def save_blog_file(slug, html):
+    filename = os.path.join(BLOG_FOLDER, f"{slug}.html")
+    with open(filename, "w") as f:
         f.write(html)
-    print(f"Blog saved to {path}")
+    print("Blog saved to", filename)
 
-def update_index(slug, title, summary):
-    with open(BLOG_INDEX, "r") as f:
-        html = f.read()
-
-    date_str = datetime.date.today().strftime("%B %d, %Y")
-    snippet = f"""
-    <div class="blog-snippet">
-      <a href="blogs/{slug}.html">{title}</a>
-      <p class="date">{date_str}</p>
-      <p class="summary">{summary}</p>
-    </div>
-    """
-
-    marker = "<!-- BLOG_INSERT -->"
-    if marker in html:
-        html = html.replace(marker, f"{snippet}\n{marker}")
-    with open(BLOG_INDEX, "w") as f:
-        f.write(html)
-    print("Blog index updated")
+def update_blog_index(slug, title, preview):
+    with open(INDEX_FILE, "r") as f:
+        lines = f.readlines()
+    new_entry = f'<div class="blog-entry"><a href="blogs/{slug}.html">{title}</a><p>{preview}</p></div>\n'
+    insert_at = next((i for i, line in enumerate(lines) if "<!-- BLOG_ENTRIES -->" in line), -1)
+    if insert_at != -1:
+        lines.insert(insert_at + 1, new_entry)
+        with open(INDEX_FILE, "w") as f:
+            f.writelines(lines)
+        print("Blog index updated")
 
 def git_commit_and_push(slug):
-    repo = Repo(REPO_PATH)
-    repo.git.add(A=True)
-    repo.index.commit(f"Add blog post: {slug}")
+    git_env = {
+        "GIT_AUTHOR_NAME": "bluejay",
+        "GIT_AUTHOR_EMAIL": "bot@askbluejay.ai",
+        "GIT_COMMITTER_NAME": "bluejay",
+        "GIT_COMMITTER_EMAIL": "bot@askbluejay.ai",
+        "GIT_ASKPASS": "echo",
+        "BLUEJAY_PAT": os.getenv("BLUEJAY_PAT")
+    }
+    if os.path.exists(LOCAL_REPO_PATH):
+        subprocess.run(["rm", "-rf", LOCAL_REPO_PATH], check=True)
+    Repo.clone_from(REPO_URL.replace("https://", f"https://{git_env['BLUEJAY_PAT']}@"), LOCAL_REPO_PATH, env=git_env)
+    subprocess.run(["git", "checkout", "-B", "main"], cwd=LOCAL_REPO_PATH, check=True)
+    subprocess.run(["git", "branch", "--set-upstream-to=origin/main", "main"], cwd=LOCAL_REPO_PATH, check=True)
+
+    subprocess.run(["git", "add", "."], cwd=LOCAL_REPO_PATH, check=True)
+    subprocess.run(["git", "commit", "-m", f"Add blog: {slug}"], cwd=LOCAL_REPO_PATH, check=True)
     try:
-        repo.git.pull('--rebase')
-        repo.remote(name="origin").push('--set-upstream', 'origin', 'main', env={
-            "GIT_ASKPASS": "echo",
-            "GIT_USERNAME": "bluejay",
-            "GIT_PASSWORD": BLUEJAY_PAT
-        })
-        print("Blog pushed to GitHub.")
-    except GitCommandError as e:
+        subprocess.run(["git", "push"], cwd=LOCAL_REPO_PATH, check=True)
+    except subprocess.CalledProcessError as e:
         print("[Git Push Error]", e)
 
 def main():
     keywords = fetch_trending_keywords()
-    main_kw = keywords[0]
-    blog = generate_blog(main_kw)
-    lines = blog.split("\n")
-    title = lines[0].replace("Title:", "").strip()
-    slug = slugify(title)
-    summary = " ".join(lines[1:3]).strip()
-    save_blog(title, blog, slug)
-    update_index(slug, title, summary)
-    git_commit_and_push(slug)
+    for kw in keywords:
+        blog = generate_blog(kw)
+        lines = blog.split("\n")
+        title = lines[0].replace("Title: ", "").strip().strip('"')
+        content = "\n".join(lines[1:]).strip()
+        slug = title.lower().replace(" ", "_").replace(":", "").replace(",", "").replace(".", "")
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{title}</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <div class="blog-post">
+    <h1>{title}</h1>
+    <p>{content.replace("\n", "</p><p>")}</p>
+  </div>
+</body>
+</html>"""
+        save_blog_file(slug, html)
+        update_blog_index(slug, title, content[:160] + "...")
+        git_commit_and_push(slug)
+        break
 
 if __name__ == "__main__":
     main()
