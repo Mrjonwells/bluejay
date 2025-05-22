@@ -1,98 +1,107 @@
 import os
-import markdown2
-from openai import OpenAI
+import re
 from datetime import datetime
+from openai import OpenAI
 from pytrends.request import TrendReq
+from dotenv import load_dotenv
 from git import Repo, GitCommandError, InvalidGitRepositoryError
+import markdown2
 
+load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-GIT_REMOTE = os.getenv("GIT_REMOTE")
+BLUEJAY_PAT = os.getenv("BLUEJAY_PAT")
+GIT_REMOTE = os.getenv("GIT_REMOTE")  # must be full https://<PAT>@github.com/username/repo.git
 
-def fetch_trending_topic():
+def get_trending_topic():
     try:
-        pytrends = TrendReq()
-        pytrends.build_payload(kw_list=["credit card processing"])
-        trends = pytrends.related_queries()
-        return next(iter(trends.values()))["top"][0]["query"]
+        pytrends = TrendReq(hl='en-US', tz=360)
+        pytrends.build_payload(["cash discount"], timeframe='now 7-d')
+        data = pytrends.related_queries()
+        topics = list(data.values())[0]['top']['query'].tolist()
+        return topics[0]
     except Exception as e:
-        print("[Fallback] Trending fetch failed:", e)
+        print(f"[Fallback] Trending fetch failed: {e}")
         return "cash discount program for small businesses"
 
 def generate_blog(topic):
-    prompt = f"Write a detailed blog post for small business owners about: {topic}"
-    completion = client.chat.completions.create(
+    prompt = f"Write a short blog post about {topic} for small business owners interested in saving money on credit card processing."
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        temperature=0.7,
     )
-    return completion.choices[0].message.content.strip()
+    return response.choices[0].message.content.strip()
 
-def format_slug(title):
-    return title.lower().replace(" ", "_").replace(":", "").replace('"', '').replace("'", "").replace(",", "").replace("?", "")
+def sanitize_filename(title):
+    return re.sub(r'\W+', '_', title).lower()
 
-def save_blog_file(title, content):
-    slug = format_slug(title)
-    html_content = f"""<!DOCTYPE html>
-<html lang='en'>
+def save_blog_to_file(title, content):
+    file_name = sanitize_filename(title) + ".html"
+    full_path = os.path.join("frontend/blogs", file_name)
+
+    with open(full_path, "w") as f:
+        f.write(f"""<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset='UTF-8'>
-  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title}</title>
+  <meta name="description" content="{title}">
 </head>
 <body>
-<h1>{title}</h1>
-<p>{content.replace("\\n", "</p><p>")}</p>
+  <h2>{title}</h2>
+  <p>{content.replace('\n', '</p><p>')}</p>
 </body>
-</html>"""
-    path = f"frontend/blogs/{slug}.html"
-    with open(path, "w") as f:
-        f.write(html_content)
-    return slug, path
+</html>""")
+    print(f"Blog saved to {full_path}")
+    return file_name
 
-def update_index(slug, title):
+def update_blog_index(title, slug):
     index_path = "frontend/blog.html"
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-    entry = f'<div class="blog-entry"><a href="blogs/{slug}.html">{title}</a><br><small>{timestamp}</small></div>\n'
-    content = ""
-    if os.path.exists(index_path):
-        with open(index_path, "r") as f:
-            content = f.read()
-    if "<!--BLOG-INSERT-->" not in content:
-        content += "\n<!--BLOG-INSERT-->"
-    content = content.replace("<!--BLOG-INSERT-->", entry + "<!--BLOG-INSERT-->")
+    if not os.path.exists(index_path):
+        open(index_path, "w").write("<html><body><h1>Blog</h1><ul></ul></body></html>")
+
+    with open(index_path, "r") as f:
+        content = f.read()
+
+    new_entry = f'<li><a href="blogs/{slug}.html">{title}</a> — {datetime.now().strftime("%B %d, %Y")}</li>\n'
+
+    content = re.sub(r"(<ul>)(.*?)(</ul>)", rf"\1{new_entry}\2\3", content, flags=re.DOTALL)
     with open(index_path, "w") as f:
         f.write(content)
+    print("Blog index updated")
 
 def git_commit_and_push(slug):
-    repo_path = os.path.abspath(".")
+    repo_path = os.path.abspath("frontend")
     try:
         repo = Repo(repo_path)
     except InvalidGitRepositoryError:
+        print("[Git] Initializing repo")
         repo = Repo.init(repo_path)
-        origin = repo.create_remote("origin", GIT_REMOTE)
-        origin.fetch()
-        repo.create_head("main", origin.refs.main).set_tracking_branch(origin.refs.main).checkout()
-        print("[Git Init] Cloned and tracked origin/main")
+        repo.create_remote("origin", GIT_REMOTE)
 
+    if not repo.remotes or "origin" not in [r.name for r in repo.remotes]:
+        repo.create_remote("origin", GIT_REMOTE)
+
+    repo.git.add("--all")
+    repo.index.commit(f"Add blog: {slug}")
     try:
-        repo.git.add(A=True)
-        repo.index.commit(f"Add blog post: {slug}")
-        repo.remote(name="origin").push()
-        print("[Git Push] Blog pushed to GitHub")
+        repo.git.pull("origin", "main", "--rebase")
+    except GitCommandError as e:
+        print(f"[Git Pull Error] {e}")
+    try:
+        repo.git.push("origin", "main")
     except GitCommandError as e:
         print(f"[Git Push Error] {e}")
 
 def main():
-    topic = fetch_trending_topic()
+    topic = get_trending_topic()
     blog = generate_blog(topic)
-    lines = blog.splitlines()
-    title = lines[0].replace("Title:", "").strip()
-    content = "\n".join(lines[1:]).strip()
-    slug, path = save_blog_file(title, content)
-    print(f"Blog saved to {path}")
-    update_index(slug, title)
-    print("Blog index updated")
-    git_commit_and_push(slug)
+    title = blog.split("\n")[0].strip().replace("Title:", "").strip()
+    content = "\n".join(blog.split("\n")[1:]).strip()
+    file_name = save_blog_to_file(title, content)
+    update_blog_index(title, file_name.replace(".html", ""))
+    git_commit_and_push(file_name.replace(".html", ""))
 
 if __name__ == "__main__":
     main()
