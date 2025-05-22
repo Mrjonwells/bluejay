@@ -69,12 +69,9 @@ def update_blog_index(slug, topic):
 
 def git_commit_and_push(slug):
     repo_path = os.path.abspath(".")
-    try:
-        repo = Repo(repo_path)
-    except InvalidGitRepositoryError:
-        print("[Git] Initializing new Git repo")
-        subprocess.run(["git", "init"], cwd=repo_path)
-
+    
+    subprocess.run(["git", "init"], cwd=repo_path)
+    subprocess.run(["git", "checkout", "-B", "main"], cwd=repo_path)
     subprocess.run(["git", "remote", "remove", "origin"], cwd=repo_path, stderr=subprocess.DEVNULL)
     subprocess.run(["git", "remote", "add", "origin", GIT_REMOTE], cwd=repo_path)
     subprocess.run(["git", "config", "--global", "user.name", "BlueJay Bot"], cwd=repo_path)
@@ -88,7 +85,7 @@ def git_commit_and_push(slug):
     subprocess.run(["git", "add", "."], cwd=repo_path)
     subprocess.run(["git", "commit", "-m", f"Auto-blog update: {slug}"], cwd=repo_path)
     try:
-        subprocess.run(["git", "push", "origin", "main"], cwd=repo_path)
+        subprocess.run(["git", "push", "-u", "origin", "main"], cwd=repo_path)
         print("[Git Push] Blog committed and pushed.")
     except Exception as e:
         print("[Git Push Error]", e)
