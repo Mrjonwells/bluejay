@@ -1,120 +1,98 @@
 import os
 import re
-import markdown2
-from datetime import datetime
 from openai import OpenAI
+from datetime import datetime
 from pytrends.request import TrendReq
-from git import Repo, GitCommandError
+from git import Repo, GitCommandError, InvalidGitRepositoryError
+import markdown2
 
-GIT_REMOTE = os.getenv("GIT_REMOTE_URL")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+GIT_REMOTE = os.getenv("GIT_REMOTE")
 
-def fetch_trending_keyword():
+def fetch_trending_topic():
     try:
         pytrends = TrendReq()
-        pytrends.build_payload(["merchant processing"], timeframe="now 1-d")
-        trends = pytrends.related_queries()
-        kw = next(iter(trends))
-        return trends[kw]["top"]["query"][0]
-    except Exception as e:
-        print("[Fallback] Trending fetch failed:", str(e))
+        pytrends.build_payload(["merchant services"], timeframe="now 1-d")
+        return pytrends.related_queries()["merchant services"]["top"]["query"][0]
+    except Exception:
+        print("[Fallback] Trending fetch failed: list index out of range")
         return "cash discount program for small businesses"
 
 def generate_blog(topic):
-    prompt = f"""Write an SEO-optimized blog post for small business owners about: "{topic}". 
-Make it informative, persuasive, and 3-5 paragraphs long. Include a clear title and strong call to action."""
-
+    prompt = f"Write an SEO-optimized blog post (title + markdown content) about: {topic}. Keep it focused on credit card processing and small business value."
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        messages=[{"role": "user", "content": prompt}]
     )
+    return response.choices[0].message.content.strip()
 
-    return response.choices[0].message.content
+def slugify(text):
+    return re.sub(r'\W+', '_', text.lower()).strip('_')
 
-def save_blog(title, body):
-    slug = re.sub(r"[^\w]+", "_", title.lower()).strip("_")
-    filename = f"{slug}.html"
-    full_path = os.path.join("frontend/blogs", filename)
-
-    body_html = markdown2.markdown(body)
-    with open(full_path, "w", encoding="utf-8") as f:
+def save_blog(markdown_blog):
+    lines = markdown_blog.split("\n")
+    title_line = lines[0].strip("# ").strip()
+    content_md = "\n".join(lines[1:])
+    content_html = markdown2.markdown(content_md)
+    slug = slugify(title_line)
+    file_name = f"{slug}.html"
+    file_path = os.path.join("frontend/blogs", file_name)
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title}</title>
-  <link rel="stylesheet" href="../style.css">
-</head>
-<body>
-  <header><a href="../blog.html" class="back-link">← Back to Blog Index</a></header>
-  <main class="blog-post">
-    <h1>{title}</h1>
-    {body_html}
-  </main>
-</body>
-</html>""")
-    print(f"Blog saved to {full_path}")
-    return filename
-
-def update_index():
-    blog_dir = "frontend/blogs"
-    posts = sorted([f for f in os.listdir(blog_dir) if f.endswith(".html")])
-    index_path = "frontend/blog.html"
-    with open(index_path, "w", encoding="utf-8") as f:
-        f.write("""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BlueJay Blog</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>{title_line}</title>
 </head>
 <body>
-  <header><a href="index.html" class="back-link">← Back to Home</a></header>
-  <main class="blog-index">
-    <h1>BlueJay Blog</h1>
-""")
-        for post in posts:
-            title = post.replace("_", " ").replace(".html", "").title()
-            f.write(f'<div class="blog-preview"><a href="blogs/{post}">{title}</a></div>\n')
-        f.write("</main></body></html>")
+  <h1>{title_line}</h1>
+  {content_html}
+</body>
+</html>""")
+    print(f"Blog saved to {file_path}")
+    return file_name
+
+def update_index(file_name):
+    blog_dir = "frontend/blogs"
+    entries = []
+    for file in sorted(os.listdir(blog_dir), reverse=True):
+        if file.endswith(".html"):
+            path = os.path.join(blog_dir, file)
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            title = re.search(r"<h1>(.*?)</h1>", content)
+            snippet = re.search(r"<p>(.*?)</p>", content)
+            if title:
+                entries.append(f"<div><a href='{file}'>{title.group(1)}</a><br><small>{snippet.group(1) if snippet else ''}</small></div>")
+
+    with open(os.path.join(blog_dir, "index.html"), "w", encoding="utf-8") as index_file:
+        index_file.write("<html><body>" + "\n<hr>\n".join(entries) + "</body></html>")
     print("Blog index updated")
 
 def git_commit_and_push(slug):
-    repo_path = os.getcwd()
+    repo_path = os.path.abspath(".")
+
     try:
-        if not os.path.exists(os.path.join(repo_path, ".git")):
-            repo = Repo.init(repo_path)
-            if "origin" not in [r.name for r in repo.remotes]:
-                repo.create_remote("origin", GIT_REMOTE)
-        else:
-            repo = Repo(repo_path)
+        repo = Repo(repo_path)
+    except InvalidGitRepositoryError:
+        repo = Repo.init(repo_path)
+        repo.create_remote("origin", GIT_REMOTE)
+        print("[Git Init] Repo initialized with remote origin")
 
-        origin = [r for r in repo.remotes if r.name == "origin"]
-        if not origin:
-            raise Exception("Remote 'origin' was not found.")
-        origin = origin[0]
-
-        origin.fetch()
-        repo.git.pull("origin", "main")
+    try:
         repo.git.add(A=True)
         repo.index.commit(f"Add blog post: {slug}")
-        origin.push()
+        repo.remote(name='origin').push()
+        print("[Git Push] Blog pushed to GitHub")
     except GitCommandError as e:
         print(f"[Git Push Error] {e}")
-    except Exception as e:
-        print(f"[Git Error] Repo setup failed: {e}")
 
 def main():
-    topic = fetch_trending_keyword()
+    topic = fetch_trending_topic()
     blog = generate_blog(topic)
-    title = blog.splitlines()[0].replace("Title:", "").strip()
-    content = "\n".join(blog.splitlines()[1:]).strip()
-    file_name = save_blog(title, content)
-    update_index()
+    file_name = save_blog(blog)
+    update_index(file_name)
     git_commit_and_push(file_name.replace(".html", ""))
 
 if __name__ == "__main__":
