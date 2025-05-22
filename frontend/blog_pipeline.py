@@ -1,103 +1,105 @@
-import os, re
-from datetime import datetime
-from openai import OpenAI
-from pytrends.request import TrendReq
-from dotenv import load_dotenv
-from git import Repo, GitCommandError, InvalidGitRepositoryError
+import os
+import json
+import time
 import markdown2
+import requests
+from pytrends.request import TrendReq
+from datetime import datetime
+from git import Repo, GitCommandError, InvalidGitRepositoryError
+import subprocess
 
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-BLUEJAY_PAT = os.getenv("BLUEJAY_PAT")
-GIT_REMOTE = os.getenv("GIT_REMOTE")  # example: https://<token>@github.com/username/repo.git
+BLOG_FOLDER = "frontend/blogs"
+BLOG_INDEX = "frontend/blogs/index.json"
+GIT_REMOTE = os.getenv("GIT_REMOTE")
 
 def get_trending_topic():
     try:
         pytrends = TrendReq(hl='en-US', tz=360)
-        pytrends.build_payload(["cash discount"], timeframe='now 7-d')
-        data = pytrends.related_queries()
-        topics = list(data.values())[0]['top']['query'].tolist()
-        return topics[0]
-    except Exception as e:
-        print(f"[Fallback] Trending fetch failed: {e}")
-        return "cash discount program for small businesses"
+        pytrends.build_payload(kw_list=["credit card processing", "cash discount", "small business savings"], timeframe='now 1-d')
+        trending = pytrends.related_queries()["cash discount"]["top"]
+        if trending is None:
+            raise IndexError
+        return trending["query"][0]
+    except Exception:
+        print("[Fallback] Trending fetch failed: list index out of range")
+        return "Cash Discount Programs"
 
-def generate_blog(topic):
-    prompt = f"Write a short blog post about {topic} for small business owners interested in saving money on credit card processing."
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
-    return response.choices[0].message.content.strip()
-
-def sanitize_filename(title):
-    return re.sub(r'\W+', '_', title).lower()
-
-def save_blog_to_file(title, content):
-    file_name = sanitize_filename(title) + ".html"
-    full_path = os.path.join("frontend/blogs", file_name)
-    html_content = f"""<!DOCTYPE html>
+def generate_blog_content(topic):
+    now = datetime.now().strftime("%B %d, %Y")
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title}</title>
-  <meta name="description" content="{title}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{topic} | AskBlueJay.ai</title>
+  <meta name="description" content="Learn how {topic.lower()} can help small businesses increase profitability and reduce credit card fees.">
 </head>
 <body>
-  <h2>{title}</h2>
-  <p>{content.replace(chr(10), '</p><p>')}</p>
+  <h1>{topic}</h1>
+  <p>Published on {now}</p>
+  <p>Cash discount programs are transforming the way small businesses handle credit card fees. By offering a discount to customers who pay with cash, these programs help business owners increase profitability, manage expenses, and stay competitive.</p>
+  <p>Implementing a cash discount program is easy and legal in all 50 states. It also helps build stronger customer relationships and keeps more money in your pocket.</p>
+  <p>Visit AskBlueJay.ai to discover how your business can save big today.</p>
 </body>
 </html>"""
-    with open(full_path, "w") as f:
-        f.write(html_content)
-    print(f"Blog saved to {full_path}")
-    return file_name
 
-def update_blog_index(title, slug):
-    index_path = "frontend/blog.html"
-    if not os.path.exists(index_path):
-        open(index_path, "w").write("<html><body><h1>Blog</h1><ul></ul></body></html>")
-    with open(index_path, "r") as f:
-        content = f.read()
-    new_entry = f'<li><a href="blogs/{slug}.html">{title}</a> — {datetime.now().strftime("%B %d, %Y")}</li>\n'
-    content = re.sub(r"(<ul>)(.*?)(</ul>)", rf"\1{new_entry}\2\3", content, flags=re.DOTALL)
-    with open(index_path, "w") as f:
+def save_blog_file(content, slug):
+    if not os.path.exists(BLOG_FOLDER):
+        os.makedirs(BLOG_FOLDER)
+    file_path = os.path.join(BLOG_FOLDER, f"{slug}.html")
+    with open(file_path, "w") as f:
         f.write(content)
+    print(f"Blog saved to {file_path}")
+    return f"{slug}.html"
+
+def update_blog_index(slug, topic):
+    index = []
+    if os.path.exists(BLOG_INDEX):
+        with open(BLOG_INDEX, "r") as f:
+            index = json.load(f)
+    new_entry = {
+        "slug": slug,
+        "title": topic,
+        "date": datetime.now().strftime("%Y-%m-%d")
+    }
+    index.insert(0, new_entry)
+    with open(BLOG_INDEX, "w") as f:
+        json.dump(index, f, indent=2)
     print("Blog index updated")
 
 def git_commit_and_push(slug):
-    repo_path = os.path.abspath("frontend")
+    repo_path = os.path.abspath(".")
     try:
         repo = Repo(repo_path)
     except InvalidGitRepositoryError:
         print("[Git] Initializing new Git repo")
-        repo = Repo.init(repo_path)
-        repo.create_remote("origin", GIT_REMOTE)
+        subprocess.run(["git", "init"], cwd=repo_path)
+        subprocess.run(["git", "remote", "add", "origin", GIT_REMOTE], cwd=repo_path)
+        subprocess.run(["git", "config", "user.name", "BlueJay Bot"], cwd=repo_path)
+        subprocess.run(["git", "config", "user.email", "bot@askbluejay.ai"], cwd=repo_path)
+        subprocess.run(["git", "add", "."], cwd=repo_path)
+        subprocess.run(["git", "commit", "-m", "Initial commit"], cwd=repo_path)
+        subprocess.run(["git", "branch", "-M", "main"], cwd=repo_path)
+        subprocess.run(["git", "push", "-u", "origin", "main"], cwd=repo_path)
+        return
 
-    if "origin" not in [r.name for r in repo.remotes]:
-        print("[Git] Creating origin remote")
-        repo.create_remote("origin", GIT_REMOTE)
-
-    repo.git.add("--all")
-    repo.index.commit(f"Add blog: {slug}")
     try:
-        repo.git.pull("origin", "main", "--rebase")
+        subprocess.run(["git", "config", "user.name", "BlueJay Bot"], cwd=repo_path)
+        subprocess.run(["git", "config", "user.email", "bot@askbluejay.ai"], cwd=repo_path)
+        subprocess.run(["git", "pull", "origin", "main", "--rebase"], cwd=repo_path)
+        subprocess.run(["git", "add", "."], cwd=repo_path)
+        subprocess.run(["git", "commit", "-m", f"Auto-blog update: {slug}"], cwd=repo_path)
+        subprocess.run(["git", "push", "origin", "main"], cwd=repo_path)
+        print("[Git Push] Blog committed and pushed.")
     except GitCommandError as e:
-        print(f"[Git Pull Error] {e}")
-    try:
-        repo.git.push("origin", "main")
-    except GitCommandError as e:
-        print(f"[Git Push Error] {e}")
+        print("[Git Push Error]", e)
 
 def main():
     topic = get_trending_topic()
-    blog = generate_blog(topic)
-    title = blog.split("\n")[0].strip().replace("Title:", "").strip()
-    content = "\n".join(blog.split("\n")[1:]).strip()
-    file_name = save_blog_to_file(title, content)
-    update_blog_index(title, file_name.replace(".html", ""))
+    slug = topic.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
+    content = generate_blog_content(topic)
+    file_name = save_blog_file(content, slug)
+    update_blog_index(slug, topic)
     git_commit_and_push(file_name.replace(".html", ""))
 
 if __name__ == "__main__":
