@@ -4,8 +4,8 @@ from datetime import datetime
 from git import Repo, GitCommandError, InvalidGitRepositoryError
 import subprocess
 
-BLOG_FOLDER = "frontend/docs/blogs"
-BLOG_INDEX = "frontend/docs/blogs/index.json"
+BLOG_FOLDER = "docs/blogs"
+BLOG_INDEX = "docs/blogs/index.json"
 GIT_REMOTE = os.getenv("GIT_REMOTE")
 
 def save_blog_file(content, slug):
