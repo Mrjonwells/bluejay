@@ -27,12 +27,25 @@
     <p>Insights for business owners who want to save smart and scale faster.</p>
   </section>
 
-  <main class="blog-index" id="blogIndex" style="text-align: center;">
-    <!-- Injected blog entries will go here -->
+  <main class="blog-index" id="blogIndex" style="text-align:center;">
+    <!-- Injected via blog_pipeline.py -->
   </main>
 
   <footer>
     <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
   </footer>
+
+  <script>
+    fetch("blogs/index.json")
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById("blogIndex");
+        data.forEach(entry => {
+          const el = document.createElement("p");
+          el.innerHTML = `<a href="blogs/${entry.slug}.html">${entry.title}</a> — ${entry.date}`;
+          container.appendChild(el);
+        });
+      });
+  </script>
 </body>
 </html>
