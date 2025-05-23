@@ -63,10 +63,11 @@ def git_commit_and_push(slug):
     repo.config_writer().set_value("user", "name", "Jonathan").release()
     repo.config_writer().set_value("user", "email", "info@askbluejay.ai").release()
 
-    # Ensure remote exists
+    # Force reset origin with token
     origin_url = os.environ.get("GIT_REMOTE")
-    if "origin" not in [r.name for r in repo.remotes]:
-        repo.create_remote("origin", origin_url)
+    if "origin" in repo.remotes:
+        repo.delete_remote("origin")
+    repo.create_remote("origin", origin_url)
 
     try:
         repo.git.add(".")
@@ -78,7 +79,6 @@ def git_commit_and_push(slug):
         print("[Git Push] Blog committed and pushed.")
     except GitCommandError as e:
         print("[Git Push Error]", str(e))
-
 def main():
     title = get_trending_topic()
     slug = title.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
