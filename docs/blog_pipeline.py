@@ -12,7 +12,7 @@ def get_trending_topic():
     try:
         pytrends = TrendReq(hl='en-US', tz=360)
         pytrends.build_payload(
-            kw_list=["credit card processing", "cash discount", "business loans", "merchant services"],
+            kw_list=["merchant services", "credit card fees", "small business payments"],
             timeframe='now 1-d'
         )
         data = pytrends.related_queries()
@@ -28,7 +28,9 @@ def load_template():
 
 def render_blog_html(title, body):
     template = load_template()
-    return template.replace("{{TITLE}}", title).replace("{{DATE}}", datetime.now().strftime("%B %d, %Y")).replace("{{BODY}}", body)
+    return template.replace("{{TITLE}}", title)\
+                   .replace("{{DATE}}", datetime.now().strftime("%B %d, %Y"))\
+                   .replace("{{BODY}}", body)
 
 def save_blog_file(slug, html):
     os.makedirs(BLOG_FOLDER, exist_ok=True)
@@ -56,17 +58,15 @@ def update_blog_index(slug, title):
 
 def git_commit_and_push(slug):
     repo = Repo(".")
-    if 'origin' not in [r.name for r in repo.remotes]:
+    if 'origin' not in [remote.name for remote in repo.remotes]:
         repo.create_remote('origin', os.environ["GIT_REMOTE"])
     repo.config_writer().set_value("user", "name", "BlueJay Bot").release()
     repo.config_writer().set_value("user", "email", "bot@askbluejay.ai").release()
-
     try:
         repo.git.add(".")
         repo.git.commit("-m", f"Auto-blog update: {slug}")
     except GitCommandError:
         print("[Git] Nothing to commit.")
-
     try:
         repo.git.pull("origin", "main", "--rebase")
         repo.git.push("origin", "main")
