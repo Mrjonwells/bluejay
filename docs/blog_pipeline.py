@@ -1,99 +1,95 @@
 import os
 import json
-import subprocess
 from datetime import datetime
+from git import Repo, GitCommandError
 from pytrends.request import TrendReq
-from git import Repo, GitCommandError, InvalidGitRepositoryError
 
 BLOG_FOLDER = "docs/blogs"
 BLOG_INDEX = "docs/blogs/index.json"
-GIT_REMOTE = "https://github.com/Mrjonwells/bluejay.git"
+BLOG_TEMPLATE = "docs/blog_template.html"
 
 def get_trending_topic():
     try:
         pytrends = TrendReq(hl='en-US', tz=360)
-        pytrends.build_payload(kw_list=["credit card processing", "cash discount", "small business savings"], timeframe='now 1-d')
-        trending = pytrends.related_queries()["cash discount"]["top"]
-        if trending is None:
-            raise IndexError
+        pytrends.build_payload(kw_list=[
+            "credit card processing",
+            "cash discount",
+            "business loans",
+            "merchant services"
+        ], timeframe='now 1-d')
+        data = pytrends.related_queries()
+        trending = data["cash discount"]["top"]
         return trending["query"][0]
     except Exception:
         print("[Fallback] Trending fetch failed: list index out of range")
         return "Cash Discount Programs"
 
-def generate_blog_content(topic):
-    now = datetime.now().strftime("%B %d, %Y")
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{topic} | AskBlueJay.ai</title>
-  <meta name="description" content="Learn how {topic.lower()} can help small businesses increase profitability and reduce credit card fees.">
-</head>
-<body>
-  <h1>{topic}</h1>
-  <p>Published on {now}</p>
-  <p>Cash discount programs are transforming the way small businesses handle credit card fees. By offering a discount to customers who pay with cash, these programs help business owners increase profitability, manage expenses, and stay competitive.</p>
-  <p>Implementing a cash discount program is easy and legal in all 50 states. It also helps build stronger customer relationships and keeps more money in your pocket.</p>
-  <p>Visit AskBlueJay.ai to discover how your business can save big today.</p>
-</body>
-</html>"""
+def load_template():
+    with open(BLOG_TEMPLATE, "r") as f:
+        return f.read()
 
-def save_blog_file(content, slug):
+def render_blog_html(title, body):
+    template = load_template()
+    return template.replace("{{TITLE}}", title).replace("{{DATE}}", datetime.now().strftime("%B %d, %Y")).replace("{{BODY}}", body)
+
+def save_blog_file(slug, html):
     os.makedirs(BLOG_FOLDER, exist_ok=True)
-    file_path = os.path.join(BLOG_FOLDER, f"{slug}.html")
-    with open(file_path, "w") as f:
-        f.write(content)
-    print(f"Blog saved to {file_path}")
-    return f"{slug}.html"
+    path = os.path.join(BLOG_FOLDER, f"{slug}.html")
+    with open(path, "w") as f:
+        f.write(html)
+    print(f"Blog saved to {path}")
+    return path
 
-def update_blog_index(slug, topic):
+def update_blog_index(slug, title):
+    os.makedirs(os.path.dirname(BLOG_INDEX), exist_ok=True)
     index = []
     if os.path.exists(BLOG_INDEX):
         with open(BLOG_INDEX, "r") as f:
             index = json.load(f)
-    new_entry = {
+    entry = {
         "slug": slug,
-        "title": topic,
+        "title": title,
         "date": datetime.now().strftime("%Y-%m-%d")
     }
-    index.insert(0, new_entry)
+    index = [entry] + [e for e in index if e["slug"] != slug]
     with open(BLOG_INDEX, "w") as f:
         json.dump(index, f, indent=2)
     print("Blog index updated")
 
 def git_commit_and_push(slug):
-    repo_path = os.path.abspath(".")
-    try:
-        repo = Repo(repo_path)
-    except InvalidGitRepositoryError:
-        print("[Git] Initializing new Git repo")
-        subprocess.run(["git", "init"], cwd=repo_path)
-        subprocess.run(["git", "remote", "add", "origin", GIT_REMOTE], cwd=repo_path)
-        subprocess.run(["git", "config", "user.name", "BlueJay Bot"], cwd=repo_path)
-        subprocess.run(["git", "config", "user.email", "bot@askbluejay.ai"], cwd=repo_path)
+    repo = Repo(".")
 
-    # Ensure remote is set
-    subprocess.run(["git", "remote", "remove", "origin"], cwd=repo_path)
-    subprocess.run(["git", "remote", "add", "origin", GIT_REMOTE], cwd=repo_path)
+    # Set Git identity
+    repo.config_writer().set_value("user", "name", "Jonathan").release()
+    repo.config_writer().set_value("user", "email", "info@askbluejay.ai").release()
+
+    # Ensure remote exists
+    origin_url = os.environ.get("GIT_REMOTE")
+    if "origin" not in [r.name for r in repo.remotes]:
+        repo.create_remote("origin", origin_url)
 
     try:
-        subprocess.run(["git", "config", "user.name", "BlueJay Bot"], cwd=repo_path)
-        subprocess.run(["git", "config", "user.email", "bot@askbluejay.ai"], cwd=repo_path)
-        subprocess.run(["git", "add", "."], cwd=repo_path)
-        subprocess.run(["git", "commit", "-m", f"Auto-blog update: {slug}"], cwd=repo_path)
-        subprocess.run(["git", "push", "-f", "origin", "main"], cwd=repo_path)
+        repo.git.add(".")
+        repo.git.commit("-m", f"Auto-blog update: {slug}")
+    except GitCommandError:
+        print("[Git] Nothing to commit.")
+    try:
+        repo.git.push("origin", "main", "--force")
         print("[Git Push] Blog committed and pushed.")
     except GitCommandError as e:
-        print("[Git Push Error]", e)
+        print("[Git Push Error]", str(e))
 
 def main():
-    topic = get_trending_topic()
-    slug = topic.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
-    content = generate_blog_content(topic)
-    file_name = save_blog_file(content, slug)
-    update_blog_index(slug, topic)
+    title = get_trending_topic()
+    slug = title.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
+    body = f"""
+Cash discount programs help small businesses save on processing fees by offering customers discounts for paying with cash. This approach not only boosts your bottom line but builds trust and loyalty. Discover how to legally implement and promote a program tailored to your customers.
+
+Learn more at AskBlueJay.ai.
+"""
+    html = render_blog_html(title, body)
+    save_blog_file(slug, html)
+    update_blog_index(slug, title)
     git_commit_and_push(slug)
 
 if __name__ == "__main__":
