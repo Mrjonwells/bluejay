@@ -66,7 +66,7 @@ def git_commit_and_push(slug):
     except GitCommandError:
         print("[Git] Nothing to commit.")
     try:
-        repo.git.push("origin", "main")
+        repo.git.push("origin", "main", "--force")
         print("[Git Push] Blog committed and pushed.")
     except GitCommandError as e:
         print("[Git Push Error]", str(e))
