@@ -11,14 +11,12 @@ BLOG_TEMPLATE = "docs/blog_template.html"
 def get_trending_topic():
     try:
         pytrends = TrendReq(hl='en-US', tz=360)
-        pytrends.build_payload(kw_list=[
-            "credit card processing",
-            "cash discount",
-            "business loans",
-            "merchant services"
-        ], timeframe='now 1-d')
+        pytrends.build_payload(
+            kw_list=["merchant services", "payment processors", "business loans", "credit card fees"],
+            timeframe='now 1-d'
+        )
         data = pytrends.related_queries()
-        trending = data["cash discount"]["top"]
+        trending = data["merchant services"]["top"]
         return trending["query"][0]
     except Exception:
         print("[Fallback] Trending fetch failed: list index out of range")
@@ -30,7 +28,9 @@ def load_template():
 
 def render_blog_html(title, body):
     template = load_template()
-    return template.replace("{{TITLE}}", title).replace("{{DATE}}", datetime.now().strftime("%B %d, %Y")).replace("{{BODY}}", body)
+    return template.replace("{{TITLE}}", title)\
+                   .replace("{{DATE}}", datetime.now().strftime("%B %d, %Y"))\
+                   .replace("{{BODY}}", body)
 
 def save_blog_file(slug, html):
     os.makedirs(BLOG_FOLDER, exist_ok=True)
@@ -58,34 +58,29 @@ def update_blog_index(slug, title):
 
 def git_commit_and_push(slug):
     repo = Repo(".")
-
-    # Set Git identity
-    repo.config_writer().set_value("user", "name", "Jonathan").release()
-    repo.config_writer().set_value("user", "email", "info@askbluejay.ai").release()
-
-    # Force reset origin with token
-    origin_url = os.environ.get("GIT_REMOTE")
-    if "origin" in repo.remotes:
-        repo.delete_remote("origin")
-    repo.create_remote("origin", origin_url)
-
+    repo.git.config("--global", "user.name", "BlueJay Bot")
+    repo.git.config("--global", "user.email", "bot@askbluejay.ai")
     try:
         repo.git.add(".")
         repo.git.commit("-m", f"Auto-blog update: {slug}")
     except GitCommandError:
         print("[Git] Nothing to commit.")
     try:
-        repo.git.push("origin", "main", "--force")
+        repo.git.push("origin", "main")
         print("[Git Push] Blog committed and pushed.")
     except GitCommandError as e:
         print("[Git Push Error]", str(e))
+
 def main():
     title = get_trending_topic()
     slug = title.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
+    slug = f"{slug}_{datetime.now().strftime('%Y%m%d%H%M')}"
     body = f"""
-Cash discount programs help small businesses save on processing fees by offering customers discounts for paying with cash. This approach not only boosts your bottom line but builds trust and loyalty. Discover how to legally implement and promote a program tailored to your customers.
+Cash discount programs are transforming the way small businesses handle credit card fees. By offering a discount to customers who pay with cash, these programs help business owners increase profitability, manage expenses, and stay competitive.
 
-Learn more at AskBlueJay.ai.
+Implementing a cash discount program is easy and legal in all 50 states. It also helps build stronger customer relationships and keeps more money in your pocket.
+
+Visit AskBlueJay.ai to discover how your business can save big today.
 """
     html = render_blog_html(title, body)
     save_blog_file(slug, html)
