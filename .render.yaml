@@ -29,5 +29,5 @@ services:
     buildCommand: ""
     startCommand: python3 docs/blog_pipeline.py
     envVars:
-  - key: GIT_REMOTE
-    fromEnvVar: GIT_REMOTE
+      - key: GIT_REMOTE
+        fromEnvVar: GIT_REMOTE
