@@ -60,13 +60,16 @@ def git_commit_and_push(slug):
         repo.create_remote('origin', os.environ["GIT_REMOTE"])
     repo.config_writer().set_value("user", "name", "BlueJay Bot").release()
     repo.config_writer().set_value("user", "email", "bot@askbluejay.ai").release()
+
     try:
         repo.git.add(".")
         repo.git.commit("-m", f"Auto-blog update: {slug}")
     except GitCommandError:
         print("[Git] Nothing to commit.")
+
     try:
-        repo.git.push("origin", "main", "--force")
+        repo.git.pull("origin", "main", "--rebase")
+        repo.git.push("origin", "main")
         print("[Git Push] Blog committed and pushed.")
     except GitCommandError as e:
         print("[Git Push Error]", str(e))
