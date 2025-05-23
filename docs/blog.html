@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BlueJay Blog | AskBlueJay.ai</title>
+  <title>AskBlueJay.ai Blog</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="BlueJay Logo" class="centered-logo" />
+    <img src="bluejay_logo.png" alt="BlueJay Logo" class="centered-logo" />
     <nav class="dropdown">
       <button class="dropbtn">
         <img src="menu-icon.png" alt="Menu" class="menu-icon" />
@@ -27,25 +27,12 @@
     <p>Insights for business owners who want to save smart and scale faster.</p>
   </section>
 
-  <main class="blog-index">
-    <ul id="blogIndex"></ul>
+  <main class="blog-index" id="blogIndex" style="text-align: center;">
+    <!-- Injected blog entries will go here -->
   </main>
 
   <footer>
     <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
   </footer>
-
-  <script>
-    fetch("blogs/index.json")
-      .then(response => response.json())
-      .then(data => {
-        const container = document.getElementById("blogIndex");
-        data.forEach(entry => {
-          const item = document.createElement("li");
-          item.innerHTML = `<a href="blogs/${entry.slug}.html">${entry.title}</a><span class="date"> ${entry.date}</span>`;
-          container.appendChild(item);
-        });
-      });
-  </script>
 </body>
 </html>
