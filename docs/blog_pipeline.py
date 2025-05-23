@@ -12,15 +12,15 @@ def get_trending_topic():
     try:
         pytrends = TrendReq(hl='en-US', tz=360)
         pytrends.build_payload(
-            kw_list=["merchant services", "payment processors", "business loans", "credit card fees"],
+            kw_list=["credit card processing", "cash discount", "business loans", "merchant services"],
             timeframe='now 1-d'
         )
         data = pytrends.related_queries()
-        trending = data["merchant services"]["top"]
+        trending = data["credit card processing"]["top"]
         return trending["query"][0]
     except Exception:
         print("[Fallback] Trending fetch failed: list index out of range")
-        return "Cash Discount Programs"
+        return "Smart Business Savings Strategy"
 
 def load_template():
     with open(BLOG_TEMPLATE, "r") as f:
@@ -28,9 +28,7 @@ def load_template():
 
 def render_blog_html(title, body):
     template = load_template()
-    return template.replace("{{TITLE}}", title)\
-                   .replace("{{DATE}}", datetime.now().strftime("%B %d, %Y"))\
-                   .replace("{{BODY}}", body)
+    return template.replace("{{TITLE}}", title).replace("{{DATE}}", datetime.now().strftime("%B %d, %Y")).replace("{{BODY}}", body)
 
 def save_blog_file(slug, html):
     os.makedirs(BLOG_FOLDER, exist_ok=True)
@@ -58,8 +56,10 @@ def update_blog_index(slug, title):
 
 def git_commit_and_push(slug):
     repo = Repo(".")
-    repo.git.config("--global", "user.name", "BlueJay Bot")
-    repo.git.config("--global", "user.email", "bot@askbluejay.ai")
+    if 'origin' not in [remote.name for remote in repo.remotes]:
+        repo.create_remote('origin', os.environ["GIT_REMOTE"])
+    repo.config_writer().set_value("user", "name", "BlueJay Bot").release()
+    repo.config_writer().set_value("user", "email", "bot@askbluejay.ai").release()
     try:
         repo.git.add(".")
         repo.git.commit("-m", f"Auto-blog update: {slug}")
@@ -73,14 +73,12 @@ def git_commit_and_push(slug):
 
 def main():
     title = get_trending_topic()
-    slug = title.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
-    slug = f"{slug}_{datetime.now().strftime('%Y%m%d%H%M')}"
+    slug_base = title.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
+    slug = f"{slug_base}_{datetime.now().strftime('%Y%m%d%H%M')}"
     body = f"""
-Cash discount programs are transforming the way small businesses handle credit card fees. By offering a discount to customers who pay with cash, these programs help business owners increase profitability, manage expenses, and stay competitive.
+Cash discount programs, optimized for modern businesses, offer an effective way to legally reduce transaction fees while enhancing customer loyalty. This strategy empowers your brand to pass processing costs transparently and boosts profitability.
 
-Implementing a cash discount program is easy and legal in all 50 states. It also helps build stronger customer relationships and keeps more money in your pocket.
-
-Visit AskBlueJay.ai to discover how your business can save big today.
+AskBlueJay.ai automates this with intelligent savings and seamless compliance. Learn more today.
 """
     html = render_blog_html(title, body)
     save_blog_file(slug, html)
