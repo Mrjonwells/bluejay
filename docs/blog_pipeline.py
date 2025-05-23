@@ -66,11 +66,12 @@ def git_commit_and_push(slug):
     except GitCommandError:
         print("[Git] Nothing to commit.")
     try:
-        repo.git.push("origin", "main")
+        remote_url = os.getenv("GIT_REMOTE")
+        repo.git.push(remote_url, "main")
         print("[Git Push] Blog committed and pushed.")
     except GitCommandError as e:
         print("[Git Push Error]", str(e))
-
+        
 def main():
     title = get_trending_topic()
     slug_base = title.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
