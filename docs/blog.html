@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AskBlueJay.ai Blog</title>
+  <title>BlueJay Blog | AskBlueJay.ai</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -14,6 +14,7 @@
         <img src="menu-icon.png" alt="Menu" class="menu-icon" />
       </button>
       <div class="dropdown-content">
+        <a href="index.html">Home</a>
         <a href="blog.html">Blog</a>
         <a href="https://calendly.com/askbluejay">Connect</a>
         <a href="legal.html">Legal</a>
@@ -27,11 +28,24 @@
   </section>
 
   <main class="blog-index">
-    <!-- Blog entries will be injected here by blog_pipeline.py -->
+    <ul id="blogIndex"></ul>
   </main>
 
   <footer>
     <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
   </footer>
+
+  <script>
+    fetch("blogs/index.json")
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById("blogIndex");
+        data.forEach(entry => {
+          const item = document.createElement("li");
+          item.innerHTML = `<a href="blogs/${entry.slug}.html">${entry.title}</a><span class="date"> ${entry.date}</span>`;
+          container.appendChild(item);
+        });
+      });
+  </script>
 </body>
 </html>
