@@ -16,7 +16,7 @@ def get_trending_topic():
             timeframe='now 1-d'
         )
         data = pytrends.related_queries()
-        trending = data["credit card processing"]["top"]
+        trending = data["merchant services"]["top"]
         return trending["query"][0]
     except Exception:
         print("[Fallback] Trending fetch failed: list index out of range")
@@ -56,7 +56,7 @@ def update_blog_index(slug, title):
 
 def git_commit_and_push(slug):
     repo = Repo(".")
-    if 'origin' not in [remote.name for remote in repo.remotes]:
+    if 'origin' not in [r.name for r in repo.remotes]:
         repo.create_remote('origin', os.environ["GIT_REMOTE"])
     repo.config_writer().set_value("user", "name", "BlueJay Bot").release()
     repo.config_writer().set_value("user", "email", "bot@askbluejay.ai").release()
@@ -66,12 +66,11 @@ def git_commit_and_push(slug):
     except GitCommandError:
         print("[Git] Nothing to commit.")
     try:
-        remote_url = os.getenv("GIT_REMOTE")
-        repo.git.push(remote_url, "main")
+        repo.git.push("origin", "main")
         print("[Git Push] Blog committed and pushed.")
     except GitCommandError as e:
         print("[Git Push Error]", str(e))
-        
+
 def main():
     title = get_trending_topic()
     slug_base = title.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
