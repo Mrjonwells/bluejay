@@ -95,17 +95,14 @@ def chat():
     thread_id = data.get("thread_id", "default")
     memory_key = redis_key(thread_id)
 
-    # Handle end chat command
     if user_input.strip().lower() == "end chat":
         redis_client.delete(memory_key)
         redis_client.delete(f"{memory_key}:submitted")
         return jsonify({"reply": "Thanks for chatting with BlueJay. Your session is now closed."})
 
-    # Load memory
     history = redis_client.get(memory_key)
     thread_messages = json.loads(history) if history else []
 
-    # Greet new users
     if not thread_messages:
         reply = "Hi, I’m BlueJay, your merchant AI expert. What’s your name?"
         thread_messages.append({"role": "assistant", "content": reply})
@@ -117,10 +114,8 @@ def chat():
         redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
         return jsonify({"reply": reply})
 
-    # Append user input
     thread_messages.append({"role": "user", "content": user_input})
 
-    # Objection logger
     if any(keyword in user_input.lower() for keyword in OBJECTION_KEYWORDS):
         try:
             with open(objection_log_path, "a") as f:
@@ -128,7 +123,6 @@ def chat():
         except Exception as e:
             print(f"Objection log error: {e}")
 
-    # System prompt
     system_prompt = {
         "role": "system",
         "content": f"You are BlueJay, a persuasive sales assistant. Use this brain:\n{json.dumps(brain)}\nAlso use this template:\n{json.dumps(template)}"
@@ -156,6 +150,30 @@ def chat():
     except Exception as e:
         print("Chat error:", e)
         return jsonify({"reply": "Something went wrong."}), 500
+
+@app.route("/seo/trending", methods=["GET"])
+def trending():
+    trending_topics = [
+        "AI tools for small businesses",
+        "The future of remote teams in 2025",
+        "Smart automation in eCommerce",
+        "Top fintech trends to watch",
+        "How AI is reshaping marketing"
+    ]
+    import random
+    return jsonify({"rewritten_topic": random.choice(trending_topics)})
+
+@app.route("/seo/inject", methods=["POST"])
+def inject():
+    data = request.get_json()
+    topic = data.get("topic", "AI Trends")
+    return jsonify({
+        "content": f"<p>{topic} is transforming industries through automation and insight. Learn how to apply it to your business today.</p>",
+        "meta": {
+            "description": f"Explore how {topic} is changing the game for modern businesses.",
+            "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
+        }
+    })
 
 @app.route("/")
 def home():
