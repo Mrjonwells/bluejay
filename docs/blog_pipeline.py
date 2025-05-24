@@ -21,7 +21,11 @@ def fetch_trending_topic():
 def inject_seo(topic):
     try:
         res = requests.post(SEO_ENDPOINT, json={"topic": topic})
-        return res.json().get("content", ""), res.json().get("meta", {})
+        body_html = res.json().get("content", "")
+        meta = res.json().get("meta", {})
+        print("Fetched content:", body_html[:60])
+        print("Meta keys:", meta.keys())
+        return body_html, meta
     except Exception as e:
         print("SEO injection error:", e)
         return "", {}
