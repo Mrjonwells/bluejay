@@ -29,7 +29,11 @@ def inject_seo(topic):
 def render_post(topic, body_html):
     with open(TEMPLATE_FILE) as f:
         template = Template(f.read())
-    return template.render(title=topic, content=body_html)
+    return template.render(
+        title=topic,
+        content=body_html,
+        date=datetime.utcnow().strftime('%B %d, %Y')
+    )
 
 def save_post(filename, html):
     path = os.path.join(BLOG_FOLDER, filename)
