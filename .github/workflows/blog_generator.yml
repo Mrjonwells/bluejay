@@ -2,7 +2,7 @@ name: Generate Blog Post
 
 on:
   schedule:
-    - cron: "0,30 * * * *"
+    - cron: "0 13 * * *"  # 6am PST
   workflow_dispatch:
 
 jobs:
