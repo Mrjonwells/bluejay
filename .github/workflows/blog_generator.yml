@@ -33,6 +33,6 @@ jobs:
           git config --global user.name "BlueJay Bot"
           git config --global user.email "bot@askbluejay.ai"
           git remote set-url origin https://Mrjonwells:${GIT_AUTH_TOKEN}@github.com/Mrjonwells/bluejay.git
-          git add docs/blogs/*.html docs/index.json
+          git add docs/blogs/*.html docs/blogs/index.json
           git commit --no-verify -m "Auto-blog update from GitHub Action" || echo "Nothing to commit"
           git push origin main
