@@ -30,4 +30,4 @@ services:
     startCommand: python3 docs/blog_pipeline.py
     envVars:
       - key: GIT_REMOTE
-        fromEnvVar: GIT_REMOTE
+        value: https://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@github.com/Mrjonwells/bluejay.git
