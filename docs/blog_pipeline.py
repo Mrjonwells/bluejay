@@ -64,6 +64,7 @@ def main():
     full_html = render_post(topic, body_html, meta)
     save_post(filename, full_html)
     update_index(topic, filename, meta)
-
+    print("Index file updated at", datetime.utcnow())
+    
 if __name__ == "__main__":
     main()
