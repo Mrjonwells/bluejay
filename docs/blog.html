@@ -3,16 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AskBlueJay.ai Blog</title>
+  <title>BlueJay’s Blog | AskBlueJay.ai</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="BlueJay Logo" class="centered-logo" />
+    <img src="images/bluejay_logo.png" alt="BlueJay Logo" class="centered-logo" />
     <nav class="dropdown">
-      <button class="dropbtn">
-        <img src="menu-icon.png" alt="Menu" class="menu-icon" />
-      </button>
+      <button class="dropbtn"><img src="menu-icon.png" alt="Menu" class="menu-icon" /></button>
       <div class="dropdown-content">
         <a href="index.html">Home</a>
         <a href="blog.html">Blog</a>
@@ -22,30 +20,28 @@
     </nav>
   </header>
 
-  <section class="hero">
+  <main class="blog-index">
     <h1>BlueJay’s Blog</h1>
     <p>Insights for business owners who want to save smart and scale faster.</p>
-  </section>
-
-  <main class="blog-index" id="blogIndex" style="text-align:center;">
-    <!-- Injected via blog_pipeline.py -->
+    <!-- Blog list will populate here -->
   </main>
+
+  <script>
+    fetch('./blogs/index.json')
+      .then(res => res.json())
+      .then(posts => {
+        const list = document.createElement('ul');
+        posts.forEach(post => {
+          const item = document.createElement('li');
+          item.innerHTML = `<a href="./blogs/${post.filename}">${post.title}</a> — ${post.date.split('T')[0]}`;
+          list.appendChild(item);
+        });
+        document.querySelector('.blog-index').appendChild(list);
+      });
+  </script>
 
   <footer>
     <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
   </footer>
-
-  <script>
-    fetch("blogs/index.json")
-      .then(response => response.json())
-      .then(data => {
-        const container = document.getElementById("blogIndex");
-        data.forEach(entry => {
-          const el = document.createElement("p");
-          el.innerHTML = `<a href="blogs/${entry.slug}.html">${entry.title}</a> — ${entry.date}`;
-          container.appendChild(el);
-        });
-      });
-  </script>
 </body>
 </html>
