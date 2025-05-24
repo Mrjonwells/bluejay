@@ -25,6 +25,7 @@ services:
   - type: cron
     name: blog-generator
     env: python
+    plan: starter
     schedule: "0,30 * * * *"
     buildCommand: ""
     startCommand: python3 docs/blog_pipeline.py
