@@ -21,9 +21,8 @@
   </header>
 
   <main class="blog-index">
-    <h1>BlueJay’s Blog</h1>
-    <p>Insights for business owners who want to save smart and scale faster.</p>
-    <!-- Blog list will populate here -->
+    <h1 style="text-align: center;">BlueJay’s Blog</h1>
+    <p style="text-align: center;">Insights for business owners who want to save smart and scale faster.</p>
   </main>
 
   <script>
@@ -31,11 +30,21 @@
       .then(res => res.json())
       .then(posts => {
         const list = document.createElement('ul');
+        list.style.listStyleType = 'none';
+        list.style.padding = '0';
+        list.style.textAlign = 'center';
+
         posts.forEach(post => {
           const item = document.createElement('li');
-          item.innerHTML = `<a href="./blogs/${post.filename}">${post.title}</a> — ${post.date.split('T')[0]}`;
+          item.style.marginBottom = '2em';
+          item.innerHTML = `
+            <h2><a href="./blogs/${post.filename}">${post.title}</a></h2>
+            <p><strong>Date:</strong> ${post.date.split('T')[0]}</p>
+            <p>${post.description}</p>
+          `;
           list.appendChild(item);
         });
+
         document.querySelector('.blog-index').appendChild(list);
       });
   </script>
