@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{TITLE}} | AskBlueJay.ai</title>
+  <title>{{ title }} | AskBlueJay.ai</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
@@ -23,9 +23,9 @@
   </header>
 
   <main class="blog-index">
-    <h1>{{TITLE}}</h1>
-    <p class="date">Published on {{DATE}}</p>
-    <p>{{BODY}}</p>
+    <h1>{{ title }}</h1>
+    <p class="date">Published on {{ date }}</p>
+    {{ content | safe }}
   </main>
 
   <footer>
