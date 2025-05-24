@@ -2,7 +2,7 @@ import json
 import os
 
 SEO_JSON = "backend/seo/seo_config.json"
-INDEX_HTML = "frontend/index.html"
+INDEX_HTML = "docs/index.html"
 PLACEHOLDER = "<!-- %%SEO_META_TAGS%% -->"
 
 def load_seo_tags():
@@ -17,14 +17,14 @@ def load_seo_tags():
 
 def inject_meta_tags():
     if not os.path.exists(INDEX_HTML):
-        print("index.html not found.")
+        print("index.html not found. Skipping injection.")
         return
 
     with open(INDEX_HTML, "r") as f:
         content = f.read()
 
     if PLACEHOLDER not in content:
-        print("Placeholder not found in index.html")
+        print("Placeholder not found in index.html. No changes made.")
         return
 
     new_meta = load_seo_tags()
