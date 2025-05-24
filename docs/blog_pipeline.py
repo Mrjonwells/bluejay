@@ -7,8 +7,8 @@ from jinja2 import Template
 BLOG_FOLDER = "docs/blogs"
 INDEX_FILE = "docs/index.json"
 TEMPLATE_FILE = "docs/blog_template.html"
-SEO_ENDPOINT = "https://bluejay-backend.onrender.com/seo/inject"
-TREND_ENDPOINT = "https://bluejay-backend.onrender.com/seo/trending"
+SEO_ENDPOINT = "https://bluejay-mjpg.onrender.com/seo/inject"
+TREND_ENDPOINT = "https://bluejay-mjpg.onrender.com/seo/trending"
 
 def fetch_trending_topic():
     try:
@@ -69,6 +69,6 @@ def main():
     save_post(filename, full_html)
     update_index(topic, filename, meta)
     print("Index file updated at", datetime.utcnow())
-    
+
 if __name__ == "__main__":
     main()
