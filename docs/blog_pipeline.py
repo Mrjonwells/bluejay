@@ -1,92 +1,64 @@
 import os
 import json
 from datetime import datetime
-from git import Repo, GitCommandError
-from pytrends.request import TrendReq
+import requests
+from jinja2 import Template
 
 BLOG_FOLDER = "docs/blogs"
-BLOG_INDEX = "docs/blogs/index.json"
-BLOG_TEMPLATE = "docs/blog_template.html"
+INDEX_FILE = "docs/index.json"
+TEMPLATE_FILE = "docs/blog_template.html"
+SEO_ENDPOINT = "https://bluejay-backend.onrender.com/seo/inject"
+TREND_ENDPOINT = "https://bluejay-backend.onrender.com/seo/trending"
 
-def get_trending_topic():
+def fetch_trending_topic():
     try:
-        pytrends = TrendReq(hl='en-US', tz=360)
-        pytrends.build_payload(
-            kw_list=["merchant services", "credit card fees", "small business payments"],
-            timeframe='now 1-d'
-        )
-        data = pytrends.related_queries()
-        trending = data["merchant services"]["top"]
-        return trending["query"][0]
-    except Exception:
-        print("[Fallback] Trending fetch failed: list index out of range")
-        return "Smart Business Savings Strategy"
+        res = requests.get(TREND_ENDPOINT)
+        return res.json().get("rewritten_topic", "AI Trends in 2025")
+    except Exception as e:
+        print("Trending fetch error:", e)
+        return "AI Trends in 2025"
 
-def load_template():
-    with open(BLOG_TEMPLATE, "r") as f:
-        return f.read()
+def inject_seo(topic):
+    try:
+        res = requests.post(SEO_ENDPOINT, json={"topic": topic})
+        return res.json().get("content", ""), res.json().get("meta", {})
+    except Exception as e:
+        print("SEO injection error:", e)
+        return "", {}
 
-def render_blog_html(title, body):
-    template = load_template()
-    return template.replace("{{TITLE}}", title)\
-                   .replace("{{DATE}}", datetime.now().strftime("%B %d, %Y"))\
-                   .replace("{{BODY}}", body)
+def render_post(topic, body_html):
+    with open(TEMPLATE_FILE) as f:
+        template = Template(f.read())
+    return template.render(title=topic, content=body_html)
 
-def save_blog_file(slug, html):
-    os.makedirs(BLOG_FOLDER, exist_ok=True)
-    path = os.path.join(BLOG_FOLDER, f"{slug}.html")
+def save_post(filename, html):
+    path = os.path.join(BLOG_FOLDER, filename)
     with open(path, "w") as f:
         f.write(html)
-    print(f"Blog saved to {path}")
-    return path
 
-def update_blog_index(slug, title):
-    os.makedirs(os.path.dirname(BLOG_INDEX), exist_ok=True)
+def update_index(title, filename, meta):
     index = []
-    if os.path.exists(BLOG_INDEX):
-        with open(BLOG_INDEX, "r") as f:
+    if os.path.exists(INDEX_FILE):
+        with open(INDEX_FILE) as f:
             index = json.load(f)
-    entry = {
-        "slug": slug,
+    index.insert(0, {
         "title": title,
-        "date": datetime.now().strftime("%Y-%m-%d")
-    }
-    index = [entry] + [e for e in index if e["slug"] != slug]
-    with open(BLOG_INDEX, "w") as f:
+        "filename": filename,
+        "description": meta.get("description", ""),
+        "keywords": meta.get("keywords", []),
+        "date": datetime.utcnow().isoformat()
+    })
+    with open(INDEX_FILE, "w") as f:
         json.dump(index, f, indent=2)
-    print("Blog index updated")
-
-def git_commit_and_push(slug):
-    repo = Repo(".")
-    if 'origin' not in [remote.name for remote in repo.remotes]:
-        repo.create_remote('origin', os.environ["GIT_REMOTE"])
-    repo.config_writer().set_value("user", "name", "BlueJay Bot").release()
-    repo.config_writer().set_value("user", "email", "bot@askbluejay.ai").release()
-    try:
-        repo.git.add(".")
-        repo.git.commit("-m", f"Auto-blog update: {slug}")
-    except GitCommandError:
-        print("[Git] Nothing to commit.")
-    try:
-        repo.git.pull("origin", "main", "--rebase")
-        repo.git.push("origin", "main")
-        print("[Git Push] Blog committed and pushed.")
-    except GitCommandError as e:
-        print("[Git Push Error]", str(e))
 
 def main():
-    title = get_trending_topic()
-    slug_base = title.lower().replace(" ", "_").replace("?", "").replace(",", "").replace("'", "")
-    slug = f"{slug_base}_{datetime.now().strftime('%Y%m%d%H%M')}"
-    body = f"""
-Cash discount programs, optimized for modern businesses, offer an effective way to legally reduce transaction fees while enhancing customer loyalty. This strategy empowers your brand to pass processing costs transparently and boosts profitability.
-
-AskBlueJay.ai automates this with intelligent savings and seamless compliance. Learn more today.
-"""
-    html = render_blog_html(title, body)
-    save_blog_file(slug, html)
-    update_blog_index(slug, title)
-    git_commit_and_push(slug)
+    topic = fetch_trending_topic()
+    body_html, meta = inject_seo(topic)
+    slug = topic.lower().replace(" ", "-").replace("?", "")
+    filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slug}.html"
+    full_html = render_post(topic, body_html)
+    save_post(filename, full_html)
+    update_index(topic, filename, meta)
 
 if __name__ == "__main__":
     main()
