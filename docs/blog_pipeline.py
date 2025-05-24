@@ -26,13 +26,14 @@ def inject_seo(topic):
         print("SEO injection error:", e)
         return "", {}
 
-def render_post(topic, body_html):
+def render_post(topic, body_html, meta):
     with open(TEMPLATE_FILE) as f:
         template = Template(f.read())
     return template.render(
         title=topic,
         content=body_html,
-        date=datetime.utcnow().strftime('%B %d, %Y')
+        date=datetime.utcnow().strftime('%B %d, %Y'),
+        meta=meta
     )
 
 def save_post(filename, html):
@@ -60,7 +61,7 @@ def main():
     body_html, meta = inject_seo(topic)
     slug = topic.lower().replace(" ", "-").replace("?", "")
     filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slug}.html"
-    full_html = render_post(topic, body_html)
+    full_html = render_post(topic, body_html, meta)
     save_post(filename, full_html)
     update_index(topic, filename, meta)
 
