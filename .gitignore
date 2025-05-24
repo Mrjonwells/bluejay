@@ -37,9 +37,9 @@ __pycache__/
 # SEO build artifacts
 backend/seo/seo_injection.html
 
-# Recommendations auto-output
+# Recommendation auto-output
 backend/config/brain_update_recommendations.json
 
-# Allow blog posts and index to be pushed
+# Blog exceptions — keep blog HTML and index.json
 !docs/blogs/*.html
 !docs/blogs/index.json
