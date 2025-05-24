@@ -2,7 +2,7 @@ name: Generate Blog Post
 
 on:
   schedule:
-    - cron: "0 13 * * *"  # 6am PST
+    - cron: "0 13 * * *"  # 6am PST daily
   workflow_dispatch:
 
 jobs:
@@ -25,12 +25,10 @@ jobs:
         run: python3 docs/blog_pipeline.py
 
       - name: Push blog with token
-        env:
-          TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config user.name "BlueJay Bot"
           git config user.email "bot@askbluejay.ai"
-          git remote set-url origin https://$TOKEN@github.com/Mrjonwells/bluejay.git
+          git remote set-url origin https://Mrjonwells:${{ secrets.GH_TOKEN }}@github.com/Mrjonwells/bluejay.git
           git add .
           git commit -m "Auto-blog update from GitHub Action" || echo "Nothing to commit"
           git push origin main
