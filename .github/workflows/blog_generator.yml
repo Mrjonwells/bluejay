@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repo without GitHub bot creds
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,11 +26,13 @@ jobs:
       - name: Run blog pipeline
         run: python3 docs/blog_pipeline.py
 
-      - name: Push blog with token
+      - name: Push blog with classic PAT
+        env:
+          GIT_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git config user.name "BlueJay Bot"
-          git config user.email "bot@askbluejay.ai"
-          git remote set-url origin https://Mrjonwells:${{ secrets.GH_TOKEN }}@github.com/Mrjonwells/bluejay.git
+          git config --global user.name "BlueJay Bot"
+          git config --global user.email "bot@askbluejay.ai"
+          git remote set-url origin https://Mrjonwells:${GIT_AUTH_TOKEN}@github.com/Mrjonwells/bluejay.git
           git add .
           git commit -m "Auto-blog update from GitHub Action" || echo "Nothing to commit"
           git push origin main
