@@ -5,8 +5,8 @@ import requests
 from jinja2 import Template
 
 BLOG_FOLDER = "docs/blogs"
-INDEX_FILE = "docs/blogs/index.json"
-TEMPLATE_FILE = "docs/blogs/blog_template.html"
+INDEX_FILE = os.path.join(BLOG_FOLDER, "index.json")
+TEMPLATE_FILE = os.path.join(BLOG_FOLDER, "blog_template.html")
 SEO_ENDPOINT = "https://bluejay-mjpg.onrender.com/seo/inject"
 TREND_ENDPOINT = "https://bluejay-mjpg.onrender.com/seo/trending"
 
@@ -24,7 +24,7 @@ def inject_seo(topic):
         body_html = res.json().get("content", "")
         meta = res.json().get("meta", {})
         print("Fetched content:", body_html[:60])
-        print("Meta keys:", meta.keys())
+        print("Meta keys:", list(meta.keys()))
         return body_html, meta
     except Exception as e:
         print("SEO injection error:", e)
