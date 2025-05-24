@@ -40,6 +40,6 @@ backend/seo/seo_injection.html
 # Recommendations auto-output
 backend/config/brain_update_recommendations.json
 
-# Allow blog posts and index to be committed
+# Allow blog posts and index to be pushed
 !docs/blogs/*.html
-!docs/index.json
+!docs/blogs/index.json
