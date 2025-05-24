@@ -6,7 +6,7 @@ from jinja2 import Template
 
 BLOG_FOLDER = "docs/blogs"
 INDEX_FILE = "docs/index.json"
-TEMPLATE_FILE = "docs/blog_template.html"
+TEMPLATE_FILE = "docs/blogs/blog_template.html"
 SEO_ENDPOINT = "https://bluejay-mjpg.onrender.com/seo/inject"
 TREND_ENDPOINT = "https://bluejay-mjpg.onrender.com/seo/trending"
 
