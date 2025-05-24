@@ -1,28 +1,34 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from seo_injection import generate_blog_html  # assumes this exists
 import os
 
-app = Flask(__name__)
-CORS(app)
+SEO_HTML = "backend/seo/seo_injection.html"
+INDEX_HTML = "docs/index.html"
+PLACEHOLDER = "<!-- %%SEO_META_TAGS%% -->"
 
-@app.route("/seo/inject", methods=["POST"])
 def inject_seo():
-    data = request.get_json()
-    topic = data.get("topic", "")
-    if not topic:
-        return jsonify({"error": "Missing topic"}), 400
-    try:
-        content, meta = generate_blog_html(topic)
-        return jsonify({
-            "topic": topic,
-            "content": content,
-            "meta": meta
-        })
-    except Exception as e:
-        print("Injection error:", e)
-        return jsonify({"error": str(e)}), 500
+    if not os.path.exists(SEO_HTML):
+        print("SEO injection HTML not found.")
+        return
+
+    if not os.path.exists(INDEX_HTML):
+        print("index.html not found.")
+        return
+
+    with open(SEO_HTML, "r") as f:
+        seo_tags = f.read()
+
+    with open(INDEX_HTML, "r") as f:
+        content = f.read()
+
+    if PLACEHOLDER not in content:
+        print("Placeholder not found in index.html. No changes made.")
+        return
+
+    updated = content.replace(PLACEHOLDER, seo_tags)
+
+    with open(INDEX_HTML, "w") as f:
+        f.write(updated)
+
+    print("SEO meta tags successfully injected.")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    inject_seo()
