@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from waitress import serve
 from datetime import datetime
+import random
 
 # Load environment
 load_dotenv()
@@ -150,15 +151,23 @@ def chat():
 
 @app.route("/seo/trending", methods=["GET"])
 def trending():
-    trending_topics = [
+    try:
+        with open("backend/seo/external_topics.json", "r") as f:
+            data = json.load(f)
+            topics = data.get("topics", [])
+            if topics:
+                return jsonify({"rewritten_topic": random.choice(topics)})
+    except Exception as e:
+        print("Trending fallback:", e)
+
+    fallback = [
         "AI tools for small businesses",
         "The future of remote teams in 2025",
         "Smart automation in eCommerce",
         "Top fintech trends to watch",
         "How AI is reshaping marketing"
     ]
-    import random
-    return jsonify({"rewritten_topic": random.choice(trending_topics)})
+    return jsonify({"rewritten_topic": random.choice(fallback)})
 
 @app.route("/seo/inject", methods=["POST"])
 def inject():
