@@ -26,28 +26,30 @@
   </main>
 
   <script>
-    fetch('./blogs/index.json')
-      .then(res => res.json())
-      .then(posts => {
-        const list = document.createElement('ul');
-        list.style.listStyleType = 'none';
-        list.style.padding = '0';
-        list.style.textAlign = 'center';
+  fetch('./blogs/index.json')
+    .then(res => res.json())
+    .then(posts => {
+      const list = document.createElement('ul');
+      list.style.listStyleType = 'none';
+      list.style.padding = '0';
+      list.style.textAlign = 'center';
 
-        posts.forEach(post => {
-          const item = document.createElement('li');
-          item.style.marginBottom = '2em';
-          item.innerHTML = `
-            <h2><a href="./blogs/${post.filename}">${post.title}</a></h2>
-            <p><strong>Date:</strong> ${post.date.split('T')[0]}</p>
-            <p>${post.description}</p>
-          `;
-          list.appendChild(item);
-        });
-
-        document.querySelector('.blog-index').appendChild(list);
+      posts.forEach(post => {
+        const date = post.date ? post.date.split('T')[0] : 'Unknown';
+        const description = post.description || 'Read more about this topic.';
+        const item = document.createElement('li');
+        item.style.marginBottom = '2em';
+        item.innerHTML = `
+          <h2><a href="./blogs/${post.filename}">${post.title}</a></h2>
+          <p><strong>Date:</strong> ${date}</p>
+          <p>${description}</p>
+        `;
+        list.appendChild(item);
       });
-  </script>
+
+      document.querySelector('.blog-index').appendChild(list);
+    });
+</script>
 
   <footer>
     <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
