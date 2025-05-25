@@ -13,16 +13,17 @@
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="BlueJay’s Blog" />
-  <meta name="twitter:description" content="Fresh business-saving insights from AskBlueJay.ai" />
+  <meta name="twitter:description" content="Smart business insights from AskBlueJay.ai" />
   <meta name="twitter:image" content="https://askbluejay.ai/logo.png" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="canonical" href="https://askbluejay.ai/blog.html" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Blog",
     "name": "BlueJay Blog",
     "url": "https://askbluejay.ai/blog.html",
-    "description": "Smart savings and automation insights for business owners."
+    "description": "Smart insights and savings tips from AskBlueJay.ai for business owners using AI tools."
   }
   </script>
 </head>
@@ -56,10 +57,11 @@
 
         posts.forEach(post => {
           const item = document.createElement('li');
+          const date = post.date ? post.date.split('T')[0] : 'Date unavailable';
           item.style.marginBottom = '2em';
           item.innerHTML = `
             <h2><a href="./blogs/${post.filename}">${post.title}</a></h2>
-            <p><strong>Date:</strong> ${post.date.split('T')[0]}</p>
+            <p><strong>Date:</strong> ${date}</p>
             <p>${post.description}</p>
           `;
           list.appendChild(item);
