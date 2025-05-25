@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BlueJay’s Blog | AskBlueJay.ai</title>
-  <meta name="description" content="Insights from AskBlueJay.ai on AI-driven savings, smarter business decisions, and merchant growth." />
-  <meta name="keywords" content="BlueJay blog, merchant AI, AI for business, save on fees, business growth, askbluejay.ai" />
+  <meta name="description" content="Latest insights from AskBlueJay.ai on how businesses can save on processing fees, scale operations, and benefit from AI automation." />
+  <meta name="keywords" content="business blog, AI tools, save money, payment processing, BlueJay blog, small business tips" />
   <meta name="author" content="AskBlueJay.ai" />
   <meta property="og:title" content="BlueJay’s Blog | AskBlueJay.ai" />
-  <meta property="og:description" content="Explore our latest posts on cutting costs and scaling smarter with merchant AI." />
+  <meta property="og:description" content="Explore smart ways to grow your business with AI insights from BlueJay." />
   <meta property="og:image" content="https://askbluejay.ai/logo.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="BlueJay’s Blog" />
+  <meta name="twitter:title" content="BlueJay Blog" />
   <meta name="twitter:description" content="Smart business insights from AskBlueJay.ai" />
   <meta name="twitter:image" content="https://askbluejay.ai/logo.png" />
   <link rel="stylesheet" href="style.css" />
@@ -44,30 +44,25 @@
   <main class="blog-index">
     <h1 style="text-align: center;">BlueJay’s Blog</h1>
     <p style="text-align: center;">Insights for business owners who want to save smart and scale faster.</p>
+    <div id="blog-list" style="max-width: 700px; margin: 0 auto; padding-top: 2em;"></div>
   </main>
 
   <script>
     fetch('./blogs/index.json')
       .then(res => res.json())
       .then(posts => {
-        const list = document.createElement('ul');
-        list.style.listStyleType = 'none';
-        list.style.padding = '0';
-        list.style.textAlign = 'center';
+        const container = document.getElementById('blog-list');
 
         posts.forEach(post => {
-          const item = document.createElement('li');
-          const date = post.date ? post.date.split('T')[0] : 'Date unavailable';
-          item.style.marginBottom = '2em';
+          const item = document.createElement('div');
+          item.style.marginBottom = '3em';
           item.innerHTML = `
-            <h2><a href="./blogs/${post.filename}">${post.title}</a></h2>
-            <p><strong>Date:</strong> ${date}</p>
-            <p>${post.description}</p>
+            <h2 style="text-align: center;"><a href="./blogs/${post.filename}">${post.title}</a></h2>
+            <p style="text-align: center;"><strong>Date:</strong> ${post.date ? post.date.split('T')[0] : 'Date unavailable'}</p>
+            <p style="text-align: center;">${post.description || ''}</p>
           `;
-          list.appendChild(item);
+          container.appendChild(item);
         });
-
-        document.querySelector('.blog-index').appendChild(list);
       });
   </script>
 
