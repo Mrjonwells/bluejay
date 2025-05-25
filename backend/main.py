@@ -167,12 +167,24 @@ def trending():
 def inject():
     data = request.get_json()
     topic = data.get("topic", "AI Trends")
+
+    paragraphs = [
+        f"<p><strong>{topic}</strong> is transforming industries through automation and AI-driven insight.</p>",
+        "<p>Small businesses are leveraging these tools to streamline operations, reduce costs, and increase scalability.</p>",
+        "<p>From smart point-of-sale systems to predictive analytics, the use of AI is becoming a necessity in today’s market.</p>",
+        f"<p>According to industry trends reported by <strong>AskBlueJay.ai</strong>, adoption is expected to rise dramatically in 2025.</p>",
+        "<p>Learn how you can apply these strategies to boost your business today.</p>"
+    ]
+
+    content = "\n".join(paragraphs)
+    meta = {
+        "description": f"Explore how {topic} is changing the game for modern businesses.",
+        "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
+    }
+
     return jsonify({
-        "content": f"<p>{topic} is transforming industries through automation and insight. Learn how to apply it to your business today.</p>",
-        "meta": {
-            "description": f"Explore how {topic} is changing the game for modern businesses.",
-            "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
-        }
+        "content": content,
+        "meta": meta
     })
 
 @app.route("/")
