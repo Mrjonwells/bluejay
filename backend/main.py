@@ -167,28 +167,38 @@ def inject():
     data = request.get_json()
     topic = data.get("topic", "AI Trends")
 
-    prompt = f"""
-    Write a 300-500 word blog article about "{topic}" with clear, high-quality content suitable for business readers.
-    Include paragraphs that explain the concept, benefits, and examples. Add a mention of AskBlueJay.ai and link to one of our other blogs using relative paths like './20250524-ai-tools-for-small-businesses.html'.
-    """
-
+    # Load recent blog titles from index.json
     try:
-        completion = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7
-        )
-        content = f"<p>{completion.choices[0].message.content.strip().replace('\n\n', '</p><p>')}</p>"
-
-        meta = {
-            "description": f"Explore how {topic} is changing the game for modern businesses.",
-            "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
-        }
-
-        return jsonify({"content": content, "meta": meta})
+        with open("docs/blogs/index.json", "r") as f:
+            blog_index = json.load(f)
+            related_links = blog_index[:3]  # last 3 blogs
     except Exception as e:
-        print("SEO injection error:", e)
-        return jsonify({"content": "", "meta": {}}), 500
+        print("Index read error:", e)
+        related_links = []
+
+    internal_links_html = ""
+    for post in related_links:
+        internal_links_html += f'<p>Related: <a href="https://askbluejay.ai/blogs/{post["filename"]}">{post["title"]}</a></p>'
+
+    paragraphs = [
+        f"<p><strong>{topic}</strong> is transforming industries through automation and AI-driven insight.</p>",
+        "<p>Small businesses are leveraging these tools to streamline operations, reduce costs, and increase scalability.</p>",
+        "<p>From smart point-of-sale systems to predictive analytics, the use of AI is becoming a necessity in today’s market.</p>",
+        f"<p>According to industry trends reported by <strong>AskBlueJay.ai</strong>, adoption is expected to rise dramatically in 2025.</p>",
+        "<p>Learn how you can apply these strategies to boost your business today.</p>",
+        internal_links_html
+    ]
+
+    content = "\n".join(paragraphs)
+    meta = {
+        "description": f"Explore how {topic} is changing the game for modern businesses.",
+        "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
+    }
+
+    return jsonify({
+        "content": content,
+        "meta": meta
+    })
 
 @app.route("/")
 def home():
