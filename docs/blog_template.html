@@ -3,11 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ title }} | AskBlueJay.ai</title>
   <meta name="description" content="{{ meta.description }}">
   <meta name="keywords" content="{{ meta.keywords | join(', ') }}">
-  <title>{{ title }} | AskBlueJay.ai</title>
+  <meta name="author" content="AskBlueJay.ai" />
+  <meta name="robots" content="index, follow" />
   <link rel="stylesheet" href="../style.css" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{{ title }} | AskBlueJay.ai" />
+  <meta property="og:description" content="{{ meta.description }}" />
+  <meta property="og:url" content="https://askbluejay.ai/blogs/{{ meta.slug or 'post' }}.html" />
+  <meta property="og:image" content="https://askbluejay.ai/logo.png" />
+  <meta property="og:type" content="article" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ title }} | AskBlueJay.ai" />
+  <meta name="twitter:description" content="{{ meta.description }}" />
+  <meta name="twitter:image" content="https://askbluejay.ai/logo.png" />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{{ title }}",
+    "image": "https://askbluejay.ai/logo.png",
+    "author": {
+      "@type": "Organization",
+      "name": "AskBlueJay.ai"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "AskBlueJay.ai",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://askbluejay.ai/logo.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://askbluejay.ai/blogs/{{ meta.slug or 'post' }}.html"
+    },
+    "datePublished": "{{ date }}",
+    "description": "{{ meta.description }}"
+  }
+  </script>
 </head>
+
 <body>
   <header>
     <img src="../logo.png" alt="BlueJay Logo" class="centered-logo" />
@@ -23,9 +67,16 @@
   </header>
 
   <main class="blog-index">
-    <h1>{{ title }}</h1>
-    <p class="date">Published on {{ date }}</p>
-    {{ content | safe }}
+    <article>
+      <h1>{{ title }}</h1>
+      <p class="date">Published on {{ date }}</p>
+      {{ content | safe }}
+    </article>
+    <section class="share-links" style="text-align:center; margin-top:2em;">
+      <p><strong>Share this:</strong></p>
+      <a href="https://twitter.com/intent/tweet?text={{ title }}&url=https://askbluejay.ai/blogs/{{ meta.slug or 'post' }}.html" target="_blank">Twitter</a> |
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://askbluejay.ai/blogs/{{ meta.slug or 'post' }}.html" target="_blank">LinkedIn</a>
+    </section>
   </main>
 
   <footer>
