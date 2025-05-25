@@ -199,6 +199,16 @@ def inject():
         "content": content,
         "meta": meta
     })
+    content = "\n".join(paragraphs)
+    meta = {
+        "description": f"Explore how {topic} is changing the game for modern businesses.",
+        "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
+    }
+
+    return jsonify({
+        "content": content,
+        "meta": meta
+    })
 
 @app.route("/")
 def home():
