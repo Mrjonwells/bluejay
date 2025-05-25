@@ -1,32 +1,28 @@
-import os
-from datetime import datetime
-
-BLOG_DIR = "docs/blogs"
-SITEMAP_PATH = "docs/sitemap.xml"
-BASE_URL = "https://askbluejay.ai/blogs"
-
-def build_entry(filename):
-    url = f"{BASE_URL}/{filename}"
-    return f"""  <url>
-    <loc>{url}</loc>
-    <lastmod>{datetime.utcnow().date()}</lastmod>
-    <priority>0.5</priority>
-  </url>"""
-
-def update_sitemap():
-    entries = []
-    for file in os.listdir(BLOG_DIR):
-        if file.endswith(".html"):
-            entries.append(build_entry(file))
-
-    full_sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{chr(10).join(entries)}
-</urlset>"""
-
-    with open(SITEMAP_PATH, "w") as f:
-        f.write(full_sitemap)
-    print(f"Sitemap updated with {len(entries)} blog entries.")
-
-if __name__ == "__main__":
-    update_sitemap()
+  <url>
+    <loc>https://askbluejay.ai/blogs/20250525-top-fintech-trends-to-watch.html</loc>
+    <lastmod>2025-05-25</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://askbluejay.ai/blogs/20250524-ai-tools-for-small-businesses.html</loc>
+    <lastmod>2025-05-25</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://askbluejay.ai/blogs/20250525-smart-automation-in-ecommerce.html</loc>
+    <lastmod>2025-05-25</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://askbluejay.ai/blogs/20250525-ai-tools-for-small-businesses.html</loc>
+    <lastmod>2025-05-25</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://askbluejay.ai/blogs/smart_business_savings_strategy_202505232343.html</loc>
+    <lastmod>2025-05-25</lastmod>
+    <priority>0.5</priority>
+  </url>
+</urlset>
