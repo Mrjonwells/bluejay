@@ -1,48 +1,34 @@
-import os
 import json
-from datetime import datetime
 from pytrends.request import TrendReq
-import requests
-
-OUTPUT_FILE = "backend/seo/external_topics.json"
+from datetime import datetime
 
 def fetch_google_trends():
-    pytrends = TrendReq()
-    pytrends.build_payload(kw_list=["AI", "payment", "small business"])
-    trending = pytrends.related_queries()
-    keywords = []
-    for topic in trending:
-        if trending[topic]["top"] is not None:
-            keywords += list(trending[topic]["top"]["query"].values)
-    return keywords[:10]
-
-def fetch_reddit_titles(subreddits=["smallbusiness", "Entrepreneur"]):
-    headers = {"User-Agent": "Mozilla/5.0"}
-    titles = []
-    for sub in subreddits:
-        url = f"https://www.reddit.com/r/{sub}/top/.json?t=day&limit=10"
-        try:
-            res = requests.get(url, headers=headers)
-            posts = res.json()["data"]["children"]
-            for post in posts:
-                title = post["data"]["title"]
-                if len(title.split()) > 3:
-                    titles.append(title)
-        except Exception as e:
-            print(f"Reddit fetch error for /r/{sub}:", e)
-    return titles
-
-def save_topics(topics):
-    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-    with open(OUTPUT_FILE, "w") as f:
-        json.dump({"topics": topics, "updated": datetime.utcnow().isoformat()}, f, indent=2)
+    pytrends = TrendReq(hl='en-US', tz=360)
+    pytrends.build_payload(['AI for business'], cat=0, timeframe='now 7-d', geo='US', gprop='')
+    
+    try:
+        related_queries = pytrends.related_queries()
+        results = related_queries.get('AI for business', {}).get('top', {}).get('query', [])
+        if not results:
+            raise ValueError("No trending results found.")
+        return results[:5]
+    except Exception as e:
+        print("Trend fetch error:", e)
+        return ["AI business tools", "automation in business", "AI trends 2025"]
 
 def main():
-    google = fetch_google_trends()
-    reddit = fetch_reddit_titles()
-    all_topics = sorted(set(google + reddit))
-    save_topics(all_topics)
-    print(f"Saved {len(all_topics)} topics to external_topics.json")
+    topics = fetch_google_trends()
+    timestamp = datetime.utcnow().isoformat()
+    
+    payload = {
+        "timestamp": timestamp,
+        "topics": topics
+    }
+
+    with open("backend/seo/trending_topics.json", "w") as f:
+        json.dump(payload, f, indent=2)
+    
+    print(f"Saved {len(topics)} trending topics.")
 
 if __name__ == "__main__":
     main()
