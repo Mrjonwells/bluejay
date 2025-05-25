@@ -3,26 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{title}} | AskBlueJay.ai</title>
-  <meta name="description" content="{{description}}" />
-  <meta name="keywords" content="{{keywords}}" />
+  <title>{{ title }} | AskBlueJay.ai</title>
+  <meta name="description" content="{{ meta.description }}">
+  <meta name="keywords" content="{{ meta.keywords | join(', ') }}">
   <meta name="author" content="AskBlueJay.ai" />
   <meta name="robots" content="index, follow" />
   <link rel="stylesheet" href="../style.css" />
-  <link rel="icon" href="../favicon.ico" type="image/x-icon" />
-  <link rel="canonical" href="https://askbluejay.ai/blogs/{{filename}}" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="{{title}} | AskBlueJay.ai" />
-  <meta property="og:description" content="{{description}}" />
-  <meta property="og:url" content="https://askbluejay.ai/blogs/{{filename}}" />
+  <meta property="og:title" content="{{ title }} | AskBlueJay.ai" />
+  <meta property="og:description" content="{{ meta.description }}" />
+  <meta property="og:url" content="https://askbluejay.ai/blogs/post.html" />
   <meta property="og:image" content="https://askbluejay.ai/logo.png" />
   <meta property="og:type" content="article" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="{{title}} | AskBlueJay.ai" />
-  <meta name="twitter:description" content="{{description}}" />
+  <meta name="twitter:title" content="{{ title }} | AskBlueJay.ai" />
+  <meta name="twitter:description" content="{{ meta.description }}" />
   <meta name="twitter:image" content="https://askbluejay.ai/logo.png" />
 
   <!-- Structured Data -->
@@ -30,7 +28,7 @@
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": "{{title}}",
+    "headline": "{{ title }}",
     "image": "https://askbluejay.ai/logo.png",
     "author": {
       "@type": "Organization",
@@ -46,17 +44,17 @@
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://askbluejay.ai/blogs/{{filename}}"
+      "@id": "https://askbluejay.ai/blogs/post.html"
     },
-    "datePublished": "{{date}}",
-    "description": "{{description}}"
+    "datePublished": "{{ date }}",
+    "description": "{{ meta.description }}"
   }
   </script>
 </head>
 
 <body>
   <header>
-    <img src="../logo.png" alt="AskBlueJay.ai Logo" class="centered-logo" />
+    <img src="../logo.png" alt="BlueJay Logo" class="centered-logo" />
     <nav class="dropdown">
       <button class="dropbtn"><img src="../menu-icon.png" alt="Menu" class="menu-icon" /></button>
       <div class="dropdown-content">
@@ -70,19 +68,15 @@
 
   <main class="blog-index">
     <article>
-      <h1>{{title}}</h1>
-      <p class="date">Published on {{date}}</p>
-      <p><strong>{{title}}</strong> is transforming industries through automation and AI-driven insight.</p>
-      <p>Small businesses are leveraging these tools to streamline operations, reduce costs, and increase scalability.</p>
-      <p>From smart point-of-sale systems to predictive analytics, the use of AI is becoming a necessity in today’s market.</p>
-      <p>According to industry trends reported by <strong>AskBlueJay.ai</strong>, adoption is expected to rise dramatically in 2025.</p>
-      <p>Learn how you can apply these strategies to boost your business today.</p>
+      <h1>{{ title }}</h1>
+      <p class="date">Published on {{ date }}</p>
+      {{ content | safe }}
     </article>
 
     <section class="share-links" style="text-align:center; margin-top:2em;">
       <p><strong>Share this:</strong></p>
-      <a href="https://twitter.com/intent/tweet?text={{title}}&url=https://askbluejay.ai/blogs/{{filename}}" target="_blank">Twitter</a> |
-      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://askbluejay.ai/blogs/{{filename}}" target="_blank">LinkedIn</a>
+      <a href="https://twitter.com/intent/tweet?text={{ title }}&url=https://askbluejay.ai/blogs/post.html" target="_blank">Twitter</a> |
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://askbluejay.ai/blogs/post.html" target="_blank">LinkedIn</a>
     </section>
   </main>
 
