@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
 
-BLOG_DIR = "frontend/blogs"
-SITEMAP_PATH = "frontend/sitemap.xml"
+BLOG_DIR = "docs/blogs"
+SITEMAP_PATH = "docs/sitemap.xml"
 BASE_URL = "https://askbluejay.ai/blogs"
 
 def build_entry(filename):
