@@ -1,0 +1,36 @@
+name: Update External Topics
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"  # every 12 hours UTC
+  workflow_dispatch:
+
+jobs:
+  update-topics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pytrends requests
+
+      - name: Run topic feeder
+        run: python3 backend/seo/external_topic_feeder.py
+
+      - name: Commit updated topics
+        env:
+          GIT_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config --global user.name "BlueJay Bot"
+          git config --global user.email "bot@askbluejay.ai"
+          git remote set-url origin https://Mrjonwells:${GIT_AUTH_TOKEN}@github.com/Mrjonwells/bluejay.git
+          git add backend/seo/external_topics.json
+          git commit --no-verify -m "Updated external blog topic feed" || echo "Nothing to commit"
+          git push origin main
