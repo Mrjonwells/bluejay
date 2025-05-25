@@ -1,13 +1,13 @@
 import os
 import json
 import redis
-import openai
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from openai import OpenAI
 from waitress import serve
+from datetime import datetime
 
 # Load environment
 load_dotenv()
@@ -21,7 +21,7 @@ config_path = os.path.join(base_dir, "config", "bluejay_config.json")
 template_path = os.path.join(base_dir, "config", "conversation_template.json")
 objection_log_path = os.path.join(base_dir, "backend", "logs", "objection_log.jsonl")
 
-# Load config + template
+# Load brain and template
 with open(config_path, "r") as f:
     brain = json.load(f)
 try:
@@ -41,7 +41,7 @@ assistant_id = os.getenv("OPENAI_ASSISTANT_ID", "asst_bLMfZI9fO9E5jltHY8KDq9ZT")
 # HubSpot
 HUBSPOT_FORM_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
-# Objections
+# Objection keywords
 OBJECTION_KEYWORDS = [
     "not interested", "already have", "too expensive", "let me think", "maybe later", "busy right now"
 ]
@@ -84,8 +84,7 @@ def send_to_hubspot(name, phone, email, notes):
             }
         }
     }
-    response = requests.post(HUBSPOT_FORM_URL, json=payload)
-    print("HubSpot response:", response.status_code, response.text)
+    requests.post(HUBSPOT_FORM_URL, json=payload)
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -139,11 +138,10 @@ def chat():
         redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
 
         name, phone, email = extract_fields(thread_messages)
-        if name and phone and email:
-            if not redis_client.get(f"{memory_key}:submitted"):
-                notes = "\n".join([f"{m['role']}: {m['content']}" for m in thread_messages])
-                send_to_hubspot(name, phone, email, notes)
-                redis_client.set(f"{memory_key}:submitted", "yes", ex=3600)
+        if name and phone and email and not redis_client.get(f"{memory_key}:submitted"):
+            notes = "\n".join([f"{m['role']}: {m['content']}" for m in thread_messages])
+            send_to_hubspot(name, phone, email, notes)
+            redis_client.set(f"{memory_key}:submitted", "yes", ex=3600)
 
         return jsonify({"reply": reply})
     except Exception as e:
@@ -167,11 +165,10 @@ def inject():
     data = request.get_json()
     topic = data.get("topic", "AI Trends")
 
-    # Load recent blog titles from index.json
     try:
         with open("docs/blogs/index.json", "r") as f:
             blog_index = json.load(f)
-            related_links = blog_index[:3]  # last 3 blogs
+            related_links = blog_index[:3]
     except Exception as e:
         print("Index read error:", e)
         related_links = []
@@ -189,16 +186,6 @@ def inject():
         internal_links_html
     ]
 
-    content = "\n".join(paragraphs)
-    meta = {
-        "description": f"Explore how {topic} is changing the game for modern businesses.",
-        "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
-    }
-
-    return jsonify({
-        "content": content,
-        "meta": meta
-    })
     content = "\n".join(paragraphs)
     meta = {
         "description": f"Explore how {topic} is changing the game for modern businesses.",
