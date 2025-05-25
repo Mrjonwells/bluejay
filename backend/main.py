@@ -12,7 +12,6 @@ from waitress import serve
 # Load environment
 load_dotenv()
 
-# Initialize Flask
 app = Flask(__name__)
 CORS(app)
 
@@ -22,7 +21,7 @@ config_path = os.path.join(base_dir, "config", "bluejay_config.json")
 template_path = os.path.join(base_dir, "config", "conversation_template.json")
 objection_log_path = os.path.join(base_dir, "backend", "logs", "objection_log.jsonl")
 
-# Load brain + template
+# Load config + template
 with open(config_path, "r") as f:
     brain = json.load(f)
 try:
@@ -31,18 +30,18 @@ try:
 except:
     template = {}
 
-# Redis setup
+# Redis
 redis_url = os.getenv("REDIS_URL")
 redis_client = redis.from_url(redis_url)
 
-# OpenAI setup
+# OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 assistant_id = os.getenv("OPENAI_ASSISTANT_ID", "asst_bLMfZI9fO9E5jltHY8KDq9ZT")
 
-# HubSpot form
+# HubSpot
 HUBSPOT_FORM_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
-# Objection tracking
+# Objections
 OBJECTION_KEYWORDS = [
     "not interested", "already have", "too expensive", "let me think", "maybe later", "busy right now"
 ]
@@ -168,24 +167,28 @@ def inject():
     data = request.get_json()
     topic = data.get("topic", "AI Trends")
 
-    paragraphs = [
-        f"<p><strong>{topic}</strong> is transforming industries through automation and AI-driven insight.</p>",
-        "<p>Small businesses are leveraging these tools to streamline operations, reduce costs, and increase scalability.</p>",
-        "<p>From smart point-of-sale systems to predictive analytics, the use of AI is becoming a necessity in today’s market.</p>",
-        f"<p>According to industry trends reported by <strong>AskBlueJay.ai</strong>, adoption is expected to rise dramatically in 2025.</p>",
-        "<p>Learn how you can apply these strategies to boost your business today.</p>"
-    ]
+    prompt = f"""
+    Write a 300-500 word blog article about "{topic}" with clear, high-quality content suitable for business readers.
+    Include paragraphs that explain the concept, benefits, and examples. Add a mention of AskBlueJay.ai and link to one of our other blogs using relative paths like './20250524-ai-tools-for-small-businesses.html'.
+    """
 
-    content = "\n".join(paragraphs)
-    meta = {
-        "description": f"Explore how {topic} is changing the game for modern businesses.",
-        "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
-    }
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7
+        )
+        content = f"<p>{completion.choices[0].message.content.strip().replace('\n\n', '</p><p>')}</p>"
 
-    return jsonify({
-        "content": content,
-        "meta": meta
-    })
+        meta = {
+            "description": f"Explore how {topic} is changing the game for modern businesses.",
+            "keywords": [topic.lower(), "business automation", "AI tools", "trending 2025"]
+        }
+
+        return jsonify({"content": content, "meta": meta})
+    except Exception as e:
+        print("SEO injection error:", e)
+        return jsonify({"content": "", "meta": {}}), 500
 
 @app.route("/")
 def home():
