@@ -9,13 +9,14 @@
   <meta name="author" content="AskBlueJay.ai" />
   <meta name="robots" content="index, follow" />
   <link rel="stylesheet" href="../style.css" />
+  <link rel="canonical" href="https://askbluejay.ai/blogs/{{ filename }}" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{ title }} | AskBlueJay.ai" />
   <meta property="og:description" content="{{ meta.description }}" />
-  <meta property="og:url" content="https://askbluejay.ai/blogs/post.html" />
   <meta property="og:image" content="https://askbluejay.ai/logo.png" />
   <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://askbluejay.ai/blogs/{{ filename }}" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -44,7 +45,7 @@
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://askbluejay.ai/blogs/post.html"
+      "@id": "https://askbluejay.ai/blogs/{{ filename }}"
     },
     "datePublished": "{{ date }}",
     "description": "{{ meta.description }}"
@@ -75,8 +76,8 @@
 
     <section class="share-links" style="text-align:center; margin-top:2em;">
       <p><strong>Share this:</strong></p>
-      <a href="https://twitter.com/intent/tweet?text={{ title }}&url=https://askbluejay.ai/blogs/post.html" target="_blank">Twitter</a> |
-      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://askbluejay.ai/blogs/post.html" target="_blank">LinkedIn</a>
+      <a href="https://twitter.com/intent/tweet?text={{ title }}&url=https://askbluejay.ai/blogs/{{ filename }}" target="_blank">Twitter</a> |
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://askbluejay.ai/blogs/{{ filename }}" target="_blank">LinkedIn</a>
     </section>
   </main>
 
