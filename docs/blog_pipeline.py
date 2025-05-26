@@ -1,10 +1,10 @@
 import os
+import sys
 import json
 import re
-import sys
 from datetime import datetime
 
-# Ensure we can import from root where main.py is located
+# Add root path to import main.py
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from main import trending, inject
