@@ -4,8 +4,8 @@ import json
 import re
 from datetime import datetime
 
-# Add root path to import main.py
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Fix import path for backend/main.py
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from main import trending, inject
 
