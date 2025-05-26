@@ -1,13 +1,8 @@
 import os
-import sys
 import json
 import re
 from datetime import datetime
-
-# Fix import path for backend/main.py
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
-
-from main import trending, inject
+import requests
 
 BLOG_DIR = "docs/blogs"
 INDEX_FILE = os.path.join(BLOG_DIR, "index.json")
@@ -109,8 +104,13 @@ def build_html(title, content, meta, filename):
 </html>"""
 
 def main():
-    topic = trending().json["rewritten_topic"]
-    result = inject({"topic": topic}).json
+    try:
+        topic = requests.get("http://localhost:5000/seo/trending").json()["rewritten_topic"]
+        result = requests.post("http://localhost:5000/seo/inject", json={"topic": topic}).json()
+    except Exception as e:
+        print("Error contacting backend:", e)
+        return
+
     title = topic
     filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slugify(title)}.html"
     html = build_html(title, result["content"], result["meta"], filename)
