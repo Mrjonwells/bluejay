@@ -1,8 +1,13 @@
 import os
 import json
 import re
+import sys
 from datetime import datetime
-from main import trending, inject  # Direct internal import
+
+# Ensure we can import from root where main.py is located
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from main import trending, inject
 
 BLOG_DIR = "docs/blogs"
 INDEX_FILE = os.path.join(BLOG_DIR, "index.json")
