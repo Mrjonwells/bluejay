@@ -2,7 +2,7 @@ name: Update External Topics
 
 on:
   schedule:
-    - cron: "0 */12 * * *"  # every 12 hours UTC
+    - cron: "30 12 * * *"  # 5:30am PST daily
   workflow_dispatch:
 
 jobs:
