@@ -4,10 +4,10 @@ import json
 import re
 from datetime import datetime
 
-# Add root path to import main.py
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
+# Add root path to import backend modules
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from main import trending, inject
+from backend.blog_engine import get_trending_topic, generate_blog_content
 
 BLOG_DIR = "docs/blogs"
 INDEX_FILE = os.path.join(BLOG_DIR, "index.json")
@@ -109,8 +109,8 @@ def build_html(title, content, meta, filename):
 </html>"""
 
 def main():
-    topic = trending().json["rewritten_topic"]
-    result = inject({"topic": topic}).json
+    topic = get_trending_topic()
+    result = generate_blog_content(topic)
     title = topic
     filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slugify(title)}.html"
     html = build_html(title, result["content"], result["meta"], filename)
