@@ -21,6 +21,8 @@ def get_trending_topic():
     return {"rewritten_topic": random.choice(fallback)}
 
 def generate_blog_content(topic):
+    topic_text = topic["rewritten_topic"]
+
     try:
         with open("docs/blogs/index.json", "r") as f:
             blog_index = json.load(f)
@@ -34,7 +36,7 @@ def generate_blog_content(topic):
         internal_links_html += f'<p>Related: <a href="https://askbluejay.ai/blogs/{post["filename"]}">{post["title"]}</a></p>'
 
     core = [
-        f"<p><strong>{topic}</strong> is one of the most discussed topics among forward-thinking businesses in 2025. As the digital economy evolves, staying ahead of fintech and automation trends is crucial.</p>",
+        f"<p><strong>{topic_text}</strong> is one of the most discussed topics among forward-thinking businesses in 2025. As the digital economy evolves, staying ahead of fintech and automation trends is crucial.</p>",
         "<p>Many industry leaders are using AI-powered tools to identify operational gaps, eliminate payment friction, and improve customer experience. This shift isn't just theoretical — it's being deployed in day-to-day operations by thousands of small and mid-sized businesses.</p>",
         "<p>For example, predictive analytics and smart integrations are allowing merchants to anticipate volume spikes and scale resources accordingly. Cloud-native payment processors are automating 80% of manual work through intelligent routing and cost analysis.</p>",
         "<p>According to 2025 data from AskBlueJay.ai and other fintech trend analysts, companies that implemented these strategies in Q1 have already seen a 15–20% reduction in fees and chargebacks.</p>",
@@ -67,7 +69,7 @@ def generate_blog_content(topic):
     return {
         "content": "\n".join(core),
         "meta": {
-            "description": f"Explore how {topic} is shaping the future of small business success through AI, automation, and strategic fintech moves.",
-            "keywords": [topic["rewritten_topic"].lower(), "ai trends", "business automation", "merchant tools", "2025 fintech"]
+            "description": f"Explore how {topic_text} is shaping the future of small business success through AI, automation, and strategic fintech moves.",
+            "keywords": [topic_text.lower(), "ai trends", "business automation", "merchant tools", "2025 fintech"]
         }
     }
