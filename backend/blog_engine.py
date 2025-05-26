@@ -68,6 +68,6 @@ def generate_blog_content(topic):
         "content": "\n".join(core),
         "meta": {
             "description": f"Explore how {topic} is shaping the future of small business success through AI, automation, and strategic fintech moves.",
-            "keywords": [topic.lower(), "ai trends", "business automation", "merchant tools", "2025 fintech"]
+            "keywords": [topic["rewritten_topic"].lower(), "ai trends", "business automation", "merchant tools", "2025 fintech"]
         }
     }
