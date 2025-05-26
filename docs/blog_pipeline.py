@@ -1,74 +1,129 @@
 import os
 import json
+import re
 from datetime import datetime
 import requests
-from jinja2 import Template
 
-BLOG_FOLDER = "docs/blogs"
-INDEX_FILE = os.path.join(BLOG_FOLDER, "index.json")
-TEMPLATE_FILE = "docs/blog_template.html"  # FIXED: Correct template location
-SEO_ENDPOINT = "https://bluejay-mjpg.onrender.com/seo/inject"
-TREND_ENDPOINT = "https://bluejay-mjpg.onrender.com/seo/trending"
+BLOG_DIR = "docs/blogs"
+INDEX_FILE = os.path.join(BLOG_DIR, "index.json")
+INJECT_URL = "http://localhost:5000/seo/inject"
 
-def fetch_trending_topic():
-    try:
-        res = requests.get(TREND_ENDPOINT)
-        return res.json().get("rewritten_topic", "AI Trends in 2025")
-    except Exception as e:
-        print("Trending fetch error:", e)
-        return "AI Trends in 2025"
+def slugify(text):
+    return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
 
-def inject_seo(topic):
-    try:
-        res = requests.post(SEO_ENDPOINT, json={"topic": topic})
-        body_html = res.json().get("content", "")
-        meta = res.json().get("meta", {})
-        print("Fetched content:", body_html[:60])
-        print("Meta keys:", list(meta.keys()))
-        return body_html, meta
-    except Exception as e:
-        print("SEO injection error:", e)
-        return "", {}
+def load_index():
+    if not os.path.exists(INDEX_FILE):
+        return []
+    with open(INDEX_FILE, "r") as f:
+        return json.load(f)
 
-def render_post(topic, body_html, meta):
-    with open(TEMPLATE_FILE) as f:
-        template = Template(f.read())
-    return template.render(
-        title=topic,
-        content=body_html,
-        date=datetime.utcnow().strftime('%B %d, %Y'),
-        meta=meta
-    )
-
-def save_post(filename, html):
-    path = os.path.join(BLOG_FOLDER, filename)
-    with open(path, "w") as f:
-        f.write(html)
-
-def update_index(title, filename, meta):
-    index = []
-    if os.path.exists(INDEX_FILE):
-        with open(INDEX_FILE) as f:
-            index = json.load(f)
-    index.insert(0, {
-        "title": title,
-        "filename": filename,
-        "description": meta.get("description", ""),
-        "keywords": meta.get("keywords", []),
-        "date": datetime.utcnow().isoformat()
-    })
+def save_index(index):
     with open(INDEX_FILE, "w") as f:
         json.dump(index, f, indent=2)
 
+def build_html(title, content, meta, filename):
+    date = datetime.utcnow().strftime("%Y-%m-%d")
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} | AskBlueJay.ai</title>
+  <meta name="description" content="{meta['description']}" />
+  <meta name="keywords" content="{', '.join(meta['keywords'])}" />
+  <meta name="author" content="AskBlueJay.ai" />
+  <meta name="robots" content="index, follow" />
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="canonical" href="https://askbluejay.ai/blogs/{filename}" />
+  <meta property="og:title" content="{title} | AskBlueJay.ai" />
+  <meta property="og:description" content="{meta['description']}" />
+  <meta property="og:image" content="https://askbluejay.ai/logo.png" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://askbluejay.ai/blogs/{filename}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{title} | AskBlueJay.ai" />
+  <meta name="twitter:description" content="{meta['description']}" />
+  <meta name="twitter:image" content="https://askbluejay.ai/logo.png" />
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{title}",
+    "image": "https://askbluejay.ai/logo.png",
+    "author": {{
+      "@type": "Organization",
+      "name": "AskBlueJay.ai"
+    }},
+    "publisher": {{
+      "@type": "Organization",
+      "name": "AskBlueJay.ai",
+      "logo": {{
+        "@type": "ImageObject",
+        "url": "https://askbluejay.ai/logo.png"
+      }}
+    }},
+    "mainEntityOfPage": {{
+      "@type": "WebPage",
+      "@id": "https://askbluejay.ai/blogs/{filename}"
+    }},
+    "datePublished": "{date}",
+    "description": "{meta['description']}"
+  }}
+  </script>
+</head>
+<body>
+  <header>
+    <img src="../logo.png" alt="BlueJay Logo" class="centered-logo" />
+    <nav class="dropdown">
+      <button class="dropbtn"><img src="../menu-icon.png" alt="Menu" class="menu-icon" /></button>
+      <div class="dropdown-content">
+        <a href="../index.html">Home</a>
+        <a href="../blog.html">Blog</a>
+        <a href="https://calendly.com/askbluejay">Connect</a>
+        <a href="../legal.html">Legal</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="blog-index">
+    <article>
+      <h1>{title}</h1>
+      <p class="date">Published on {date}</p>
+      {content}
+    </article>
+    <section class="share-links" style="text-align:center; margin-top:2em;">
+      <p><strong>Share this:</strong></p>
+      <a href="https://twitter.com/intent/tweet?text={title}&url=https://askbluejay.ai/blogs/{filename}" target="_blank">Twitter</a> |
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://askbluejay.ai/blogs/{filename}" target="_blank">LinkedIn</a>
+    </section>
+  </main>
+
+  <footer>
+    <p>BlueJay and AskBlueJay.ai are property of Fortified Capital LLC. All rights reserved.</p>
+  </footer>
+</body>
+</html>"""
+
 def main():
-    topic = fetch_trending_topic()
-    body_html, meta = inject_seo(topic)
-    slug = topic.lower().replace(" ", "-").replace("?", "")
-    filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slug}.html"
-    full_html = render_post(topic, body_html, meta)
-    save_post(filename, full_html)
-    update_index(topic, filename, meta)
-    print("Index file updated at", datetime.utcnow())
+    topic = requests.get("http://localhost:5000/seo/trending").json()["rewritten_topic"]
+    response = requests.post(INJECT_URL, json={"topic": topic}).json()
+    title = topic
+    filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slugify(title)}.html"
+    html = build_html(title, response["content"], response["meta"], filename)
+
+    with open(os.path.join(BLOG_DIR, filename), "w") as f:
+        f.write(html)
+
+    index = load_index()
+    index.insert(0, {
+        "title": title,
+        "filename": filename,
+        "description": response["meta"]["description"],
+        "keywords": response["meta"]["keywords"],
+        "date": datetime.utcnow().isoformat()
+    })
+    save_index(index)
+    print(f"Blog saved: {filename}")
 
 if __name__ == "__main__":
     main()
