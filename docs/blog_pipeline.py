@@ -2,11 +2,10 @@ import os
 import json
 import re
 from datetime import datetime
-import requests
+from main import trending, inject  # Direct internal import
 
 BLOG_DIR = "docs/blogs"
 INDEX_FILE = os.path.join(BLOG_DIR, "index.json")
-INJECT_URL = "http://localhost:5000/seo/inject"
 
 def slugify(text):
     return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
@@ -105,11 +104,11 @@ def build_html(title, content, meta, filename):
 </html>"""
 
 def main():
-    topic = requests.get("http://localhost:5000/seo/trending").json()["rewritten_topic"]
-    response = requests.post(INJECT_URL, json={"topic": topic}).json()
+    topic = trending().json["rewritten_topic"]
+    result = inject({"topic": topic}).json
     title = topic
     filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slugify(title)}.html"
-    html = build_html(title, response["content"], response["meta"], filename)
+    html = build_html(title, result["content"], result["meta"], filename)
 
     with open(os.path.join(BLOG_DIR, filename), "w") as f:
         f.write(html)
@@ -118,8 +117,8 @@ def main():
     index.insert(0, {
         "title": title,
         "filename": filename,
-        "description": response["meta"]["description"],
-        "keywords": response["meta"]["keywords"],
+        "description": result["meta"]["description"],
+        "keywords": result["meta"]["keywords"],
         "date": datetime.utcnow().isoformat()
     })
     save_index(index)
