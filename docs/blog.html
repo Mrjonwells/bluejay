@@ -4,26 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BlueJay’s Blog | AskBlueJay.ai</title>
-  <meta name="description" content="Latest insights from AskBlueJay.ai on how businesses can save on processing fees, scale operations, and benefit from AI automation." />
-  <meta name="keywords" content="business blog, AI tools, save money, payment processing, BlueJay blog, small business tips" />
+  <meta name="description" content="Smart AI-powered insights from AskBlueJay.ai to help merchants save fees, optimize operations, and scale faster." />
+  <meta name="keywords" content="business blog, AI tools, small business savings, merchant automation, BlueJay blog" />
   <meta name="author" content="AskBlueJay.ai" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="canonical" href="https://askbluejay.ai/blog.html" />
   <meta property="og:title" content="BlueJay’s Blog | AskBlueJay.ai" />
-  <meta property="og:description" content="Explore smart ways to grow your business with AI insights from BlueJay." />
+  <meta property="og:description" content="Insights to help businesses save smart and grow faster using AI and automation." />
   <meta property="og:image" content="https://askbluejay.ai/logo.png" />
-  <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="BlueJay Blog" />
   <meta name="twitter:description" content="Smart business insights from AskBlueJay.ai" />
   <meta name="twitter:image" content="https://askbluejay.ai/logo.png" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="canonical" href="https://askbluejay.ai/blog.html" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Blog",
     "name": "BlueJay Blog",
     "url": "https://askbluejay.ai/blog.html",
-    "description": "Smart insights and savings tips from AskBlueJay.ai for business owners using AI tools."
+    "description": "Smart insights and automation strategies for merchants powered by AskBlueJay.ai"
   }
   </script>
 </head>
@@ -44,7 +43,7 @@
   <main class="blog-index">
     <h1 style="text-align: center;">BlueJay’s Blog</h1>
     <p style="text-align: center;">Insights for business owners who want to save smart and scale faster.</p>
-    <div id="blog-list" style="max-width: 700px; margin: 0 auto; padding-top: 2em;"></div>
+    <div id="blog-list" style="text-align: center;"></div>
   </main>
 
   <script>
@@ -52,17 +51,25 @@
       .then(res => res.json())
       .then(posts => {
         const container = document.getElementById('blog-list');
+        const list = document.createElement('ul');
+        list.style.listStyleType = 'none';
+        list.style.padding = '0';
+        list.style.maxWidth = '700px';
+        list.style.margin = '0 auto';
 
         posts.forEach(post => {
-          const item = document.createElement('div');
-          item.style.marginBottom = '3em';
+          const item = document.createElement('li');
+          item.style.marginBottom = '2.5em';
+          const date = post.date ? post.date.split('T')[0] : 'Date unavailable';
           item.innerHTML = `
-            <h2 style="text-align: center;"><a href="./blogs/${post.filename}">${post.title}</a></h2>
-            <p style="text-align: center;"><strong>Date:</strong> ${post.date ? post.date.split('T')[0] : 'Date unavailable'}</p>
-            <p style="text-align: center;">${post.description || ''}</p>
+            <h2><a href="./blogs/${post.filename}">${post.title}</a></h2>
+            <p><strong>Date:</strong> ${date}</p>
+            <p>${post.description}</p>
           `;
-          container.appendChild(item);
+          list.appendChild(item);
         });
+
+        container.appendChild(list);
       });
   </script>
 
