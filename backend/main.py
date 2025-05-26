@@ -12,7 +12,6 @@ import random
 
 from backend.blog_engine import get_trending_topic, generate_blog_content
 
-# Load environment
 load_dotenv()
 
 app = Flask(__name__)
@@ -33,18 +32,13 @@ try:
 except:
     template = {}
 
-# Redis
 redis_url = os.getenv("REDIS_URL")
 redis_client = redis.from_url(redis_url)
 
-# OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-assistant_id = os.getenv("OPENAI_ASSISTANT_ID", "asst_bLMfZI9fO9E5jltHY8KDq9ZT")
 
-# HubSpot
 HUBSPOT_FORM_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
-# Objection keywords
 OBJECTION_KEYWORDS = [
     "not interested", "already have", "too expensive", "let me think", "maybe later", "busy right now"
 ]
@@ -158,7 +152,7 @@ def trending():
 @app.route("/seo/inject", methods=["POST"])
 def inject():
     data = request.get_json()
-    return jsonify(generate_blog_content(data.get("topic", "AI Trends")))
+    return jsonify(generate_blog_content(data))
 
 @app.route("/")
 def home():
