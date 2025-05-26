@@ -1,3 +1,4 @@
+# ... [everything before stays the same] ...
 import os
 import json
 import redis
@@ -9,7 +10,7 @@ from openai import OpenAI
 from waitress import serve
 from datetime import datetime
 import random
-
+import time  # added
 from backend.blog_engine import get_trending_topic, generate_blog_content
 
 load_dotenv()
@@ -95,18 +96,31 @@ def chat():
         redis_client.delete(f"{memory_key}:submitted")
         return jsonify({"reply": "Thanks for chatting with BlueJay. Your session is now closed."})
 
-    history = redis_client.get(memory_key)
-    thread_messages = json.loads(history) if history else []
+    history_blob = redis_client.get(memory_key)
+    try:
+        memory_data = json.loads(history_blob) if history_blob else None
+        if memory_data:
+            timestamp = memory_data.get("timestamp", 0)
+            if time.time() - timestamp > 1800:
+                redis_client.delete(memory_key)
+                memory_data = None
+    except Exception as e:
+        print("Session decode error:", e)
+        redis_client.delete(memory_key)
+        memory_data = None
+
+    thread_messages = memory_data.get("messages") if memory_data else []
 
     if not thread_messages:
         reply = "Hi, I’m BlueJay, your merchant AI expert. What’s your name?"
-        thread_messages.append({"role": "assistant", "content": reply})
-        redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+        payload = {"timestamp": time.time(), "messages": [{"role": "assistant", "content": reply}]}
+        redis_client.setex(memory_key, 1800, json.dumps(payload))
         return jsonify({"reply": reply})
     elif len(thread_messages) == 1 and thread_messages[0]["role"] == "assistant" and "welcome back" not in thread_messages[0]["content"].lower():
         reply = "Welcome back — ready to pick up where we left off?"
         thread_messages.append({"role": "assistant", "content": reply})
-        redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+        payload = {"timestamp": time.time(), "messages": thread_messages}
+        redis_client.setex(memory_key, 1800, json.dumps(payload))
         return jsonify({"reply": reply})
 
     thread_messages.append({"role": "user", "content": user_input})
@@ -132,7 +146,10 @@ def chat():
         )
         reply = response.choices[0].message.content
         thread_messages.append({"role": "assistant", "content": reply})
-        redis_client.setex(memory_key, 1800, json.dumps(thread_messages))
+        redis_client.setex(memory_key, 1800, json.dumps({
+            "timestamp": time.time(),
+            "messages": thread_messages
+        }))
 
         name, phone, email = extract_fields(thread_messages)
         if name and phone and email and not redis_client.get(f"{memory_key}:submitted"):
