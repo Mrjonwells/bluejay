@@ -21,7 +21,7 @@ def get_trending_topic():
     return {"rewritten_topic": random.choice(fallback)}
 
 def generate_blog_content(topic):
-    topic_text = topic["rewritten_topic"]
+    topic_text = topic if isinstance(topic, str) else topic.get("rewritten_topic", "AI Trends")
 
     try:
         with open("docs/blogs/index.json", "r") as f:
