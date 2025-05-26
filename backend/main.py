@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from waitress import serve
 from datetime import datetime
+import random
 
 from backend.blog_engine import get_trending_topic, generate_blog_content
 
@@ -151,12 +152,13 @@ def chat():
         return jsonify({"reply": "Something went wrong."}), 500
 
 @app.route("/seo/trending", methods=["GET"])
-def seo_trending():
+def trending():
     return jsonify(get_trending_topic())
 
 @app.route("/seo/inject", methods=["POST"])
-def seo_inject():
-    return jsonify(generate_blog_content(request.get_json()))
+def inject():
+    data = request.get_json()
+    return jsonify(generate_blog_content(data.get("topic", "AI Trends")))
 
 @app.route("/")
 def home():
