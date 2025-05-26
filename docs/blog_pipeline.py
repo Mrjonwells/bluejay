@@ -4,7 +4,7 @@ import json
 import re
 from datetime import datetime
 
-# Add root path to import backend modules
+# Add project root to path to import blog_engine
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from backend.blog_engine import get_trending_topic, generate_blog_content
@@ -109,18 +109,17 @@ def build_html(title, content, meta, filename):
 </html>"""
 
 def main():
-    topic = get_trending_topic()
-    result = generate_blog_content(topic)
-    title = topic
-    filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slugify(title)}.html"
-    html = build_html(title, result["content"], result["meta"], filename)
+    topic = get_trending_topic()["rewritten_topic"]
+    result = generate_blog_content({"topic": topic})
+    filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slugify(topic)}.html"
+    html = build_html(topic, result["content"], result["meta"], filename)
 
     with open(os.path.join(BLOG_DIR, filename), "w") as f:
         f.write(html)
 
     index = load_index()
     index.insert(0, {
-        "title": title,
+        "title": topic,
         "filename": filename,
         "description": result["meta"]["description"],
         "keywords": result["meta"]["keywords"],
