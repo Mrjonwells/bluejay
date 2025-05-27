@@ -12,8 +12,9 @@ import random
 import time
 
 from backend.blog_engine import get_trending_topic, generate_blog_content
-from backend.branch_router import detect_intent
-from backend.live_rates import parse_rate_request, estimate_savings, get_suggested_rate
+from backend.language_detection import is_non_english
+from backend.intent_detection import detect_intent
+from backend.rate_analysis import parse_rate_request, get_suggested_rate, estimate_savings
 from backend.prompt_optimizer import build_optimized_prompt
 from backend.lead_scoring import parse_lead_details, score_lead
 
@@ -28,6 +29,7 @@ config_path = os.path.join(base_dir, "config", "bluejay_config.json")
 template_path = os.path.join(base_dir, "config", "conversation_template.json")
 objection_log_path = os.path.join(base_dir, "backend", "logs", "objection_log.jsonl")
 
+# Load brain and template
 with open(config_path, "r") as f:
     brain = json.load(f)
 try:
@@ -66,17 +68,17 @@ def extract_fields(messages):
     return name, phone, email
 
 def send_to_hubspot(name, phone, email, notes, lead_score=None):
-    quality = None
+    properties = [
+        {"name": "firstname", "value": name},
+        {"name": "phone", "value": phone},
+        {"name": "email", "value": email},
+        {"name": "notes", "value": notes}
+    ]
     if lead_score is not None:
-        quality = "High" if lead_score >= 80 else "Medium" if lead_score >= 40 else "Low"
-
+        label = "High" if lead_score >= 70 else "Medium" if lead_score >= 40 else "Low"
+        properties.append({"name": "lead_quality", "value": label})
     payload = {
-        "fields": [
-            {"name": "firstname", "value": name},
-            {"name": "phone", "value": phone},
-            {"name": "email", "value": email},
-            {"name": "notes", "value": notes}
-        ],
+        "fields": properties,
         "context": {
             "pageUri": "https://askbluejay.ai",
             "pageName": "AskBlueJay.ai"
@@ -89,27 +91,18 @@ def send_to_hubspot(name, phone, email, notes, lead_score=None):
             }
         }
     }
-
-    if quality:
-        payload["fields"].append({"name": "lead_quality", "value": quality})
-
     requests.post(HUBSPOT_FORM_URL, json=payload)
 
-def is_non_english(text):
-    try:
-        result = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "Reply with only 'en' if English. Otherwise, reply with the ISO 639-1 code (e.g. 'es', 'fr')."},
-                {"role": "user", "content": text}
-            ],
-            temperature=0
-        )
-        lang = result.choices[0].message.content.strip().lower()
-        return lang if lang != "en" else None
-    except Exception as e:
-        print("Language detection error:", e)  # <-- critical debug line
-        return None
+def store_session(memory_key, thread_messages, name=None, lead_score=None):
+    TTL = 1800  # default
+    if lead_score is not None and lead_score >= 70:
+        TTL = 86400  # high-quality: 24hr
+    payload = {
+        "timestamp": time.time(),
+        "messages": thread_messages,
+        "name": name
+    }
+    redis_client.setex(memory_key, TTL, json.dumps(payload))
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -127,8 +120,7 @@ def chat():
     try:
         memory_data = json.loads(history_blob) if history_blob else None
         if memory_data:
-            timestamp = memory_data.get("timestamp", 0)
-            if time.time() - timestamp > 1800:
+            if time.time() - memory_data.get("timestamp", 0) > 1800:
                 redis_client.delete(memory_key)
                 memory_data = None
     except Exception as e:
@@ -140,12 +132,11 @@ def chat():
     known_name = memory_data.get("name") if memory_data else None
 
     current_hour = datetime.now().hour
-    if current_hour < 12:
-        time_greeting = "Good morning"
-    elif current_hour < 18:
-        time_greeting = "Good afternoon"
-    else:
-        time_greeting = "Good evening"
+    time_greeting = (
+        "Good morning" if current_hour < 12 else
+        "Good afternoon" if current_hour < 18 else
+        "Good evening"
+    )
 
     if not thread_messages:
         reply = (
@@ -153,25 +144,17 @@ def chat():
             "I help businesses cut fees, boost profits, and scale smarter.\n"
             "Let’s get started — what’s your name?"
         )
-        payload = {
-            "timestamp": time.time(),
-            "messages": [{"role": "assistant", "content": reply}],
-            "name": None
-        }
-        redis_client.setex(memory_key, 1800, json.dumps(payload))
+        store_session(memory_key, [{"role": "assistant", "content": reply}], name=None)
         return jsonify({"reply": reply})
 
     elif len(thread_messages) == 1 and thread_messages[0]["role"] == "assistant":
-        if known_name:
-            reply = f"{time_greeting}, {known_name}! Ready to pick up where we left off?"
-        else:
-            reply = f"{time_greeting}, welcome back — ready to pick up where we left off?"
+        reply = (
+            f"{time_greeting}, {known_name}! Ready to pick up where we left off?"
+            if known_name else
+            f"{time_greeting}, welcome back — ready to pick up where we left off?"
+        )
         thread_messages.append({"role": "assistant", "content": reply})
-        redis_client.setex(memory_key, 1800, json.dumps({
-            "timestamp": time.time(),
-            "messages": thread_messages,
-            "name": known_name
-        }))
+        store_session(memory_key, thread_messages, name=known_name)
         return jsonify({"reply": reply})
 
     thread_messages.append({"role": "user", "content": user_input})
@@ -181,10 +164,13 @@ def chat():
             with open(objection_log_path, "a") as f:
                 f.write(json.dumps({"thread_id": thread_id, "messages": thread_messages}) + "\n")
         except Exception as e:
-            print(f"Objection log error: {e}")
+            print("Objection log error:", e)
+
+    lang_code = is_non_english(user_input)
+    if lang_code:
+        thread_messages.append({"role": "assistant", "content": f"Puedo ayudarte en {lang_code.upper()} también. ¿Quieres continuar en ese idioma?"})
 
     intent = detect_intent(user_input)
-
     savings_message = None
     if intent in ["savings_calc", "pricing_info"]:
         rate_info = parse_rate_request(user_input)
@@ -201,17 +187,10 @@ def chat():
                     "Would you like a full breakdown?"
                 )
 
-    # Multilingual fallback
-    language_code = is_non_english(user_input)
-    if language_code:
-        thread_messages.append({"role": "assistant", "content": f"Puedo ayudarte en {language_code.upper()} también. ¿Quieres continuar en ese idioma?"})
-
-    # System prompt w/ objection optimization
     system_prompt = {
         "role": "system",
         "content": build_optimized_prompt(brain, template)
     }
-
     messages = [system_prompt] + thread_messages
     if savings_message:
         messages.append({"role": "assistant", "content": savings_message})
@@ -227,16 +206,10 @@ def chat():
 
         name, phone, email = extract_fields(thread_messages)
         stored_name = known_name or name
-
-        # Lead scoring
         lead_data = parse_lead_details(user_input)
         lead_score = score_lead(lead_data["volume"], lead_data["transactions"])
 
-        redis_client.setex(memory_key, 1800, json.dumps({
-            "timestamp": time.time(),
-            "messages": thread_messages,
-            "name": stored_name
-        }))
+        store_session(memory_key, thread_messages, name=stored_name, lead_score=lead_score)
 
         if name and phone and email and not redis_client.get(f"{memory_key}:submitted"):
             notes = "\n".join([f"{m['role']}: {m['content']}" for m in thread_messages])
