@@ -1,47 +1,64 @@
 import streamlit as st
-import redis
 import os
-import json
 from dotenv import load_dotenv
+import redis
+import pandas as pd
+import time
 
 load_dotenv()
 
-st.set_page_config(page_title="BlueJay Dashboard", layout="wide")
+# Secure login credentials
+USERNAME = os.getenv("DASHBOARD_USER", "admin")
+PASSWORD = os.getenv("DASHBOARD_PASS", "bluejay123")
 
-st.title("BlueJay Live Dashboard")
+# Simulated Redis connection
+redis_host = os.getenv("REDIS_HOST", "localhost")
+redis_port = int(os.getenv("REDIS_PORT", 6379))
+r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
 
-redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-try:
-    redis_client = redis.from_url(redis_url)
-    keys = redis_client.keys("thread:*")
-    st.success(f"Redis Connected — {len(keys)} active chat threads")
-except Exception as e:
-    st.error(f"Redis Connection Failed: {e}")
-    keys = []
+# --- AUTHENTICATION ---
+def login():
+    st.title("🔐 BlueJay Dashboard Login")
+    user = st.text_input("Username")
+    pw = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if user == USERNAME and pw == PASSWORD:
+            st.session_state.logged_in = True
+        else:
+            st.error("Invalid credentials")
 
-high = medium = low = 0
-leads = []
+# --- DASHBOARD CONTENT ---
+def dashboard():
+    st.set_page_config(page_title="BlueJay Admin Dashboard", layout="wide")
+    st.title("📊 BlueJay AI Admin Dashboard")
+    st.markdown("Real-time system stats, engagement metrics, and lead quality visualization.")
 
-for key in keys:
-    try:
-        data = redis_client.get(key)
-        if not data: continue
-        payload = json.loads(data)
-        messages = payload.get("messages", [])
-        for msg in messages:
-            if msg["role"] == "assistant" and "lead_quality" in msg["content"].lower():
-                if "high" in msg["content"].lower(): high += 1
-                elif "medium" in msg["content"].lower(): medium += 1
-                elif "low" in msg["content"].lower(): low += 1
-        leads.append((key, len(messages)))
-    except:
-        continue
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Active Sessions", r.dbsize())
+    with col2:
+        st.metric("System Uptime", f"{round(time.time() - float(r.get('boot_time') or time.time()))}s")
+    with col3:
+        st.metric("Known Leads", len(r.keys("lead:*")))
 
-col1, col2, col3 = st.columns(3)
-col1.metric("High Quality Leads", high)
-col2.metric("Medium Quality Leads", medium)
-col3.metric("Low Quality Leads", low)
+    st.subheader("💡 Engagement Summary")
+    lead_scores = []
+    for key in r.scan_iter("lead:*"):
+        data = r.hgetall(key)
+        if 'score' in data:
+            lead_scores.append(int(data['score']))
 
-st.subheader("Active Sessions")
-for thread_id, msg_count in leads:
-    st.write(f"{thread_id} — {msg_count} messages")
+    if lead_scores:
+        df = pd.DataFrame(lead_scores, columns=["Score"])
+        st.bar_chart(df)
+    else:
+        st.info("No lead scores found.")
+
+# --- ROUTER ---
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+if st.session_state.logged_in:
+    dashboard()
+else:
+    login()
