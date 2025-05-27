@@ -66,6 +66,10 @@ def extract_fields(messages):
     return name, phone, email
 
 def send_to_hubspot(name, phone, email, notes, lead_score=None):
+    quality = None
+    if lead_score is not None:
+        quality = "High" if lead_score >= 80 else "Medium" if lead_score >= 40 else "Low"
+
     payload = {
         "fields": [
             {"name": "firstname", "value": name},
@@ -85,8 +89,9 @@ def send_to_hubspot(name, phone, email, notes, lead_score=None):
             }
         }
     }
-    if lead_score is not None:
-        payload["fields"].append({"name": "lead_score", "value": str(lead_score)})
+
+    if quality:
+        payload["fields"].append({"name": "lead_quality", "value": quality})
 
     requests.post(HUBSPOT_FORM_URL, json=payload)
 
