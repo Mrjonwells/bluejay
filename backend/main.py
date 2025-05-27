@@ -15,6 +15,7 @@ from backend.blog_engine import get_trending_topic, generate_blog_content
 from backend.branch_router import detect_intent
 from backend.live_rates import parse_rate_request, estimate_savings, get_suggested_rate
 from backend.prompt_optimizer import build_optimized_prompt
+from backend.lead_scoring import parse_lead_details, score_lead
 
 load_dotenv()
 
@@ -27,7 +28,6 @@ config_path = os.path.join(base_dir, "config", "bluejay_config.json")
 template_path = os.path.join(base_dir, "config", "conversation_template.json")
 objection_log_path = os.path.join(base_dir, "backend", "logs", "objection_log.jsonl")
 
-# Load brain and template
 with open(config_path, "r") as f:
     brain = json.load(f)
 try:
@@ -65,7 +65,7 @@ def extract_fields(messages):
             email = content
     return name, phone, email
 
-def send_to_hubspot(name, phone, email, notes):
+def send_to_hubspot(name, phone, email, notes, lead_score=None):
     payload = {
         "fields": [
             {"name": "firstname", "value": name},
@@ -85,7 +85,25 @@ def send_to_hubspot(name, phone, email, notes):
             }
         }
     }
+    if lead_score is not None:
+        payload["fields"].append({"name": "lead_score", "value": str(lead_score)})
+
     requests.post(HUBSPOT_FORM_URL, json=payload)
+
+def is_non_english(text):
+    try:
+        result = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Reply with only 'en' if English. Otherwise, reply with the ISO 639-1 language code (e.g. 'es' for Spanish, 'fr' for French)."},
+                {"role": "user", "content": text}
+            ],
+            temperature=0
+        )
+        lang = result.choices[0].message.content.strip().lower()
+        return lang if lang != "en" else None
+    except:
+        return None
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -152,7 +170,6 @@ def chat():
 
     thread_messages.append({"role": "user", "content": user_input})
 
-    # 1. Objection Logging
     if any(keyword in user_input.lower() for keyword in OBJECTION_KEYWORDS):
         try:
             with open(objection_log_path, "a") as f:
@@ -160,12 +177,10 @@ def chat():
         except Exception as e:
             print(f"Objection log error: {e}")
 
-    # 2. Intent Detection
     intent = detect_intent(user_input)
 
-    # 3. Rate Savings Calculation (fallback prompt injection)
     savings_message = None
-    if intent == "savings_calc" or intent == "pricing_info":
+    if intent in ["savings_calc", "pricing_info"]:
         rate_info = parse_rate_request(user_input)
         if rate_info["rate"]:
             savings = estimate_savings(rate_info["rate"])
@@ -180,7 +195,12 @@ def chat():
                     "Would you like a full breakdown?"
                 )
 
-    # 4. Dynamic System Prompt
+    # Multilingual fallback
+    language_code = is_non_english(user_input)
+    if language_code:
+        thread_messages.append({"role": "assistant", "content": f"Puedo ayudarte en {language_code.upper()} también. ¿Quieres continuar en ese idioma?"})
+
+    # System prompt w/ objection optimization
     system_prompt = {
         "role": "system",
         "content": build_optimized_prompt(brain, template)
@@ -202,6 +222,10 @@ def chat():
         name, phone, email = extract_fields(thread_messages)
         stored_name = known_name or name
 
+        # Lead scoring
+        lead_data = parse_lead_details(user_input)
+        lead_score = score_lead(lead_data["volume"], lead_data["transactions"])
+
         redis_client.setex(memory_key, 1800, json.dumps({
             "timestamp": time.time(),
             "messages": thread_messages,
@@ -210,7 +234,7 @@ def chat():
 
         if name and phone and email and not redis_client.get(f"{memory_key}:submitted"):
             notes = "\n".join([f"{m['role']}: {m['content']}" for m in thread_messages])
-            send_to_hubspot(name, phone, email, notes)
+            send_to_hubspot(name, phone, email, notes, lead_score=lead_score)
             redis_client.set(f"{memory_key}:submitted", "yes", ex=3600)
 
         return jsonify({"reply": reply})
