@@ -12,6 +12,9 @@ import random
 import time
 
 from backend.blog_engine import get_trending_topic, generate_blog_content
+from backend.branch_router import detect_intent
+from backend.live_rates import parse_rate_request, estimate_savings, get_suggested_rate
+from backend.prompt_optimizer import build_optimized_prompt
 
 load_dotenv()
 
@@ -91,13 +94,11 @@ def chat():
     thread_id = data.get("thread_id", "default")
     memory_key = redis_key(thread_id)
 
-    # Session termination
     if user_input.lower() == "end chat":
         redis_client.delete(memory_key)
         redis_client.delete(f"{memory_key}:submitted")
         return jsonify({"reply": "Thanks for chatting with BlueJay. Your session is now closed."})
 
-    # Try to load session
     history_blob = redis_client.get(memory_key)
     try:
         memory_data = json.loads(history_blob) if history_blob else None
@@ -114,7 +115,6 @@ def chat():
     thread_messages = memory_data.get("messages") if memory_data else []
     known_name = memory_data.get("name") if memory_data else None
 
-    # Greeting logic
     current_hour = datetime.now().hour
     if current_hour < 12:
         time_greeting = "Good morning"
@@ -150,10 +150,9 @@ def chat():
         }))
         return jsonify({"reply": reply})
 
-    # Chat continues
     thread_messages.append({"role": "user", "content": user_input})
 
-    # Detect objections
+    # 1. Objection Logging
     if any(keyword in user_input.lower() for keyword in OBJECTION_KEYWORDS):
         try:
             with open(objection_log_path, "a") as f:
@@ -161,12 +160,35 @@ def chat():
         except Exception as e:
             print(f"Objection log error: {e}")
 
-    # Build messages for OpenAI
+    # 2. Intent Detection
+    intent = detect_intent(user_input)
+
+    # 3. Rate Savings Calculation (fallback prompt injection)
+    savings_message = None
+    if intent == "savings_calc" or intent == "pricing_info":
+        rate_info = parse_rate_request(user_input)
+        if rate_info["rate"]:
+            savings = estimate_savings(rate_info["rate"])
+            savings_message = f"If you're paying {rate_info['rate']}%, we could save you about ${savings}/mo on $10k volume."
+        elif rate_info["platform"]:
+            default_rate = get_suggested_rate(rate_info["platform"])
+            if default_rate:
+                savings = estimate_savings(default_rate)
+                savings_message = (
+                    f"Most {rate_info['platform'].capitalize()} merchants pay around {default_rate}%.\n"
+                    f"That means you could save about ${savings}/mo with BlueJay on $10k volume.\n"
+                    "Would you like a full breakdown?"
+                )
+
+    # 4. Dynamic System Prompt
     system_prompt = {
         "role": "system",
-        "content": f"You are BlueJay, a persuasive sales assistant. Use this brain:\n{json.dumps(brain)}\nAlso use this template:\n{json.dumps(template)}"
+        "content": build_optimized_prompt(brain, template)
     }
+
     messages = [system_prompt] + thread_messages
+    if savings_message:
+        messages.append({"role": "assistant", "content": savings_message})
 
     try:
         response = client.chat.completions.create(
@@ -177,7 +199,6 @@ def chat():
         reply = response.choices[0].message.content
         thread_messages.append({"role": "assistant", "content": reply})
 
-        # Extract and store contact info
         name, phone, email = extract_fields(thread_messages)
         stored_name = known_name or name
 
@@ -193,7 +214,6 @@ def chat():
             redis_client.set(f"{memory_key}:submitted", "yes", ex=3600)
 
         return jsonify({"reply": reply})
-
     except Exception as e:
         print("Chat error:", e)
         return jsonify({"reply": "Something went wrong."}), 500
