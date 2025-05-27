@@ -100,14 +100,15 @@ def is_non_english(text):
         result = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "Reply with only 'en' if English. Otherwise, reply with the ISO 639-1 language code (e.g. 'es' for Spanish, 'fr' for French)."},
+                {"role": "system", "content": "Reply with only 'en' if English. Otherwise, reply with the ISO 639-1 code (e.g. 'es', 'fr')."},
                 {"role": "user", "content": text}
             ],
             temperature=0
         )
         lang = result.choices[0].message.content.strip().lower()
         return lang if lang != "en" else None
-    except:
+    except Exception as e:
+        print("Language detection error:", e)  # <-- critical debug line
         return None
 
 @app.route("/chat", methods=["POST"])
