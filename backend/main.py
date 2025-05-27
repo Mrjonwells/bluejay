@@ -1,4 +1,3 @@
-# ... [everything before stays the same] ...
 import os
 import json
 import redis
@@ -10,7 +9,8 @@ from openai import OpenAI
 from waitress import serve
 from datetime import datetime
 import random
-import time  # added
+import time
+
 from backend.blog_engine import get_trending_topic, generate_blog_content
 
 load_dotenv()
@@ -87,15 +87,17 @@ def send_to_hubspot(name, phone, email, notes):
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_input = data.get("message", "")
+    user_input = data.get("message", "").strip()
     thread_id = data.get("thread_id", "default")
     memory_key = redis_key(thread_id)
 
-    if user_input.strip().lower() == "end chat":
+    # Session termination
+    if user_input.lower() == "end chat":
         redis_client.delete(memory_key)
         redis_client.delete(f"{memory_key}:submitted")
         return jsonify({"reply": "Thanks for chatting with BlueJay. Your session is now closed."})
 
+    # Try to load session
     history_blob = redis_client.get(memory_key)
     try:
         memory_data = json.loads(history_blob) if history_blob else None
@@ -110,21 +112,48 @@ def chat():
         memory_data = None
 
     thread_messages = memory_data.get("messages") if memory_data else []
+    known_name = memory_data.get("name") if memory_data else None
+
+    # Greeting logic
+    current_hour = datetime.now().hour
+    if current_hour < 12:
+        time_greeting = "Good morning"
+    elif current_hour < 18:
+        time_greeting = "Good afternoon"
+    else:
+        time_greeting = "Good evening"
 
     if not thread_messages:
-        reply = "Hi, I’m BlueJay, your merchant AI expert. What’s your name?"
-        payload = {"timestamp": time.time(), "messages": [{"role": "assistant", "content": reply}]}
-        redis_client.setex(memory_key, 1800, json.dumps(payload))
-        return jsonify({"reply": reply})
-    elif len(thread_messages) == 1 and thread_messages[0]["role"] == "assistant" and "welcome back" not in thread_messages[0]["content"].lower():
-        reply = "Welcome back — ready to pick up where we left off?"
-        thread_messages.append({"role": "assistant", "content": reply})
-        payload = {"timestamp": time.time(), "messages": thread_messages}
+        reply = (
+            f"{time_greeting}! I’m BlueJay — your AI-powered merchant expert.\n"
+            "I help businesses cut fees, boost profits, and scale smarter.\n"
+            "Let’s get started — what’s your name?"
+        )
+        payload = {
+            "timestamp": time.time(),
+            "messages": [{"role": "assistant", "content": reply}],
+            "name": None
+        }
         redis_client.setex(memory_key, 1800, json.dumps(payload))
         return jsonify({"reply": reply})
 
+    elif len(thread_messages) == 1 and thread_messages[0]["role"] == "assistant":
+        if known_name:
+            reply = f"{time_greeting}, {known_name}! Ready to pick up where we left off?"
+        else:
+            reply = f"{time_greeting}, welcome back — ready to pick up where we left off?"
+        thread_messages.append({"role": "assistant", "content": reply})
+        redis_client.setex(memory_key, 1800, json.dumps({
+            "timestamp": time.time(),
+            "messages": thread_messages,
+            "name": known_name
+        }))
+        return jsonify({"reply": reply})
+
+    # Chat continues
     thread_messages.append({"role": "user", "content": user_input})
 
+    # Detect objections
     if any(keyword in user_input.lower() for keyword in OBJECTION_KEYWORDS):
         try:
             with open(objection_log_path, "a") as f:
@@ -132,6 +161,7 @@ def chat():
         except Exception as e:
             print(f"Objection log error: {e}")
 
+    # Build messages for OpenAI
     system_prompt = {
         "role": "system",
         "content": f"You are BlueJay, a persuasive sales assistant. Use this brain:\n{json.dumps(brain)}\nAlso use this template:\n{json.dumps(template)}"
@@ -146,18 +176,24 @@ def chat():
         )
         reply = response.choices[0].message.content
         thread_messages.append({"role": "assistant", "content": reply})
+
+        # Extract and store contact info
+        name, phone, email = extract_fields(thread_messages)
+        stored_name = known_name or name
+
         redis_client.setex(memory_key, 1800, json.dumps({
             "timestamp": time.time(),
-            "messages": thread_messages
+            "messages": thread_messages,
+            "name": stored_name
         }))
 
-        name, phone, email = extract_fields(thread_messages)
         if name and phone and email and not redis_client.get(f"{memory_key}:submitted"):
             notes = "\n".join([f"{m['role']}: {m['content']}" for m in thread_messages])
             send_to_hubspot(name, phone, email, notes)
             redis_client.set(f"{memory_key}:submitted", "yes", ex=3600)
 
         return jsonify({"reply": reply})
+
     except Exception as e:
         print("Chat error:", e)
         return jsonify({"reply": "Something went wrong."}), 500
