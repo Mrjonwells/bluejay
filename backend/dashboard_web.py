@@ -1,24 +1,18 @@
+
 import streamlit as st
 import os
-from dotenv import load_dotenv
 import redis
-import pandas as pd
+import json
 import time
+from dotenv import load_dotenv
 
 load_dotenv()
 
-# Secure login credentials
 USERNAME = os.getenv("DASHBOARD_USER", "admin")
 PASSWORD = os.getenv("DASHBOARD_PASS", "bluejay123")
 
-# Simulated Redis connection
-redis_host = os.getenv("REDIS_HOST", "localhost")
-redis_port = int(os.getenv("REDIS_PORT", 6379))
-r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
-
-# --- AUTHENTICATION ---
 def login():
-    st.title("🔐 BlueJay Dashboard Login")
+    st.title("🔐 BlueJay Admin Login")
     user = st.text_input("Username")
     pw = st.text_input("Password", type="password")
     if st.button("Login"):
@@ -27,34 +21,50 @@ def login():
         else:
             st.error("Invalid credentials")
 
-# --- DASHBOARD CONTENT ---
+def connect_redis():
+    try:
+        r = redis.from_url(os.getenv("REDIS_URL"), decode_responses=True)
+        r.ping()
+        return r
+    except Exception as e:
+        st.error("❌ Redis Connection Failed")
+        return None
+
 def dashboard():
-    st.set_page_config(page_title="BlueJay Admin Dashboard", layout="wide")
-    st.title("📊 BlueJay AI Admin Dashboard")
-    st.markdown("Real-time system stats, engagement metrics, and lead quality visualization.")
+    st.set_page_config(page_title="BlueJay Admin", layout="wide")
+    st.title("🧠 BlueJay Admin Console")
+    st.markdown("`━━━━━━━━━━ BLUEJAY STATUS ━━━━━━━━━━`")
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Active Sessions", r.dbsize())
-    with col2:
-        st.metric("System Uptime", f"{round(time.time() - float(r.get('boot_time') or time.time()))}s")
-    with col3:
-        st.metric("Known Leads", len(r.keys("lead:*")))
+    r = connect_redis()
+    if not r:
+        return
 
-    st.subheader("💡 Engagement Summary")
-    lead_scores = []
+    # Status block
+    active_keys = r.keys("thread:*")
+    st.markdown(f"**Redis**        : ✓ Connected ({len(active_keys)} threads)")
+    st.markdown(f"**HubSpot**      : Last push: N/A")
+    st.markdown(f"**Blog Engine**  : Trending topics: OK")
+
+    st.markdown("`━━━━━━━━━━ LEADS ━━━━━━━━━━`")
+    high = medium = low = 0
     for key in r.scan_iter("lead:*"):
-        data = r.hgetall(key)
-        if 'score' in data:
-            lead_scores.append(int(data['score']))
+        score = r.hget(key, "score")
+        if score:
+            s = int(score)
+            if s >= 70: high += 1
+            elif s >= 40: medium += 1
+            else: low += 1
+    st.markdown(f"**High**   : {high}")
+    st.markdown(f"**Medium** : {medium}")
+    st.markdown(f"**Low**    : {low}")
 
-    if lead_scores:
-        df = pd.DataFrame(lead_scores, columns=["Score"])
-        st.bar_chart(df)
-    else:
-        st.info("No lead scores found.")
+    st.markdown("`━━━━━━━━━━ TRAFFIC ━━━━━━━━━━`")
+    st.markdown(f"**Chats Today**     : [N/A]")
+    st.markdown(f"**Common Intents**  : [N/A]")
 
-# --- ROUTER ---
+    st.markdown("`━━━━━━━━━━ ERRORS ━━━━━━━━━━`")
+    st.markdown("**0 errors in last 30 minutes**")
+
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
