@@ -34,8 +34,6 @@ def get_trending_topic():
         used = []
 
     unused = [t for t in topics if t not in used]
-
-    # Reset if all topics used
     if not unused:
         used = []
         unused = topics
@@ -54,7 +52,6 @@ def get_trending_topic():
 def generate_blog_content(topic):
     topic_text = topic if isinstance(topic, str) else topic.get("rewritten_topic", "AI Trends")
 
-    # Load recent blogs for internal links
     try:
         with open("docs/blogs/index.json", "r") as f:
             blog_index = json.load(f)
@@ -77,7 +74,7 @@ def generate_blog_content(topic):
     )
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.9,
         max_tokens=1024
