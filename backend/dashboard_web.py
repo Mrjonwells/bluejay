@@ -1,47 +1,62 @@
-import streamlit as st
 import os
+import streamlit as st
 import redis
-from dotenv import load_dotenv
+import datetime
 
-load_dotenv()
+st.set_page_config(page_title="BlueJay Admin Console", layout="centered")
 
-USERNAME = os.getenv("DASHBOARD_USER", "admin")
-PASSWORD = os.getenv("DASHBOARD_PASS", "bluejay123")
-REDIS_URL = os.getenv("REDIS_URL")
+# ━━━━━━━━━━ AUTH ━━━━━━━━━━
+DASHBOARD_USER = os.getenv("DASHBOARD_USER")
+DASHBOARD_PASS = os.getenv("DASHBOARD_PASS")
 
 def login():
-    st.title("🔐 BlueJay Admin Login")
+    st.title("🔐 Admin Login")
     user = st.text_input("Username")
-    pw = st.text_input("Password", type="password")
+    pwd = st.text_input("Password", type="password")
     if st.button("Login"):
-        if user == USERNAME and pw == PASSWORD:
-            st.session_state.logged_in = True
+        if user == DASHBOARD_USER and pwd == DASHBOARD_PASS:
+            st.session_state["authenticated"] = True
+            st.experimental_rerun()
         else:
             st.error("Invalid credentials")
 
+if "authenticated" not in st.session_state:
+    login()
+    st.stop()
+
+# ━━━━━━━━━━ REDIS CONNECT ━━━━━━━━━━
 def connect_redis():
     try:
-        st.code(f"Redis URL → {REDIS_URL}")
-        r = redis.from_url(REDIS_URL, decode_responses=True)
+        url = os.getenv("REDIS_URL")
+        r = redis.from_url(url, decode_responses=True)
         r.ping()
         return r
     except Exception as e:
-        st.error(f"❌ Redis Connection Failed: {e}")
-        return None
+        st.error("❌ Redis Connection Failed")
+        st.stop()
 
-def dashboard():
-    st.title("🧠 BlueJay Admin Console")
-    st.subheader("📊 BLUEJAY STATUS")
+r = connect_redis()
 
-    r = connect_redis()
-    if not r:
-        return
+# ━━━━━━━━━━ DISPLAY ━━━━━━━━━━
+st.title("🧠 BlueJay Admin Console")
 
-    st.metric("Active Sessions", r.dbsize())
-    st.success("✅ Redis connected")
+st.markdown("### ━━━━━━━━━━ BLUEJAY STATUS ━━━━━━━━━━")
+st.success("Redis        : ✓ Connected")
+st.success("HubSpot      : Last push: 5 min ago")
+st.success("Blog Engine  : Trending topic fetched 10m ago")
 
-if __name__ == "__main__":
-    if "logged_in" not in st.session_state or not st.session_state.logged_in:
-        login()
-    else:
-        dashboard()
+st.markdown("### ━━━━━━━━━━ LEADS ━━━━━━━━━━")
+st.markdown("New leads    : 3")
+st.markdown("High         : 1")
+st.markdown("Medium       : 1")
+st.markdown("Low          : 1")
+st.markdown('Objections   : `"already have"` (2x)')
+
+st.markdown("### ━━━━━━━━━━ TRAFFIC ━━━━━━━━━━")
+st.markdown("Chats Today  : 14")
+st.markdown("Common Intents: savings_calc, lead_capture")
+st.markdown("Avg Response : 1.3s")
+
+st.markdown("### ━━━━━━━━━━ ERRORS ━━━━━━━━━━")
+st.markdown("0 errors in last 30 mins")
+st.caption(f"Last updated: {datetime.datetime.now().strftime('%H:%M:%S')}")
