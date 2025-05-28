@@ -11,25 +11,50 @@ def get_trending_topic():
         with open("backend/seo/external_topics.json", "r") as f:
             data = json.load(f)
             topics = data.get("topics", [])
-            if topics:
-                return {"rewritten_topic": random.choice(topics)}
     except Exception as e:
-        print("Trending fallback:", e)
+        print("Trending topic load error:", e)
+        topics = []
 
-    fallback = [
-        "Smart automation in eCommerce",
-        "Top fintech trends to watch",
-        "How AI is reshaping marketing",
-        "The role of AI in customer service",
-        "AI-powered tools for small businesses",
-        "Generative AI in content creation"
-    ]
-    return {"rewritten_topic": random.choice(fallback)}
+    if not topics:
+        fallback = [
+            "Smart automation in eCommerce",
+            "Top fintech trends to watch",
+            "How AI is reshaping marketing",
+            "The role of AI in customer service",
+            "AI-powered tools for small businesses",
+            "Generative AI in content creation"
+        ]
+        topics = fallback
+
+    used_path = "backend/seo/topic_history.json"
+    try:
+        with open(used_path, "r") as f:
+            used = json.load(f)
+    except:
+        used = []
+
+    unused = [t for t in topics if t not in used]
+
+    # Reset if all topics used
+    if not unused:
+        used = []
+        unused = topics
+
+    picked = random.choice(unused)
+    used.append(picked)
+
+    try:
+        with open(used_path, "w") as f:
+            json.dump(used, f)
+    except Exception as e:
+        print("History write error:", e)
+
+    return {"rewritten_topic": picked}
 
 def generate_blog_content(topic):
     topic_text = topic if isinstance(topic, str) else topic.get("rewritten_topic", "AI Trends")
 
-    # Load up to 3 recent blogs for internal linking
+    # Load recent blogs for internal links
     try:
         with open("docs/blogs/index.json", "r") as f:
             blog_index = json.load(f)
@@ -38,22 +63,19 @@ def generate_blog_content(topic):
         print("Index read error:", e)
         related_links = []
 
-    # Create internal link HTML
     internal_links_html = ""
     for post in related_links:
         internal_links_html += f'<li><a href="{post["url"]}">{post["title"]}</a></li>\n'
 
-    # Prompt for generation
     prompt = (
         f"Write a 300-500 word SEO blog post about '{topic_text}' targeting small business owners. "
-        f"Include an informative tone, use structured paragraphs, and provide useful insights. "
-        f"Add a short list if relevant, and end with a call to action. "
-        f"Use natural language. Date: {datetime.utcnow().strftime('%B %d, %Y')}. "
-        f"Use these internal blog topics as context:\n"
-        + "\n".join([p["title"] for p in related_links])
+        f"Include an informative tone, structured paragraphs, and practical insights. "
+        f"Add a short list if relevant, and end with a call to action. Use natural language. "
+        f"Date: {datetime.utcnow().strftime('%B %d, %Y')}. "
+        f"Use these prior blog titles as context: " +
+        ", ".join([p["title"] for p in related_links])
     )
 
-    # Call OpenAI completion
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
