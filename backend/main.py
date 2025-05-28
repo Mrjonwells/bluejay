@@ -11,12 +11,12 @@ from datetime import datetime
 import random
 import time
 
-from backend.blog_engine import get_trending_topic, generate_blog_content
-from backend.language_detection import is_non_english
-from backend.intent_detection import detect_intent
-from backend.rate_analysis import parse_rate_request, get_suggested_rate, estimate_savings
-from backend.prompt_optimizer import build_optimized_prompt
-from backend.lead_scoring import parse_lead_details, score_lead
+from blog_engine import get_trending_topic, generate_blog_content
+from language_detection import is_non_english
+from intent_detection import detect_intent
+from rate_analysis import parse_rate_request, get_suggested_rate, estimate_savings
+from prompt_optimizer import build_optimized_prompt
+from lead_scoring import parse_lead_details, score_lead
 
 load_dotenv()
 
