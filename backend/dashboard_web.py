@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 st.set_page_config(page_title="BlueJay Admin Console", layout="wide")
-
 st.markdown("<h1 style='color:#f63366;'>🧠 BlueJay Admin Console</h1>", unsafe_allow_html=True)
 st.markdown("---")
 
@@ -14,7 +13,7 @@ redis_status = "Unknown"
 redis_url = os.getenv("REDIS_URL")
 
 try:
-    redis_client = redis.Redis.from_url(redis_url, socket_connect_timeout=5, ssl=True)
+    redis_client = redis.from_url(redis_url, socket_connect_timeout=5)
     redis_client.ping()
     redis_status = "Connected"
 except Exception as e:
