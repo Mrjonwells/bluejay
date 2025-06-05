@@ -109,6 +109,10 @@ def build_html(title, content, meta, filename):
 </html>"""
 
 def main():
+    # 🔍 DEBUG: Print partial API key to confirm visibility
+    key = os.getenv("OPENAI_API_KEY")
+    print("DEBUG - OPENAI_API_KEY:", key[:6] + "..." + key[-4:] if key else "NOT SET")
+
     topic_obj = get_trending_topic()
     topic = topic_obj["rewritten_topic"]
     result = generate_blog_content({"topic": topic})
