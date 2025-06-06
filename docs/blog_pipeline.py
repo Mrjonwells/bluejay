@@ -109,16 +109,21 @@ def build_html(title, content, meta, filename):
 </html>"""
 
 def main():
-    # 🔍 DEBUG: Print partial API key to confirm visibility
     key = os.getenv("OPENAI_API_KEY")
     print("DEBUG - OPENAI_API_KEY:", key[:6] + "..." + key[-4:] if key else "NOT SET")
 
     topic_obj = get_trending_topic()
     topic = topic_obj["rewritten_topic"]
-    result = generate_blog_content({"topic": topic})
+    result = generate_blog_content({"topic": topic})  # now returns raw content (str)
     title = topic
     filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slugify(title)}.html"
-    html = build_html(title, result["content"], result["meta"], filename)
+
+    meta = {
+        "description": f"Explore the latest insights on {title} from AskBlueJay.ai.",
+        "keywords": [word for word in title.lower().split() if len(word) > 3][:5]
+    }
+
+    html = build_html(title, result, meta, filename)
 
     with open(os.path.join(BLOG_DIR, filename), "w") as f:
         f.write(html)
@@ -127,8 +132,8 @@ def main():
     index.insert(0, {
         "title": title,
         "filename": filename,
-        "description": result["meta"]["description"],
-        "keywords": result["meta"]["keywords"],
+        "description": meta["description"],
+        "keywords": meta["keywords"],
         "date": datetime.utcnow().isoformat()
     })
     save_index(index)
