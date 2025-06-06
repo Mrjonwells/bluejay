@@ -56,7 +56,7 @@ def get_trending_topic():
 def generate_blog_content(payload):
     topic = payload.get("topic", "Latest Tech Trends")
     modifier = random.choice(MODIFIERS)
-    model = "gpt-3.5-turbo"  # ✅ Use high-limit, stable model for blog generation
+    model = "gpt-3.5-turbo-0125"  # ✅ Quota-safe model with high limits
 
     system_prompt = (
         "You are a professional blog writer generating original, SEO-optimized long-form posts (300–500+ words). "
