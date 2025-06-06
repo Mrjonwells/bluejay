@@ -3,19 +3,20 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #0d0d0d;
   color: #eaeaea;
+  overflow-x: hidden;
 }
 
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 6px 14px;
   flex-wrap: wrap;
 }
 
 .centered-logo {
-  height: 400px;
-  margin: 3px auto 0 auto;
+  height: 260px;
+  margin: 10px auto 0 auto;
   display: block;
   filter: drop-shadow(0 0 4px rgba(0, 170, 255, 0.6));
 }
@@ -28,8 +29,8 @@ header {
   background: none;
   border: none;
   cursor: pointer;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   padding: 0;
 }
 
@@ -41,7 +42,7 @@ header {
 .dropdown-content {
   display: none;
   position: absolute;
-  top: 40px;
+  top: 36px;
   right: 0;
   background-color: #0d0d0d;
   border: 1px solid #00aaff;
@@ -53,7 +54,7 @@ header {
   color: #00aaff;
   text-decoration: none;
   display: block;
-  margin: 8px 0;
+  margin: 6px 0;
   font-weight: bold;
 }
 
@@ -63,19 +64,19 @@ header {
 
 .hero {
   text-align: center;
-  margin-top: -10px;
-  padding: 0 20px 20px;
-  animation: fadeIn 1.2s ease-in-out;
+  margin-top: -4px;
+  padding: 0 10px 10px;
+  animation: fadeIn 1s ease-in-out;
 }
 
 .hero h1 {
-  font-size: 2.2em;
+  font-size: 1.9em;
   color: #00aaff;
   margin-bottom: 6px;
 }
 
 .hero p {
-  font-size: 1em;
+  font-size: 0.95em;
   color: #cceeff;
   margin-top: 0;
 }
@@ -89,16 +90,16 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 10px;
 }
 
 .chatlog {
   width: 100%;
-  max-width: 600px;
-  height: 300px;
+  max-width: 500px;
+  height: 240px;
   overflow-y: auto;
   background: #1e1e1e;
-  padding: 15px;
+  padding: 12px;
   border-radius: 10px;
   margin-bottom: 10px;
 }
@@ -107,11 +108,11 @@ header {
   background-color: #1e1e1e;
   color: #00aaff;
   padding: 10px 14px;
-  margin: 8px;
+  margin: 6px;
   border-radius: 20px 20px 20px 4px;
   max-width: 75%;
   align-self: flex-start;
-  box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
   display: block;
 }
 
@@ -119,7 +120,7 @@ header {
   background: transparent;
   color: #ffffff;
   padding: 10px 14px;
-  margin: 8px;
+  margin: 6px;
   border: 2px solid #ffffff33;
   border-radius: 20px 20px 4px 20px;
   max-width: 75%;
@@ -135,7 +136,7 @@ header {
 .input-row {
   display: flex;
   width: 100%;
-  max-width: 600px;
+  max-width: 500px;
 }
 
 #user-input {
@@ -163,15 +164,15 @@ header {
   align-items: flex-start;
   flex-wrap: nowrap;
   overflow-x: auto;
-  gap: 20px;
-  padding: 20px;
+  gap: 16px;
+  padding: 10px 10px 30px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
 
 .feature-card {
-  flex: 0 0 300px;
-  max-width: 300px;
+  flex: 0 0 240px;
+  max-width: 240px;
   background: transparent;
   padding: 0;
   border-radius: 0;
@@ -198,10 +199,10 @@ header {
 
 .feature-card img {
   width: 100%;
-  max-width: 260px;
+  max-width: 220px;
   height: auto;
   display: block;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 8px auto;
   object-fit: contain;
   filter: none;
 }
@@ -209,13 +210,13 @@ header {
 footer {
   text-align: center;
   font-size: 12px;
-  padding: 20px;
+  padding: 12px;
   color: #888;
 }
 
 @media (max-width: 768px) {
   .centered-logo {
-    height: 300px;
+    height: 200px;
   }
 
   .dropbtn {
@@ -223,11 +224,15 @@ footer {
   }
 
   .menu-icon {
-    width: 28px;
+    width: 26px;
   }
 
   .feature-card {
     flex: 0 0 80%;
     max-width: 80%;
+  }
+
+  .chatlog {
+    height: 200px;
   }
 }
