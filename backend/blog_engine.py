@@ -94,6 +94,7 @@ def generate_blog_content(payload):
             temperature=1.1
         )
 
+    print("[MODEL USED]:", fallback_model)
     return {
         "content": response.choices[0].message.content.strip(),
         "meta": {
