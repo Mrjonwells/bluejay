@@ -2,6 +2,7 @@ import os
 import json
 import random
 from openai import OpenAI
+from datetime import datetime, timedelta
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -21,31 +22,40 @@ USED_INDEX = "docs/blogs/index.json"
 TOPIC_FILE = "backend/seo/external_topics.json"
 
 def get_trending_topic():
-    # Load published blog titles
+    # Load all available topics
+    all_topics = []
+    if os.path.exists(TOPIC_FILE):
+        with open(TOPIC_FILE, "r") as f:
+            try:
+                all_topics = json.load(f)
+            except Exception:
+                pass
+
+    if not all_topics:
+        return {"rewritten_topic": "How Smart Merchants Are Scaling with AI"}
+
+    # Load used topics + check timestamp for optional reset
     used_titles = set()
+    cutoff = datetime.utcnow() - timedelta(days=365)
     if os.path.exists(USED_INDEX):
         with open(USED_INDEX, "r") as f:
             try:
                 used = json.load(f)
-                used_titles = {entry["title"] for entry in used if "title" in entry}
+                used_titles = {
+                    entry["title"]
+                    for entry in used
+                    if "title" in entry and "date" in entry and datetime.fromisoformat(entry["date"]) > cutoff
+                }
             except Exception:
                 pass
 
-    # Load all candidate topics
-    if os.path.exists(TOPIC_FILE):
-        with open(TOPIC_FILE, "r") as f:
-            try:
-                topics = json.load(f)
-                fresh_topics = [t for t in topics if t["rewritten_topic"] not in used_titles]
-                if fresh_topics:
-                    return random.choice(fresh_topics)
-                else:
-                    return random.choice(topics)  # fallback if all used
-            except Exception:
-                pass
+    # Filter fresh topics
+    fresh_topics = [t for t in all_topics if t["rewritten_topic"] not in used_titles]
+    if fresh_topics:
+        return random.choice(fresh_topics)
 
-    # Emergency fallback
-    return {"rewritten_topic": "How Smart Merchants Are Scaling with AI"}
+    # Reset allowed — reuse full topic list
+    return random.choice(all_topics)
 
 def generate_blog_content(payload):
     topic = payload.get("topic", "Latest Tech Trends")
