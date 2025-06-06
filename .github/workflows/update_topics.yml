@@ -1,41 +1,47 @@
-name: Update External Topics
+name: Update External Blog Topics
 
 on:
   schedule:
-    - cron: "30 12 * * *"  # 5:30am PST daily
+    - cron: "0 2 * * 1,4"  # Twice weekly: Mondays & Thursdays 2am UTC
   workflow_dispatch:
 
 jobs:
-  update-topics:
+  update:
     runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false  # avoid permission conflict
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install pytrends requests
+      - name: Set up pip cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      - name: Run topic feeder
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Refresh external topics
         run: python3 backend/seo/external_topic_feeder.py
 
       - name: Commit updated topics
         env:
           GIT_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git config --global user.name "BlueJay Bot"
+          git config --global user.name "BlueJay Topic Bot"
           git config --global user.email "bot@askbluejay.ai"
           git remote set-url origin https://Mrjonwells:${GIT_AUTH_TOKEN}@github.com/Mrjonwells/bluejay.git
-          git fetch origin main
-          git checkout main
-          git pull origin main --no-rebase
+          git pull origin main --rebase || true
           git add backend/seo/external_topics.json
-          git commit --no-verify -m "Updated external blog topic feed" || echo "Nothing to commit"
+          git commit --no-verify -m "Updated external blog topics" || echo "::notice::No topic updates"
           git push origin main
