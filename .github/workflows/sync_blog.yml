@@ -1,34 +1,44 @@
-name: Sync Blog to GitHub
+name: Sync Blog Content
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # Runs every hour
   workflow_dispatch:
+  schedule:
+    - cron: "30 13 * * *"  # 6:30am PST daily sync (after blog gen)
 
 jobs:
-  commit-and-push:
+  sync:
     runs-on: ubuntu-latest
-
-    env:
-      REPO_NAME: Mrjonwells/bluejay
-
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Git identity
-        run: |
-          git config --global user.email "bluejay@askbluejay.ai"
-          git config --global user.name "BlueJay Bot"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Detect changes
-        id: detect
-        run: |
-          git add frontend/blogs/ frontend/blog.html || true
-          git diff --cached --exit-code || echo "CHANGES_DETECTED=true" >> $GITHUB_ENV
+      - name: Set up pip cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      - name: Commit and push
-        if: env.CHANGES_DETECTED == 'true'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run sync script
+        run: python3 docs/blog_sync.py
+
+      - name: Commit synced changes
+        env:
+          GIT_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git commit -m "Auto-sync SEO and blog updates from BlueJay"
-          git push https://x-access-token:${{ secrets.BLUEJAY_PAT }}@github.com/${{ env.REPO_NAME }}.git
+          git config --global user.name "BlueJay Sync Bot"
+          git config --global user.email "bot@askbluejay.ai"
+          git remote set-url origin https://Mrjonwells:${GIT_AUTH_TOKEN}@github.com/Mrjonwells/bluejay.git
+          git pull origin main --rebase || true
+          git add docs/blogs/*.html docs/blogs/index.json
+          git commit --no-verify -m "Synced blog content" || echo "::notice::No sync updates"
+          git push origin main
