@@ -4,9 +4,7 @@ import json
 import re
 from datetime import datetime
 
-# Add root path to import blog_engine from backend/
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from backend.blog_engine import get_trending_topic, generate_blog_content
 
 BLOG_DIR = "docs/blogs"
@@ -114,16 +112,11 @@ def main():
 
     topic_obj = get_trending_topic()
     topic = topic_obj["rewritten_topic"]
-    result = generate_blog_content({"topic": topic})  # now returns raw content (str)
+
+    result = generate_blog_content({"topic": topic})
     title = topic
     filename = f"{datetime.utcnow().strftime('%Y%m%d')}-{slugify(title)}.html"
-
-    meta = {
-        "description": f"Explore the latest insights on {title} from AskBlueJay.ai.",
-        "keywords": [word for word in title.lower().split() if len(word) > 3][:5]
-    }
-
-    html = build_html(title, result, meta, filename)
+    html = build_html(title, result["content"], result["meta"], filename)
 
     with open(os.path.join(BLOG_DIR, filename), "w") as f:
         f.write(html)
@@ -132,9 +125,10 @@ def main():
     index.insert(0, {
         "title": title,
         "filename": filename,
-        "description": meta["description"],
-        "keywords": meta["keywords"],
-        "date": datetime.utcnow().isoformat()
+        "description": result["meta"]["description"],
+        "keywords": result["meta"]["keywords"],
+        "date": datetime.utcnow().isoformat(),
+        "model": result["model"]
     })
     save_index(index)
     print(f"Blog saved: {filename}")
