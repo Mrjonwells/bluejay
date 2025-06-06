@@ -22,39 +22,41 @@ USED_INDEX = "docs/blogs/index.json"
 TOPIC_FILE = "backend/seo/external_topics.json"
 
 def get_trending_topic():
-    # Load all available topics
+    # Load all candidate topics
     all_topics = []
-    if os.path.exists(TOPIC_FILE):
+    try:
         with open(TOPIC_FILE, "r") as f:
-            try:
-                all_topics = json.load(f)
-            except Exception:
-                pass
+            data = json.load(f)
+            if isinstance(data, list):
+                all_topics = data
+            elif isinstance(data, dict) and "topics" in data:
+                all_topics = [{"rewritten_topic": t} for t in data["topics"]]
+    except Exception as e:
+        print("Error loading topics:", e)
 
     if not all_topics:
         return {"rewritten_topic": "How Smart Merchants Are Scaling with AI"}
 
-    # Load used topics + check timestamp for optional reset
+    # Load used titles (filtered to within the last 365 days)
     used_titles = set()
-    cutoff = datetime.utcnow() - timedelta(days=365)
-    if os.path.exists(USED_INDEX):
-        with open(USED_INDEX, "r") as f:
-            try:
-                used = json.load(f)
+    try:
+        if os.path.exists(USED_INDEX):
+            with open(USED_INDEX, "r") as f:
+                index_data = json.load(f)
+                cutoff = datetime.utcnow() - timedelta(days=365)
                 used_titles = {
-                    entry["title"]
-                    for entry in used
+                    entry["title"] for entry in index_data
                     if "title" in entry and "date" in entry and datetime.fromisoformat(entry["date"]) > cutoff
                 }
-            except Exception:
-                pass
+    except Exception as e:
+        print("Error loading used index:", e)
 
     # Filter fresh topics
     fresh_topics = [t for t in all_topics if t["rewritten_topic"] not in used_titles]
     if fresh_topics:
         return random.choice(fresh_topics)
 
-    # Reset allowed — reuse full topic list
+    # Fallback: reuse any
     return random.choice(all_topics)
 
 def generate_blog_content(payload):
