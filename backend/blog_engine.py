@@ -4,8 +4,6 @@ import random
 from openai import OpenAI
 from datetime import datetime, timedelta
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 MODIFIERS = [
     "from a futuristic lens", "as a marketing trend", "with real-world examples",
     "using contrarian opinions", "explained like you're 5", "in a myth-vs-fact format",
@@ -58,7 +56,7 @@ def get_trending_topic():
 def generate_blog_content(payload):
     topic = payload.get("topic", "Latest Tech Trends")
     modifier = random.choice(MODIFIERS)
-    fallback_model = "gpt-4o"
+    model = "gpt-3.5-turbo"  # ✅ Use high-limit, stable model for blog generation
 
     system_prompt = (
         "You are a professional blog writer generating original, SEO-optimized long-form posts (300–500+ words). "
@@ -71,35 +69,22 @@ def generate_blog_content(payload):
         "Include proper structure: headings, bullet points if useful, and engaging sub-sections."
     )
 
-    try:
-        print("[INFO] Trying GPT-4o...")
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=1.1
-        )
-    except Exception as e:
-        print("[WARNING] GPT-4o failed:", e)
-        print("[INFO] Falling back to GPT-3.5-turbo...")
-        fallback_model = "gpt-3.5-turbo"
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=1.1
-        )
+    print(f"[INFO] Using model: {model}")
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        temperature=1.1
+    )
 
-    print("[MODEL USED]:", fallback_model)
     return {
         "content": response.choices[0].message.content.strip(),
         "meta": {
             "description": topic,
             "keywords": [w for w in topic.lower().split() if len(w) > 3]
         },
-        "model": fallback_model
+        "model": model
     }
