@@ -17,7 +17,7 @@ header {
   height: 400px;
   margin: 3px auto 0 auto;
   display: block;
-  filter: drop-shadow(0 0 3px #00aaff);
+  filter: drop-shadow(0 0 4px rgba(0, 170, 255, 0.6));
 }
 
 .dropdown {
