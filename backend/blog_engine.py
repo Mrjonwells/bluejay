@@ -22,7 +22,6 @@ USED_INDEX = "docs/blogs/index.json"
 TOPIC_FILE = "backend/seo/external_topics.json"
 
 def get_trending_topic():
-    # Load all candidate topics
     all_topics = []
     try:
         with open(TOPIC_FILE, "r") as f:
@@ -37,7 +36,6 @@ def get_trending_topic():
     if not all_topics:
         return {"rewritten_topic": "How Smart Merchants Are Scaling with AI"}
 
-    # Load used titles (filtered to within the last 365 days)
     used_titles = set()
     try:
         if os.path.exists(USED_INDEX):
@@ -51,17 +49,16 @@ def get_trending_topic():
     except Exception as e:
         print("Error loading used index:", e)
 
-    # Filter fresh topics
     fresh_topics = [t for t in all_topics if t["rewritten_topic"] not in used_titles]
     if fresh_topics:
         return random.choice(fresh_topics)
 
-    # Fallback: reuse any
     return random.choice(all_topics)
 
 def generate_blog_content(payload):
     topic = payload.get("topic", "Latest Tech Trends")
     modifier = random.choice(MODIFIERS)
+    fallback_model = "gpt-4o"
 
     system_prompt = (
         "You are a professional blog writer generating original, SEO-optimized long-form posts (300–500+ words). "
@@ -74,13 +71,34 @@ def generate_blog_content(payload):
         "Include proper structure: headings, bullet points if useful, and engaging sub-sections."
     )
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        temperature=1.1
-    )
+    try:
+        print("[INFO] Trying GPT-4o...")
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=1.1
+        )
+    except Exception as e:
+        print("[WARNING] GPT-4o failed:", e)
+        print("[INFO] Falling back to GPT-3.5-turbo...")
+        fallback_model = "gpt-3.5-turbo"
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=1.1
+        )
 
-    return response.choices[0].message.content.strip()
+    return {
+        "content": response.choices[0].message.content.strip(),
+        "meta": {
+            "description": topic,
+            "keywords": [w for w in topic.lower().split() if len(w) > 3]
+        },
+        "model": fallback_model
+    }
