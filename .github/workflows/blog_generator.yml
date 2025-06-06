@@ -22,11 +22,20 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Set up pip cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Run blog pipeline
         run: python3 docs/blog_pipeline.py
+        continue-on-error: false
 
       - name: Update sitemap
         run: python3 docs/sitemap_updater.py
@@ -40,5 +49,5 @@ jobs:
           git remote set-url origin https://Mrjonwells:${GIT_AUTH_TOKEN}@github.com/Mrjonwells/bluejay.git
           git pull origin main --rebase || true
           git add docs/blogs/*.html docs/blogs/index.json docs/sitemap.xml
-          git commit --no-verify -m "Auto-blog update from GitHub Action" || echo "Nothing to commit"
+          git commit --no-verify -m "Auto-blog update from GitHub Action" || echo "::notice::Nothing to commit"
           git push origin main
