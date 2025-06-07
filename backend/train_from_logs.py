@@ -1,32 +1,56 @@
 import json
-from pathlib import Path
+import os
+import redis
+from datetime import datetime
+from dotenv import load_dotenv
 
-LOG_PATH = Path("backend/logs/interaction_log.jsonl")
-RECOMMENDATION_PATH = Path("backend/brain_update_recommendations.json")
+load_dotenv()
 
-def analyze_logs():
-    recommendations = {"cash_discounting": [], "calendar_triggering": [], "seo_keywords": []}
-    if not LOG_PATH.exists():
-        print("No logs found.")
-        return
+LOG_PATH = "backend/logs/interaction_log.jsonl"
+BRAIN_RECOMMENDATIONS_PATH = "backend/config/brain_update_recommendations.json"
+REDIS_URL = os.getenv("REDIS_URL")
 
-    with open(LOG_PATH, "r") as f:
-        for line in f:
-            try:
-                entry = json.loads(line)
-                msg = entry.get("user", "").lower() + " " + entry.get("assistant", "").lower()
-                if "cash discount" in msg or "zero fee" in msg:
-                    recommendations["cash_discounting"].append("reinforce multi-step explanation")
-                if "book" in msg or "meeting" in msg or "calendar" in msg:
-                    recommendations["calendar_triggering"].append("reinforce calendly popup timing")
-                if "seo" in msg or "search" in msg or "blog" in msg:
-                    recommendations["seo_keywords"].append("log user search language")
-            except:
-                continue
+redis_client = redis.from_url(REDIS_URL, ssl=True)  # ensure SSL is applied
 
-    with open(RECOMMENDATION_PATH, "w") as out:
-        json.dump(recommendations, out, indent=2)
-    print("Updated recommendations saved.")
+FIELD_KEYWORDS = {
+    "monthly_card_volume": ["$10,000", "$15000", "75000", "20k", "monthly volume", "card sales", "processing", "$12000"],
+    "average_ticket": ["average ticket", "ticket size", "typically spend", "avg sale", "$8", "$15", "$18"],
+    "processor": ["Square", "Stripe", "Clover", "POS", "processor", "terminal", "using"],
+    "transaction_type": ["online", "counter", "in person", "ecommerce", "website"],
+    "business_name": ["LLC", "Inc", "taco shop", "company name", "we’re a coffee shop"],
+    "contact_info": ["@gmail.com", "@yahoo.com", "@", "phone", "reach me"]
+}
+
+def parse_redis_threads():
+    field_counts = {k: 0 for k in FIELD_KEYWORDS}
+    for key in redis_client.scan_iter("thread:*"):
+        try:
+            messages = json.loads(redis_client.get(key))
+            for msg in messages:
+                if msg["role"] == "user":
+                    content = msg["content"].lower()
+                    for field, keywords in FIELD_KEYWORDS.items():
+                        if any(kw.lower() in content for kw in keywords):
+                            field_counts[field] += 1
+        except Exception:
+            continue
+    return field_counts
+
+def generate_recommendations(counts):
+    return [f"Improve capture rate for '{field}' — too few logged mentions." for field, count in counts.items() if count < 3]
+
+def save_output(field_counts, recs):
+    output = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "field_counts": field_counts,
+        "recommendations": recs
+    }
+    os.makedirs(os.path.dirname(BRAIN_RECOMMENDATIONS_PATH), exist_ok=True)
+    with open(BRAIN_RECOMMENDATIONS_PATH, "w") as f:
+        json.dump(output, f, indent=2)
+    print("Recommendations written to brain_update_recommendations.json")
 
 if __name__ == "__main__":
-    analyze_logs()
+    counts = parse_redis_threads()
+    recs = generate_recommendations(counts)
+    save_output(counts, recs)
