@@ -1,35 +1,32 @@
+# brainstem.py
+
+import redis
+import json
 import os
 
-def get_all_metrics():
-    """
-    Returns a dictionary of usage and cost metrics for core services.
-    Replace static values with API calls if needed.
-    """
-    return {
-        "OpenAI": {
-            "cost": float(os.getenv("OPENAI_SPEND", "12.45")),
-            "limit": float(os.getenv("OPENAI_LIMIT", "50"))
-        },
-        "Render": {
-            "cost": float(os.getenv("RENDER_SPEND", "7.30")),
-            "limit": float(os.getenv("RENDER_LIMIT", "25"))
-        },
-        "GitHub": {
-            "cost": float(os.getenv("GITHUB_SPEND", "0.0")),
-            "limit": float(os.getenv("GITHUB_LIMIT", "5"))
-        }
-    }
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 
-def update_brain_config(param, value):
-    """
-    Central update logic for config parameters.
-    Add write-back to config or database here if needed.
-    """
-    # Simulated response - extend this as needed
-    return f"🔁 Updated `{param}` to `{value}`"
+# ⚠️ Fallback: strip SSL if unsupported
+try:
+    redis_client = redis.from_url(redis_url, decode_responses=True, ssl=True, ssl_cert_reqs=None)
+except TypeError:
+    redis_client = redis.from_url(redis_url, decode_responses=True)
 
-def undo_last_change():
-    """
-    Placeholder for undo functionality — to be implemented.
-    """
-    return "↩️ Undo not yet implemented."
+def parse_redis_threads():
+    threads = {}
+    for key in redis_client.scan_iter("thread:*"):
+        thread = redis_client.get(key)
+        if thread:
+            threads[key] = json.loads(thread)
+    return threads
+
+def generate_recommendations(thread_data):
+    recs = {}
+    for thread_id, messages in thread_data.items():
+        if isinstance(messages, list) and len(messages) > 3:
+            recs[thread_id] = "🧠 Suggest optimization: shorten greeting or vary closing."
+    return recs
+
+def save_output(counts, recs):
+    with open("backend/logs/brain_output.json", "w") as f:
+        json.dump({"counts": counts, "recommendations": recs}, f, indent=2)
