@@ -2,6 +2,7 @@ import os
 import redis
 import streamlit as st
 from dotenv import load_dotenv
+from dashboard import get_all_metrics
 
 load_dotenv()
 
@@ -9,40 +10,39 @@ st.set_page_config(page_title="BlueJay Admin Console", layout="wide")
 st.markdown("<h1 style='color:#00aaff;'>📊 BlueJay Admin Console</h1>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Redis connection
+# Redis connection with SSL
 redis_status = "Unknown"
 redis_url = os.getenv("REDIS_URL")
 
 try:
-    pool = redis.ConnectionPool.from_url(redis_url, decode_components=True, ssl=False)
-    redis_client = redis.Redis(connection_pool=pool)
+    redis_client = redis.from_url(redis_url, ssl=True)
     redis_client.ping()
     redis_status = "Connected"
 except Exception as e:
     redis_status = f"Redis Connection Failed: {e}"
     st.error(redis_status)
-    st.exception(e)
+    st.stop()
 
-if "Connected" in redis_status:
-    st.success("✅ Redis Connected")
+st.success("✅ Redis Connected")
+st.markdown("### 🔎 BlueJay System Status")
 
-# Usage Metrics
-from dashboard import get_all_metrics
-data = get_all_metrics()
+# Metrics section
+try:
+    metrics = get_all_metrics()
 
-st.markdown("## 💰 Current Spend Overview")
-st.bar_chart({
-    "GitHub": [data["GitHub"]["cost"]],
-    "OpenAI": [data["OpenAI"]["cost"]],
-    "Render": [data["Render"]["cost"]],
-    "Total": [data["Total"]["cost"]]
-})
+    spend_labels = list(metrics.keys())
+    spend_values = [metrics[k]["cost"] for k in spend_labels]
+    spend_limits = [metrics[k]["limit"] for k in spend_labels]
 
-st.markdown("## 📈 Usage Limits")
-st.write(f"**OpenAI:** {data['OpenAI']['cost']} / {data['OpenAI']['limit']}")
-st.write(f"**Render:** {data['Render']['cost']} / {data['Render']['limit']}")
-st.write(f"**GitHub Actions:** {data['GitHub']['cost']} / {data['GitHub']['limit']}")
-st.write(f"**Total Usage:** {data['Total']['cost']} / {data['Total']['limit']}")
+    st.subheader("💰 Current Spend Overview")
+    st.bar_chart(data=spend_values, use_container_width=True)
+
+    st.subheader("📉 Usage Limits")
+    for key in metrics:
+        st.markdown(f"**{key}**: ${metrics[key]['cost']} of ${metrics[key]['limit']}")
+
+except Exception as e:
+    st.error(f"Metric load failed: {e}")
 
 st.markdown("---")
 st.caption("BlueJay AI Admin Console © 2025")
