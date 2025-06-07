@@ -5,19 +5,16 @@ import urllib.parse
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 LOG_PATH = "backend/logs/interaction_log.jsonl"
 BRAIN_RECOMMENDATIONS_PATH = "backend/config/brain_update_recommendations.json"
 REDIS_URL = os.getenv("REDIS_URL")
 
-# Parse SSL scheme from Redis URL
-url = urllib.parse.urlparse(REDIS_URL)
-use_ssl = url.scheme == "rediss"
-
-# Connect to Redis with correct SSL handling
-redis_client = redis.from_url(REDIS_URL, decode_responses=True, ssl=use_ssl)
+# Parse Redis URL to safely set SSL if using rediss://
+parsed_url = urllib.parse.urlparse(REDIS_URL)
+use_ssl = parsed_url.scheme == "rediss"
+redis_client = redis.from_url(REDIS_URL, ssl=use_ssl, decode_responses=True)
 
 FIELD_KEYWORDS = {
     "monthly_card_volume": ["$10,000", "$15000", "75000", "20k", "monthly volume", "card sales", "processing", "$12000"],
