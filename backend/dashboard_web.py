@@ -1,8 +1,9 @@
 import os
 import redis
 import streamlit as st
+import urllib.parse
 from dotenv import load_dotenv
-from dashboard import get_all_metrics
+from brainstem import get_all_metrics  # unified interface
 
 load_dotenv()
 
@@ -10,12 +11,14 @@ st.set_page_config(page_title="BlueJay Admin Console", layout="wide")
 st.markdown("<h1 style='color:#00aaff;'>📊 BlueJay Admin Console</h1>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Redis connection with SSL
+# Redis connection with SSL-aware scheme
 redis_status = "Unknown"
 redis_url = os.getenv("REDIS_URL")
 
 try:
-    redis_client = redis.from_url(redis_url, ssl=True)
+    parsed_url = urllib.parse.urlparse(redis_url)
+    use_ssl = parsed_url.scheme == "rediss"
+    redis_client = redis.from_url(redis_url, ssl=use_ssl)
     redis_client.ping()
     redis_status = "Connected"
 except Exception as e:
