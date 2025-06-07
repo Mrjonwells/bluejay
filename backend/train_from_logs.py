@@ -11,7 +11,6 @@ LOG_PATH = "backend/logs/interaction_log.jsonl"
 BRAIN_RECOMMENDATIONS_PATH = "backend/config/brain_update_recommendations.json"
 REDIS_URL = os.getenv("REDIS_URL")
 
-# Parse Redis URL to safely set SSL if using rediss://
 parsed_url = urllib.parse.urlparse(REDIS_URL)
 use_ssl = parsed_url.scheme == "rediss"
 redis_client = redis.from_url(REDIS_URL, ssl=use_ssl, decode_responses=True)
