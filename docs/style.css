@@ -236,3 +236,19 @@ footer {
     height: 200px;
   }
 }
+
+/* BLOG STYLES */
+.blog-title {
+  color: #00aaff;
+  font-size: 1.8em;
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.blog-content {
+  color: #cceeff;
+  line-height: 1.6;
+  font-size: 1em;
+  padding: 0 20px;
+}
