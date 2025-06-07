@@ -30,3 +30,4 @@ def generate_recommendations(thread_data):
 def save_output(counts, recs):
     with open("backend/logs/brain_output.json", "w") as f:
         json.dump({"counts": counts, "recommendations": recs}, f, indent=2)
+        
