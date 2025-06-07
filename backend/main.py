@@ -41,7 +41,7 @@ except:
 redis_url = os.getenv("REDIS_URL")
 redis_client = redis.from_url(redis_url, ssl=True)  # 🔒 SSL fix
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), http_client=None)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 HUBSPOT_FORM_URL = "https://api.hsforms.com/submissions/v3/integration/submit/45853776/3b7c289f-566e-4403-ac4b-5e2387c3c5d1"
 
