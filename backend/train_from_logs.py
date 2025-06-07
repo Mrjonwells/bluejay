@@ -1,8 +1,8 @@
+import json
 import os
-from dotenv import load_dotenv
-from bluejay.brainstem import parse_redis_threads, generate_recommendations, save_output
-
-load_dotenv()
+import urllib.parse
+from datetime import datetime
+from brainstem import parse_redis_threads, generate_recommendations, save_output
 
 if __name__ == "__main__":
     counts = parse_redis_threads()
