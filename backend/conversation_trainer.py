@@ -1,73 +1,45 @@
 import os
 import json
 import redis
-import urllib.parse
-from datetime import datetime
-from dotenv import load_dotenv
 
-load_dotenv()
-
-REDIS_URL = os.getenv("REDIS_URL")
-LOG_DIR = "backend/logs/conversations/"
-os.makedirs(LOG_DIR, exist_ok=True)
-
-# Parse Redis URL to set SSL if using rediss://
-parsed_url = urllib.parse.urlparse(REDIS_URL)
-use_ssl = parsed_url.scheme == "rediss"
-redis_client = redis.from_url(REDIS_URL, ssl=use_ssl, decode_responses=True)
-
-FIELD_KEYWORDS = {
-    "monthly_card_volume": ["$10,000", "$15000", "75000", "20k", "monthly volume", "card sales", "processing", "$12000"],
-    "average_ticket": ["average ticket", "ticket size", "typically spend", "avg sale", "$8", "$15", "$18"],
-    "processor": ["Square", "Stripe", "Clover", "POS", "processor", "terminal", "using"],
-    "transaction_type": ["online", "counter", "in person", "ecommerce", "website"],
-    "business_name": ["LLC", "Inc", "taco shop", "company name", "we’re a coffee shop"],
-    "contact_info": ["@gmail.com", "@yahoo.com", "@", "phone", "reach me"]
-}
+# Safe Redis client init (avoids ssl error in certain environments)
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+try:
+    redis_client = redis.from_url(redis_url, decode_responses=True, ssl=True, ssl_cert_reqs=None)
+except TypeError:
+    redis_client = redis.from_url(redis_url, decode_responses=True)
 
 def fetch_conversations():
-    threads = {}
-    for key in redis_client.scan_iter("thread:*"):
-        try:
-            data = redis_client.get(key)
-            if data:
-                threads[key] = json.loads(data)
-        except Exception:
-            continue
-    return threads
+    conversations = []
+    try:
+        for key in redis_client.scan_iter("thread:*"):
+            raw = redis_client.get(key)
+            if raw:
+                conversations.append(json.loads(raw))
+    except redis.RedisError as e:
+        print("Redis error:", e)
+    return conversations
 
-def score_conversations(threads):
-    scores = {}
-    for thread_id, messages in threads.items():
-        field_flags = {k: False for k in FIELD_KEYWORDS}
-        for msg in messages:
-            if msg["role"] != "user":
-                continue
-            content = msg["content"].lower()
-            for field, keywords in FIELD_KEYWORDS.items():
-                if any(kw.lower() in content for kw in keywords):
-                    field_flags[field] = True
-        score = sum(field_flags.values())
-        scores[thread_id] = {
-            "score": score,
-            "missing": [field for field, found in field_flags.items() if not found]
-        }
-    return scores
+def summarize_conversation(conv):
+    # Placeholder logic — refine as needed
+    return {"summary": f"Found {len(conv)} messages."}
 
-def save_snapshot(threads, scores):
-    timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-    out_path = os.path.join(LOG_DIR, f"conversation_snapshot_{timestamp}.json")
-    combined = {
-        "timestamp": timestamp,
-        "total_threads": len(threads),
-        "thread_scores": scores,
-        "threads": threads
-    }
-    with open(out_path, "w") as f:
-        json.dump(combined, f, indent=2)
-    print(f"Saved {len(threads)} threads to {out_path}")
+def train_from_conversations(conversations):
+    summaries = []
+    for conv in conversations:
+        summaries.append(summarize_conversation(conv))
+    return summaries
+
+def save_output(summaries):
+    os.makedirs("backend/logs", exist_ok=True)
+    with open("backend/logs/conversation_summaries.json", "w") as f:
+        json.dump(summaries, f, indent=2)
 
 if __name__ == "__main__":
     all_threads = fetch_conversations()
-    all_scores = score_conversations(all_threads)
-    save_snapshot(all_threads, all_scores)
+    if not all_threads:
+        print("No threads found or Redis connection issue.")
+    else:
+        result = train_from_conversations(all_threads)
+        save_output(result)
+        print("✅ Saved summaries.")
