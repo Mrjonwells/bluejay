@@ -39,7 +39,7 @@ except:
     template = {}
 
 redis_url = os.getenv("REDIS_URL")
-redis_client = redis.from_url(redis_url)
+redis_client = redis.from_url(redis_url, ssl=True)  # 🔒 SSL fix
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -94,9 +94,9 @@ def send_to_hubspot(name, phone, email, notes, lead_score=None):
     requests.post(HUBSPOT_FORM_URL, json=payload)
 
 def store_session(memory_key, thread_messages, name=None, lead_score=None):
-    TTL = 1800  # default
+    TTL = 1800
     if lead_score is not None and lead_score >= 70:
-        TTL = 86400  # high-quality: 24hr
+        TTL = 86400
     payload = {
         "timestamp": time.time(),
         "messages": thread_messages,
