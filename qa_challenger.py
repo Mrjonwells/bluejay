@@ -1,12 +1,14 @@
 import os
 import json
 from openai import OpenAI
+from dotenv import load_dotenv
 
-# ✅ FIX: Avoid triggering 'proxies' bug by avoiding http_client param
+load_dotenv()
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-INPUT_LOG = "bluejay/backend/logs/interaction_log.jsonl"
-OUTPUT_RECS = "brain_update_recommendations.json"
+INPUT_LOG = "backend/logs/interaction_log.jsonl"
+OUTPUT_RECS = "backend/config/brain_update_recommendations.json"
 
 if not os.path.exists(INPUT_LOG):
     print(f"Log file not found at {INPUT_LOG}. Skipping QA pass.")
@@ -19,9 +21,7 @@ def load_interactions(path):
 def generate_feedback(thread_id, assistant_msgs):
     if not assistant_msgs:
         return None
-
     recent = assistant_msgs[-3:] if len(assistant_msgs) >= 3 else assistant_msgs
-
     prompt = [
         {
             "role": "system",
@@ -32,7 +32,6 @@ def generate_feedback(thread_id, assistant_msgs):
             "content": "\n\n".join(recent)
         }
     ]
-
     try:
         result = client.chat.completions.create(
             model="gpt-4o",
@@ -48,7 +47,6 @@ def generate_feedback(thread_id, assistant_msgs):
 def run_qa_challenger():
     logs = load_interactions(INPUT_LOG)
     recs = []
-
     for entry in logs:
         thread_id = entry.get("thread_id", "unknown")
         messages = entry.get("messages", [])
@@ -56,7 +54,7 @@ def run_qa_challenger():
         feedback = generate_feedback(thread_id, assistant_replies)
         if feedback:
             recs.append(feedback)
-
+    os.makedirs(os.path.dirname(OUTPUT_RECS), exist_ok=True)
     with open(OUTPUT_RECS, "w") as f:
         json.dump(recs, f, indent=2)
     print(f"Generated {len(recs)} improvement recommendations.")
