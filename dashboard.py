@@ -1,74 +1,51 @@
-# dashboard.py
-
-import streamlit as st
-import redis
-import json
 import os
-from collections import Counter
-import time
+import requests
 from datetime import datetime
+from dotenv import load_dotenv
 
-st.set_page_config(page_title="BlueJay Admin Dashboard", layout="wide")
+load_dotenv()
 
-# Redis connection
-redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-r = redis.from_url(redis_url)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+RENDER_API_KEY = os.getenv("RENDER_API_KEY")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+GITHUB_REPO = "Mrjonwells/bluejay"
 
-# Title
-st.title("BlueJay Intelligence Dashboard")
+def fetch_openai_usage():
+    headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
+    url = "https://api.openai.com/v1/dashboard/billing/usage"
+    now = datetime.utcnow().isoformat()
+    month_start = f"{datetime.utcnow():%Y-%m}-01T00:00:00Z"
+    res = requests.get(f"{url}?start_date={month_start}&end_date={now}", headers=headers)
+    usage = res.json().get("total_usage", 0) / 100.0
+    return round(usage, 2)
 
-# Sidebar status
-st.sidebar.header("System Health")
-try:
-    test_ping = r.ping()
-    st.sidebar.success("Redis: Online")
-except:
-    st.sidebar.error("Redis: Offline")
+def fetch_openai_limit():
+    headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
+    res = requests.get("https://api.openai.com/v1/dashboard/billing/subscription", headers=headers)
+    return res.json().get("hard_limit_usd", 0)
 
-# Load sessions
-st.header("Recent Sessions")
-keys = [k.decode() for k in r.keys("thread:*") if b":submitted" not in k]
-sessions = []
-for key in keys[-10:]:
-    raw = r.get(key)
-    if raw:
-        data = json.loads(raw)
-        sessions.append({
-            "Thread": key,
-            "Name": data.get("name", "—"),
-            "Messages": len(data.get("messages", [])),
-            "Last Seen": datetime.fromtimestamp(data.get("timestamp", 0)).strftime("%Y-%m-%d %H:%M"),
-        })
+def fetch_render_cost():
+    # Placeholder: Render doesn't offer public cost API. Manually insert.
+    return 12.00
 
-if sessions:
-    st.table(sessions)
-else:
-    st.info("No active sessions.")
+def fetch_github_actions_cost():
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/actions/runs"
+    res = requests.get(url, headers=headers)
+    runs = res.json().get("workflow_runs", [])
+    return round(len(runs) * 0.005, 2)  # Rough est. $0.005 per run
 
-# Lead Quality
-st.header("Lead Quality Overview")
-quality_counts = Counter()
-for key in r.scan_iter("thread:*"):
-    if b":submitted" not in key:
-        data = r.get(key)
-        if data:
-            try:
-                payload = json.loads(data)
-                name = payload.get("name")
-                if name:
-                    score_key = key.decode().replace("thread:", "thread:") + ":submitted"
-                    if r.get(score_key):
-                        notes = "\n".join(m["content"] for m in payload.get("messages", []) if m["role"] == "user")
-                        if "high" in notes.lower():
-                            quality_counts["High"] += 1
-                        elif "medium" in notes.lower():
-                            quality_counts["Medium"] += 1
-                        elif "low" in notes.lower():
-                            quality_counts["Low"] += 1
-            except:
-                continue
+def get_all_metrics():
+    openai_cost = fetch_openai_usage()
+    openai_limit = fetch_openai_limit()
+    render_cost = fetch_render_cost()
+    github_cost = fetch_github_actions_cost()
 
-st.bar_chart(quality_counts)
+    total = round(openai_cost + render_cost + github_cost, 2)
 
-# Footer
-st.markdown("Last updated: " + time.strftime("%Y-%m-%d %H:%M:%S"))
+    return {
+        "OpenAI": {"cost": openai_cost, "limit": openai_limit},
+        "Render": {"cost": render_cost, "limit": 25},
+        "GitHub": {"cost": github_cost, "limit": 10},
+        "Total": {"cost": total, "limit": openai_limit + 25 + 10}
+    }
