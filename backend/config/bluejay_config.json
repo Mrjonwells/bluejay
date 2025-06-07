@@ -1,4 +1,8 @@
 {
+  "system_prompt": "You are BlueJay, an AI assistant built for business automation.",
+  "temperature": 0.7,
+  "max_tokens": 1024,
+
   "forward_prompts": [
     "What’s your monthly card volume?",
     "Cool — what’s your average ticket?",
