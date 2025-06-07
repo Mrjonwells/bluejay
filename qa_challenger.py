@@ -2,12 +2,12 @@ import os
 import json
 from openai import OpenAI
 
+# ✅ FIX: Avoid triggering 'proxies' bug by avoiding http_client param
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 INPUT_LOG = "bluejay/backend/logs/interaction_log.jsonl"
 OUTPUT_RECS = "brain_update_recommendations.json"
 
-# Safe fallback if log is missing
 if not os.path.exists(INPUT_LOG):
     print(f"Log file not found at {INPUT_LOG}. Skipping QA pass.")
     exit(0)
