@@ -11,10 +11,9 @@ LOG_PATH = "backend/logs/interaction_log.jsonl"
 BRAIN_RECOMMENDATIONS_PATH = "backend/config/brain_update_recommendations.json"
 REDIS_URL = os.getenv("REDIS_URL")
 
-# Connect to Redis
-redis_client = redis.from_url(REDIS_URL)
+# ✅ Ensure SSL is enforced for hosted Redis instances (e.g. Render, Upstash)
+redis_client = redis.from_url(REDIS_URL, ssl=True)
 
-# Keywords for field detection
 FIELD_KEYWORDS = {
     "monthly_card_volume": ["$10,000", "$15000", "75000", "20k", "monthly volume", "card sales", "processing", "$12000"],
     "average_ticket": ["average ticket", "ticket size", "typically spend", "avg sale", "$8", "$15", "$18"],
@@ -28,14 +27,19 @@ def parse_redis_threads():
     field_counts = {k: 0 for k in FIELD_KEYWORDS}
     for key in redis_client.scan_iter("thread:*"):
         try:
-            messages = json.loads(redis_client.get(key))
+            data = redis_client.get(key)
+            if not data:
+                continue
+            session = json.loads(data)
+            messages = session.get("messages", [])
             for msg in messages:
                 if msg["role"] == "user":
                     content = msg["content"].lower()
                     for field, keywords in FIELD_KEYWORDS.items():
                         if any(kw.lower() in content for kw in keywords):
                             field_counts[field] += 1
-        except Exception:
+        except Exception as e:
+            print(f"Error parsing {key}: {e}")
             continue
     return field_counts
 
