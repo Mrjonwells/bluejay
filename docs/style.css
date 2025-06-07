@@ -214,6 +214,25 @@ footer {
   color: #888;
 }
 
+/* Blog specific */
+.blog-title {
+  color: #00aaff;
+}
+
+.blog-content {
+  color: #cceeff;
+  line-height: 1.6;
+}
+
+a {
+  color: #00aaff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .centered-logo {
     height: 200px;
@@ -235,20 +254,4 @@ footer {
   .chatlog {
     height: 200px;
   }
-}
-
-/* BLOG STYLES */
-.blog-title {
-  color: #00aaff;
-  font-size: 1.8em;
-  margin-bottom: 10px;
-  font-weight: bold;
-  text-align: center;
-}
-
-.blog-content {
-  color: #cceeff;
-  line-height: 1.6;
-  font-size: 1em;
-  padding: 0 20px;
 }
